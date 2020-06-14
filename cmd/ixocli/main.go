@@ -22,6 +22,7 @@ import (
 )
 
 func main() {
+	cobra.EnableCommandSorting = false
 	cdc := app.MakeCodec()
 	config := sdk.GetConfig()
 	config.SetBech32PrefixForAccount(app.Bech32PrefixAccAddr, app.Bech32PrefixAccPub)
