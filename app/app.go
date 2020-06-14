@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/oracles"
 	"encoding/json"
 	"io"
 	"os"
@@ -29,12 +28,14 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
-	bonddoc "github.com/tokenchain/ixo-blockchain/x/bonddoc"
-	bonds "github.com/tokenchain/ixo-blockchain/x/bonds"
-	did "github.com/tokenchain/ixo-blockchain/x/did"
-	fees "github.com/tokenchain/ixo-blockchain/x/fees"
-	project "github.com/tokenchain/ixo-blockchain/x/project"
-	treasury "github.com/tokenchain/ixo-blockchain/x/treasury"
+	"github.com/tokenchain/ixo-blockchain/x/bonddoc"
+	"github.com/tokenchain/ixo-blockchain/x/bonds"
+	"github.com/tokenchain/ixo-blockchain/x/did"
+	"github.com/tokenchain/ixo-blockchain/x/fees"
+	gmtypes "github.com/tokenchain/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/oracles"
+	"github.com/tokenchain/ixo-blockchain/x/project"
+	"github.com/tokenchain/ixo-blockchain/x/treasury"
 )
 
 const (
@@ -131,7 +132,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	cdc := MakeCodec()
 
-	bApp := bam.NewBaseApp(appName, logger, db, DefaultTxDecoder(cdc), baseAppOptions...)
+	bApp := bam.NewBaseApp(appName, logger, db, gmtypes.DefaultTxDecoder(cdc), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 
 	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
