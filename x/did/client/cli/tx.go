@@ -58,7 +58,17 @@ func unmarshalSovrinDID(sovrinJson string) sovrin.SovrinDid {
 
 	return sovrinDid
 }
-
+func GetCreatDidCertificate(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "generate",
+		Short: "Generate full did certification",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cert := sovrin.Gen()
+			fmt.Print(cert.String())
+			return nil
+		},
+	}
+}
 func GetCmdAddDidDoc(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "addDidDoc [sovrin-did]",

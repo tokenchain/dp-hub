@@ -39,7 +39,7 @@ import (
 )
 
 const (
-	appName              = "DpApp"
+	appName              = "Dark Inter Pool"
 	Bech32MainPrefix     = "dx0"
 	Bech32PrefixAccAddr  = Bech32MainPrefix
 	Bech32PrefixAccPub   = Bech32MainPrefix + sdk.PrefixPublic

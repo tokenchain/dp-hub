@@ -61,6 +61,7 @@ func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	didTxCmd.AddCommand(client.PostCommands(
 		cli.GetCmdAddDidDoc(cdc),
 		cli.GetCmdAddCredential(cdc),
+		cli.GetCreatDidCertificate(cdc),
 	)...)
 
 	return didTxCmd

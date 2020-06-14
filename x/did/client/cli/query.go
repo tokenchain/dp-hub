@@ -128,3 +128,4 @@ func GetCmdAllDidDocs(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 }
+
