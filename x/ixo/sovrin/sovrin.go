@@ -68,7 +68,7 @@ func FromSeed(seed [32]byte) SovrinDid {
 	signKey := base58.Encode(privateKey[:32])
 	keyPairPublicKey, keyPairPrivateKey, err := naclBox.GenerateKey(bytes.NewReader(privateKey[:]))
 	sovDid := SovrinDid{
-		Did:                 base58.Encode(publicKey[:16]),
+		Did:                 fmt.Sprintf("did:dxp:%s", base58.Encode(publicKey[:16])),
 		VerifyKey:           base58.Encode(publicKey),
 		EncryptionPublicKey: base58.Encode(keyPairPublicKey[:]),
 		Secret: SovrinSecret{

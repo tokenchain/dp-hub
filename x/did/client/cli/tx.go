@@ -58,6 +58,16 @@ func unmarshalSovrinDID(sovrinJson string) sovrin.SovrinDid {
 
 	return sovrinDid
 }
+func GetCreateMnemonic(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{Use: "genmnemonic",
+		Short: "Generate full set of mnemonic",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cert := sovrin.GenerateMnemonic()
+			fmt.Print(cert)
+			return nil
+		},
+	}
+}
 func GetCreatDidCertificate(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "generate",
