@@ -1,8 +1,8 @@
 package bonds
 
 import (
-	"github.com/ixofoundation/ixo-blockchain/x/bonds/internal/keeper"
-	"github.com/ixofoundation/ixo-blockchain/x/bonds/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/keeper"
+	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
 )
 
 //noinspection GoUnusedConst,GoNameStartsWithPackageName

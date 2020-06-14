@@ -1,8 +1,8 @@
 package fees
 
 import (
-	"github.com/ixofoundation/ixo-blockchain/x/fees/internal/keeper"
-	"github.com/ixofoundation/ixo-blockchain/x/fees/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/fees/internal/keeper"
+	"github.com/tokenchain/ixo-blockchain/x/fees/internal/types"
 )
 
 const (

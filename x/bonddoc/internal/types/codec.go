@@ -8,7 +8,7 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgCreateBond{}, "bonddoc/CreateBond", nil)
 	cdc.RegisterConcrete(MsgUpdateBondStatus{}, "bonddoc/UpdateBondStatus", nil)
 
-	// TODO: https://github.com/ixofoundation/ixo-blockchain/issues/76
+	// TODO: https://github.com/tokenchain/ixo-blockchain/issues/76
 	// cdc.RegisterInterface((*StoredBondDoc)(nil), nil)
 }
 

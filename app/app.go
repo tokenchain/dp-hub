@@ -1,8 +1,8 @@
 package app
 
 import (
+	"github.com/tokenchain/ixo-blockchain/x/oracles"
 	"encoding/json"
-	"github.com/ixofoundation/ixo-blockchain/x/oracles"
 	"io"
 	"os"
 
@@ -29,18 +29,17 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/ixofoundation/ixo-blockchain/x/bonddoc"
-	"github.com/ixofoundation/ixo-blockchain/x/bonds"
-	"github.com/ixofoundation/ixo-blockchain/x/did"
-	"github.com/ixofoundation/ixo-blockchain/x/fees"
-	"github.com/ixofoundation/ixo-blockchain/x/ixo"
-	"github.com/ixofoundation/ixo-blockchain/x/project"
-	"github.com/ixofoundation/ixo-blockchain/x/treasury"
+	bonddoc "github.com/tokenchain/ixo-blockchain/x/bonddoc"
+	bonds "github.com/tokenchain/ixo-blockchain/x/bonds"
+	did "github.com/tokenchain/ixo-blockchain/x/did"
+	fees "github.com/tokenchain/ixo-blockchain/x/fees"
+	project "github.com/tokenchain/ixo-blockchain/x/project"
+	treasury "github.com/tokenchain/ixo-blockchain/x/treasury"
 )
 
 const (
-	appName              = "ixoApp"
-	Bech32MainPrefix     = "ixo"
+	appName              = "DpApp"
+	Bech32MainPrefix     = "dx0"
 	Bech32PrefixAccAddr  = Bech32MainPrefix
 	Bech32PrefixAccPub   = Bech32MainPrefix + sdk.PrefixPublic
 	Bech32PrefixValAddr  = Bech32MainPrefix + sdk.PrefixValidator + sdk.PrefixOperator
@@ -50,8 +49,8 @@ const (
 )
 
 var (
-	DefaultCLIHome  = os.ExpandEnv("$HOME/.ixocli")
-	DefaultNodeHome = os.ExpandEnv("$HOME/.ixod")
+	DefaultCLIHome  = os.ExpandEnv("$HOME/.dxocli")
+	DefaultNodeHome = os.ExpandEnv("$HOME/.dxod")
 
 	ModuleBasics = module.NewBasicManager(
 		genaccounts.AppModuleBasic{},
@@ -132,7 +131,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	cdc := MakeCodec()
 
-	bApp := bam.NewBaseApp(appName, logger, db, ixo.DefaultTxDecoder(cdc), baseAppOptions...)
+	bApp := bam.NewBaseApp(appName, logger, db, DefaultTxDecoder(cdc), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 
 	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, staking.StoreKey,

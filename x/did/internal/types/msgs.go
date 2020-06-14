@@ -3,7 +3,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ixofoundation/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/ixo"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"

@@ -1,8 +1,8 @@
 package treasury
 
 import (
-	"github.com/ixofoundation/ixo-blockchain/x/treasury/internal/keeper"
-	"github.com/ixofoundation/ixo-blockchain/x/treasury/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/keeper"
+	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/types"
 )
 
 const (

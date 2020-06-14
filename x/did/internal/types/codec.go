@@ -3,7 +3,7 @@ package types
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	"github.com/ixofoundation/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/ixo"
 )
 
 func RegisterCodec(cdc *codec.Codec) {
@@ -12,7 +12,7 @@ func RegisterCodec(cdc *codec.Codec) {
 
 	cdc.RegisterInterface((*ixo.DidDoc)(nil), nil)
 
-	// TODO: https://github.com/ixofoundation/ixo-blockchain/issues/76
+	// TODO: https://github.com/tokenchain/ixo-blockchain/issues/76
 	cdc.RegisterConcrete(BaseDidDoc{}, "did/BaseDidDoc", nil)
 	//cdc.RegisterConcrete(DidCredential{}, "did/DidCredential", nil)
 	//cdc.RegisterConcrete(Claim{}, "did/Claim", nil)

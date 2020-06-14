@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/crypto"
 
-	"github.com/ixofoundation/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/ixo"
 )
 
 var _ ixo.DidDoc = (*BaseDidDoc)(nil)

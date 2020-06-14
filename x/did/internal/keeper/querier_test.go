@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/ixofoundation/ixo-blockchain/x/did/internal/types"
-	"github.com/ixofoundation/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/ixo"
 )
 
 func TestQueryDidDocs(t *testing.T) {

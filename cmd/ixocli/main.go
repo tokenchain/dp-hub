@@ -17,8 +17,8 @@ import (
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tmlibs/cli"
 
-	"github.com/ixofoundation/ixo-blockchain/app"
-	ixoClient "github.com/ixofoundation/ixo-blockchain/client"
+	"github.com/tokenchain/ixo-blockchain/app"
+	ixoClient "github.com/tokenchain/ixo-blockchain/client"
 )
 
 func main() {
@@ -30,8 +30,8 @@ func main() {
 	config.Seal()
 
 	rootCmd := &cobra.Command{
-		Use:   "ixocli",
-		Short: "ixo Light-Client",
+		Use:   "dxocli",
+		Short: "dxo Light-Client",
 	}
 
 	rootCmd.PersistentFlags().String(client.FlagChainID, "", "Chain ID of tendermint node")
@@ -52,7 +52,7 @@ func main() {
 		client.LineBreak,
 	)
 
-	executor := cli.PrepareMainCmd(rootCmd, "IXO", app.DefaultCLIHome)
+	executor := cli.PrepareMainCmd(rootCmd, "DXO", app.DefaultCLIHome)
 	err := executor.Execute()
 	if err != nil {
 		panic(err)

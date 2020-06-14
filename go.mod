@@ -1,4 +1,4 @@
-module github.com/ixofoundation/ixo-blockchain
+module github.com/tokenchain/ixo-blockchain
 
 go 1.12
 

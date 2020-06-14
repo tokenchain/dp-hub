@@ -1,8 +1,8 @@
 package did
 
 import (
-	"github.com/ixofoundation/ixo-blockchain/x/did/internal/keeper"
-	"github.com/ixofoundation/ixo-blockchain/x/did/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
+	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 )
 
 const (

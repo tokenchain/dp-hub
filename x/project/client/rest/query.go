@@ -10,9 +10,9 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/cosmos/cosmos-sdk/types/rest"
-	"github.com/ixofoundation/ixo-blockchain/x/ixo"
-	"github.com/ixofoundation/ixo-blockchain/x/project/internal/keeper"
-	"github.com/ixofoundation/ixo-blockchain/x/project/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/project/internal/keeper"
+	"github.com/tokenchain/ixo-blockchain/x/project/internal/types"
 )
 
 type AccDetails struct {

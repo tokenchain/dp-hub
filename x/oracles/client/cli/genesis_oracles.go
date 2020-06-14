@@ -5,8 +5,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
-	"github.com/ixofoundation/ixo-blockchain/x/ixo"
-	"github.com/ixofoundation/ixo-blockchain/x/oracles/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/oracles/internal/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/cli"
@@ -39,7 +39,7 @@ func AddGenesisOracleCmd(ctx *server.Context, cdc *codec.Codec,
 
 			// Check that oracle DID is valid
 			if !ixo.IsValidDid(oracleDid) {
-				return fmt.Errorf("oracle did is invalid")
+				return fmt.Errorf("oracle did is invalid from genesis oracle event.")
 			}
 
 			oracle := types.NewOracle(oracleDid, capabilities)

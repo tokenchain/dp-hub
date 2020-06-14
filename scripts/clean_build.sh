@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-rm -rf "$HOME"/.ixod
-rm -rf "$HOME"/.ixocli
+rm -rf "$HOME"/.dxod
+rm -rf "$HOME"/.dxocli
 
-cd "$HOME"/go/src/github.com/ixofoundation/ixo-blockchain/ || exit
+cd "$HOME"/go/src/github.com/tokenchain/ixo-blockchain/ || exit
 make install

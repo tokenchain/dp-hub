@@ -9,9 +9,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
 
-	"github.com/ixofoundation/ixo-blockchain/x/ixo"
-	"github.com/ixofoundation/ixo-blockchain/x/project/internal/keeper"
-	"github.com/ixofoundation/ixo-blockchain/x/project/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/project/internal/keeper"
+	"github.com/tokenchain/ixo-blockchain/x/project/internal/types"
 )
 
 func GetCmdProjectDoc(cdc *codec.Codec) *cobra.Command {

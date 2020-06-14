@@ -4,7 +4,7 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
-	"github.com/ixofoundation/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/ixo"
 )
 
 // Parameter store keys
@@ -15,7 +15,7 @@ var (
 
 // project parameters
 type Params struct {
-	IxoDid                       ixo.Did `json:"ixo_did" yaml:"ixo_did"`
+	IxoDid                       ixo.Did `json:"dp_did" yaml:"dp_did"`
 	ProjectMinimumInitialFunding sdk.Int `json:"project_minimum_initial_funding" yaml:"project_minimum_initial_funding"`
 }
 
@@ -43,7 +43,7 @@ func DefaultParams() Params {
 // validate params
 func ValidateParams(params Params) error {
 	if len(params.IxoDid) == 0 {
-		return fmt.Errorf("ixo did cannot be empty")
+		return fmt.Errorf("dp_did cannot be empty")
 	}
 	if params.ProjectMinimumInitialFunding.LT(sdk.ZeroInt()) {
 		return fmt.Errorf("project parameter ProjectMinimumInitialFunding should be positive, is %s ", params.ProjectMinimumInitialFunding.String())

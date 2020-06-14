@@ -1,15 +1,15 @@
-# ixo Hub
+# DP Chain Hub
 
-[![version](https://img.shields.io/github/tag/ixofoundation/ixo-blockchain.svg)](https://github.com/ixofoundation/ixo-blockchain/releases/latest)
-[![Go Report Card](https://goreportcard.com/badge/github.com/ixofoundation/ixo-blockchain)](https://goreportcard.com/report/github.com/ixofoundation/ixo-blockchain)
-[![LoC](https://tokei.rs/b1/github/ixofoundation/ixo-blockchain)](https://github.com/ixofoundation/ixo-blockchain)
+[![version](https://img.shields.io/github/tag/tokenchain/ixo-blockchain.svg)](https://github.com/tokenchain/ixo-blockchain/releases/latest)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tokenchain/ixo-blockchain)](https://goreportcard.com/report/github.com/tokenchain/ixo-blockchain)
+[![LoC](https://tokei.rs/b1/github/tokenchain/ixo-blockchain)](https://github.com/tokenchain/ixo-blockchain)
 
 This is the official repository for the Internet of Impact Relayer Hub (ixo Hub)
 
 > This document will have all details necessary to help getting started with ixo Hub
 
 ## Documentation
-- Guide for setting up a Relayer on the Pandora Test Network: [here](https://github.com/ixofoundation/docs/blob/master/developer-tools/test-networks/join-a-test-network.md)
+- Guide for setting up a Relayer on the Pandora Test Network: [here](https://github.com/tokenchain/docs/blob/master/developer-tools/test-networks/join-a-test-network.md)
 - Modules specification: look into `x/<module>/spec`
 
 ## Scripts

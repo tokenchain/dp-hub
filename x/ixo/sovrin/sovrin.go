@@ -26,7 +26,6 @@ func (ss SovrinSecret) String() string {
 	if err != nil {
 		panic(err)
 	}
-
 	return fmt.Sprintf("%v", string(output))
 }
 
@@ -42,7 +41,6 @@ func (sd SovrinDid) String() string {
 	if err != nil {
 		panic(err)
 	}
-
 	return fmt.Sprintf("%v", string(output))
 }
 
@@ -55,38 +53,30 @@ func GenerateMnemonic() string {
 func FromMnemonic(mnemonic string) SovrinDid {
 	seed := sha256.New()
 	seed.Write([]byte(mnemonic))
-
 	var seed32 [32]byte
 	copy(seed32[:], seed.Sum(nil)[:32])
-
 	return FromSeed(seed32)
-
 }
 
 func FromSeed(seed [32]byte) SovrinDid {
-
 	publicKeyBytes, privateKeyBytes, err := ed25519.GenerateKey(bytes.NewReader(seed[0:32]))
 	if err != nil {
 		panic(err)
 	}
 	publicKey := []byte(publicKeyBytes)
 	privateKey := []byte(privateKeyBytes)
-
 	signKey := base58.Encode(privateKey[:32])
 	keyPairPublicKey, keyPairPrivateKey, err := naclBox.GenerateKey(bytes.NewReader(privateKey[:]))
-
 	sovDid := SovrinDid{
 		Did:                 base58.Encode(publicKey[:16]),
 		VerifyKey:           base58.Encode(publicKey),
 		EncryptionPublicKey: base58.Encode(keyPairPublicKey[:]),
-
 		Secret: SovrinSecret{
 			Seed:                 hex.EncodeToString(seed[0:32]),
 			SignKey:              signKey,
 			EncryptionPrivateKey: base58.Encode(keyPairPrivateKey[:]),
 		},
 	}
-
 	return sovDid
 }
 
@@ -104,7 +94,6 @@ func SignMessage(message []byte, signKey string, verifyKey string) []byte {
 	fullPrivKey := ed25519.PrivateKey(privateKey)
 	copy(fullPrivKey[:], getArrayFromKey(signKey))
 	copy(fullPrivKey[32:], getArrayFromKey(verifyKey))
-
 	return ed25519.Sign(fullPrivKey, message)
 }
 
@@ -112,7 +101,6 @@ func VerifySignedMessage(message []byte, signature []byte, verifyKey string) boo
 	publicKey := ed25519.PublicKey{}
 	copy(publicKey[:], getArrayFromKey(verifyKey))
 	result := ed25519.Verify(publicKey, message, signature)
-
 	return result
 }
 

@@ -7,8 +7,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 
-	"github.com/ixofoundation/ixo-blockchain/x/fees/internal/keeper"
-	"github.com/ixofoundation/ixo-blockchain/x/fees/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/fees/internal/keeper"
+	"github.com/tokenchain/ixo-blockchain/x/fees/internal/types"
 )
 
 func queryFeesRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {

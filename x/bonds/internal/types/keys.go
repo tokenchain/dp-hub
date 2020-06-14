@@ -1,6 +1,6 @@
 package types
 
-import "github.com/ixofoundation/ixo-blockchain/x/ixo"
+import "github.com/tokenchain/ixo-blockchain/x/ixo"
 
 const (
 	// ModuleName is the name of this module

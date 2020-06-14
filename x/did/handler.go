@@ -3,8 +3,8 @@ package did
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/ixofoundation/ixo-blockchain/x/did/internal/keeper"
-	"github.com/ixofoundation/ixo-blockchain/x/did/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
+	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {

@@ -2,11 +2,11 @@ package types
 
 import (
 	"encoding/json"
-	"github.com/ixofoundation/ixo-blockchain/x/did"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/ixofoundation/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/ixo"
 )
 
 type MsgCreateProject struct {
@@ -22,7 +22,6 @@ var _ sdk.Msg = MsgCreateProject{}
 
 func (msg MsgCreateProject) Type() string  { return "create-project" }
 func (msg MsgCreateProject) Route() string { return RouterKey }
-
 func (msg MsgCreateProject) ValidateBasic() sdk.Error {
 	// Check that not empty
 	if valid, err := CheckNotEmpty(msg.PubKey, "PubKey"); !valid {

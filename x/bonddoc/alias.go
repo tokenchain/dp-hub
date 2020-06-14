@@ -1,8 +1,8 @@
 package bonddoc
 
 import (
-	"github.com/ixofoundation/ixo-blockchain/x/bonddoc/internal/keeper"
-	"github.com/ixofoundation/ixo-blockchain/x/bonddoc/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/bonddoc/internal/keeper"
+	"github.com/tokenchain/ixo-blockchain/x/bonddoc/internal/types"
 )
 
 const (
