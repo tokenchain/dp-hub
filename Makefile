@@ -50,10 +50,9 @@ else
 	go build -mod=readonly $(BUILD_FLAGS) -o build/ixocli ./cmd/ixocli
 endif
 
-build_linux: go.sum
-	env GOOS=linux GOARCH=amd64
-	go build -mod=readonly $(BUILD_FLAGS) -o build/ixod ./cmd/ixod
-	go build -mod=readonly $(BUILD_FLAGS) -o build/ixocli ./cmd/ixocli
+buildlinux: go.sum
+	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/ixod ./cmd/ixod
+	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/ixocli ./cmd/ixocli
 
 install: go.sum
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/ixod
