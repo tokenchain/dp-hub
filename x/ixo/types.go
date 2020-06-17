@@ -23,7 +23,7 @@ var (
 	//  possibly should just be `^did:(dxp:|sov:)([a-zA-Z0-9]){21,22}$`.
 )
 
-const IxoNativeToken = "dpl"
+const IxoNativeToken = "dap"
 
 type IxoTx struct {
 	Msgs       []sdk.Msg      `json:"payload" yaml:"payload"`
@@ -125,7 +125,6 @@ func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 			msg["signBytes"] = signByteString
 
 			txBytes, _ = json.Marshal(upTx)
-
 			err = cdc.UnmarshalJSON(txBytes, &tx)
 			if err != nil {
 				return nil, sdk.ErrTxDecode("").TraceSDK(err.Error())

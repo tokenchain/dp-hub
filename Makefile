@@ -40,7 +40,7 @@ ldflags := $(strip $(ldflags))
 BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
 
 all: lint install
-
+OS=linux
 build: go.sum
 ifeq ($(OS),Windows_NT)
 	go build -mod=readonly $(BUILD_FLAGS) -o build/ixod.exe ./cmd/ixod
@@ -49,6 +49,11 @@ else
 	go build -mod=readonly $(BUILD_FLAGS) -o build/ixod ./cmd/ixod
 	go build -mod=readonly $(BUILD_FLAGS) -o build/ixocli ./cmd/ixocli
 endif
+
+build_linux: go.sum
+	env GOOS=linux GOARCH=amd64
+	go build -mod=readonly $(BUILD_FLAGS) -o build/ixod ./cmd/ixod
+	go build -mod=readonly $(BUILD_FLAGS) -o build/ixocli ./cmd/ixocli
 
 install: go.sum
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/ixod
