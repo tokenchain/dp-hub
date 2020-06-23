@@ -1,6 +1,9 @@
 package main
 
 import (
+	"github.com/cosmos/cosmos-sdk/client/flags"
+
+	//	"github.com/cosmos/cosmos-sdk/x/mint"
 	"os"
 	"path"
 
@@ -16,9 +19,13 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tmlibs/cli"
-
+	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	"github.com/tokenchain/ixo-blockchain/app"
 	ixoClient "github.com/tokenchain/ixo-blockchain/client"
+	/*	distRest "github.com/cosmos/cosmos-sdk/x/distribution/client/rest"
+		distcmd "github.com/cosmos/cosmos-sdk/x/distribution"
+		distClient "github.com/cosmos/cosmos-sdk/x/distribution/client"*/
+
 )
 
 func main() {
@@ -51,7 +58,17 @@ func main() {
 		client.LineBreak,
 		keys.Commands(),
 		client.LineBreak,
+		flags.NewCompletionCmd(rootCmd, true),
 	)
+
+	//mc := []sdk.{
+	/*nsclient.NewModuleClient(storeNS, cdc),
+	pricingclient.NewModuleClient(storePricing, cdc),
+	stakingclient.NewModuleClient(st.StoreKey, cdc),*/
+	//	distClient.NewModuleClient(distcmd.StoreKey, cdc),
+	/*slashingclient.NewModuleClient(sl.StoreKey, cdc),
+	mintclient.NewModuleClient(mint.StoreKey, cdc),*/
+	//}
 
 	executor := cli.PrepareMainCmd(rootCmd, "DXO", app.DefaultCLIHome)
 	err := executor.Execute()
@@ -98,9 +115,7 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		authCli.GetEncodeCommand(cdc),
 		client.LineBreak,
 	)
-
 	app.ModuleBasics.AddTxCommands(txCmd, cdc)
-
 	return txCmd
 }
 
@@ -113,7 +128,6 @@ func initConfig(cmd *cobra.Command) error {
 	cfgFile := path.Join(home, "config", "config.toml")
 	if _, err := os.Stat(cfgFile); err == nil {
 		viper.SetConfigFile(cfgFile)
-
 		if err := viper.ReadInConfig(); err != nil {
 			return err
 		}
@@ -122,16 +136,16 @@ func initConfig(cmd *cobra.Command) error {
 	if err := viper.BindPFlag(client.FlagChainID, cmd.PersistentFlags().Lookup(client.FlagChainID)); err != nil {
 		return err
 	}
-
 	if err := viper.BindPFlag(cli.EncodingFlag, cmd.PersistentFlags().Lookup(cli.EncodingFlag)); err != nil {
 		return err
 	}
-
 	return viper.BindPFlag(cli.OutputFlag, cmd.PersistentFlags().Lookup(cli.OutputFlag))
 }
 
 func registerRoutes(rs *lcd.RestServer) {
 	client.RegisterRoutes(rs.CliCtx, rs.Mux)
+	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
 	ixoClient.RegisterTxRoutes(rs.CliCtx, rs.Mux)
+	//distRest.RegisterRoutes(rs.CliCtx, rs.Mux, rs., distcmd.StoreKey)
 	app.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }

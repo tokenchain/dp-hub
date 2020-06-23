@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"github.com/tokenchain/ixo-blockchain/x/nameservice"
 	"io"
 	"os"
 
@@ -74,6 +75,7 @@ var (
 		bonds.AppModuleBasic{},
 		treasury.AppModuleBasic{},
 		oracles.AppModuleBasic{},
+		nameservice.AppModule{},
 	)
 
 	maccPerms = map[string][]string{
