@@ -21,7 +21,8 @@ import (
 	"github.com/tendermint/tmlibs/cli"
 	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	"github.com/tokenchain/ixo-blockchain/app"
-	ixoClient "github.com/tokenchain/ixo-blockchain/client"
+	cli2 "github.com/tokenchain/ixo-blockchain/client/cli"
+	tx2 "github.com/tokenchain/ixo-blockchain/client/tx"
 	/*	distRest "github.com/cosmos/cosmos-sdk/x/distribution/client/rest"
 		distcmd "github.com/cosmos/cosmos-sdk/x/distribution"
 		distClient "github.com/cosmos/cosmos-sdk/x/distribution/client"*/
@@ -90,8 +91,8 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		rpc.ValidatorCommand(cdc),
 		rpc.BlockCommand(),
 		authCli.QueryTxsByEventsCmd(cdc),
-		ixoClient.QueryTxCmd(cdc),
 		client.LineBreak,
+		cli2.QueryTxCmd(cdc),
 	)
 
 	app.ModuleBasics.AddQueryCommands(queryCmd, cdc)
@@ -102,6 +103,7 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 func txCmd(cdc *amino.Codec) *cobra.Command {
 	txCmd := &cobra.Command{
 		Use:   "tx",
+		Aliases: []string{"tx"},
 		Short: "Transactions subcommands",
 	}
 
@@ -145,7 +147,7 @@ func initConfig(cmd *cobra.Command) error {
 func registerRoutes(rs *lcd.RestServer) {
 	client.RegisterRoutes(rs.CliCtx, rs.Mux)
 	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
-	ixoClient.RegisterTxRoutes(rs.CliCtx, rs.Mux)
+	tx2.RegisterTxRoutes(rs.CliCtx, rs.Mux)
 	//distRest.RegisterRoutes(rs.CliCtx, rs.Mux, rs., distcmd.StoreKey)
 	app.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }

@@ -1,8 +1,6 @@
 package types
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
 )
 
@@ -54,14 +52,7 @@ type UpdateBondStatusDoc struct {
 }
 
 type BondDoc struct {
-	CreatedOn string     `json:"createdOn" yaml:"createdOn"`
-	CreatedBy string     `json:"createdBy" yaml:"createdBy"`
+	CreatedOn string     `json:"created_on" yaml:"created_on"`
+	CreatedBy string     `json:"created_by" yaml:"created_by"`
 	Status    BondStatus `json:"status" yaml:"status"`
-}
-
-type BondDocDecoder func(bondEntryBytes []byte) (StoredBondDoc, error)
-
-type BondMsg interface {
-	sdk.Msg
-	IsNewDid() bool
 }

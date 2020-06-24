@@ -9,19 +9,29 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
 )
 
+const (
+	TypeMsgCreateBond       = "create-bond"
+	TypeMsgUpdateBondStatus = "update-bond-status"
+)
+
+var (
+	_ ixo.IxoMsg = MsgCreateBond{}
+	_ ixo.IxoMsg = MsgUpdateBondStatus{}
+
+	_ StoredBondDoc = (*MsgCreateBond)(nil)
+)
+
 type MsgCreateBond struct {
-	SignBytes string  `json:"signBytes" yaml:"signBytes"`
-	TxHash    string  `json:"txHash" yaml:"txHash"`
-	SenderDid ixo.Did `json:"senderDid" yaml:"senderDid"`
-	BondDid   ixo.Did `json:"bondDid" yaml:"bondDid"`
-	PubKey    string  `json:"pubKey" yaml:"pubKey"`
+	TxHash    string  `json:"tx_hash" yaml:"tx_hash"`
+	SenderDid ixo.Did `json:"sender_did" yaml:"sender_did"`
+	BondDid   ixo.Did `json:"bond_did" yaml:"bond_did"`
+	PubKey    string  `json:"pub_key" yaml:"pub_key"`
 	Data      BondDoc `json:"data" yaml:"data"`
 }
 
-var _ sdk.Msg = MsgCreateBond{}
-
-func (msg MsgCreateBond) Type() string  { return "create-bond" }
+func (msg MsgCreateBond) Type() string  { return TypeMsgCreateBond }
 func (msg MsgCreateBond) Route() string { return RouterKey }
+
 func (msg MsgCreateBond) ValidateBasic() sdk.Error {
 	// Check that not empty
 	if valid, err := CheckNotEmpty(msg.PubKey, "PubKey"); !valid {
@@ -43,11 +53,10 @@ func (msg MsgCreateBond) ValidateBasic() sdk.Error {
 
 	return nil
 }
-
 func (msg MsgCreateBond) GetBondDid() ixo.Did   { return msg.BondDid }
-func (msg MsgCreateBond) GetSenderDid() ixo.Did { return msg.SenderDid }
+func (msg MsgCreateBond) GetSignerDid() ixo.Did { return msg.GetBondDid() }
 func (msg MsgCreateBond) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{[]byte(msg.GetBondDid())}
+	return []sdk.AccAddress{ixo.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateBond) String() string {
@@ -57,29 +66,28 @@ func (msg MsgCreateBond) String() string {
 	}
 	return string(b)
 }
-
 func (msg MsgCreateBond) GetPubKey() string     { return msg.PubKey }
 func (msg MsgCreateBond) GetStatus() BondStatus { return msg.Data.Status }
+
 func (msg *MsgCreateBond) SetStatus(status BondStatus) {
 	msg.Data.Status = status
 }
 
 func (msg MsgCreateBond) GetSignBytes() []byte {
-	return []byte(msg.SignBytes)
+	if bz, err := json.Marshal(msg); err != nil {
+		panic(err)
+	} else {
+		return sdk.MustSortJSON(bz)
+	}
 }
 
-func (msg MsgCreateBond) IsNewDid() bool { return true }
-
-var _ StoredBondDoc = (*MsgCreateBond)(nil)
-
 type MsgUpdateBondStatus struct {
-	SignBytes string              `json:"signBytes" yaml:"signBytes"`
-	SenderDid ixo.Did             `json:"senderDid" yaml:"senderDid"`
-	BondDid   ixo.Did             `json:"bondDid" yaml:"bondDid"`
+	SenderDid ixo.Did             `json:"sender_did" yaml:"sender_did"`
+	BondDid   ixo.Did             `json:"bond_did" yaml:"bond_did"`
 	Data      UpdateBondStatusDoc `json:"data" yaml:"data"`
 }
 
-func (msg MsgUpdateBondStatus) Type() string  { return "update-bond-status" }
+func (msg MsgUpdateBondStatus) Type() string  { return TypeMsgUpdateBondStatus }
 func (msg MsgUpdateBondStatus) Route() string { return RouterKey }
 
 func (msg MsgUpdateBondStatus) ValidateBasic() sdk.Error {
@@ -104,20 +112,14 @@ func (msg MsgUpdateBondStatus) ValidateBasic() sdk.Error {
 }
 
 func (msg MsgUpdateBondStatus) GetSignBytes() []byte {
-	return []byte(msg.SignBytes)
+	if bz, err := json.Marshal(msg); err != nil {
+		panic(err)
+	} else {
+		return sdk.MustSortJSON(bz)
+	}
 }
 
+func (msg MsgUpdateBondStatus) GetSignerDid() ixo.Did { return msg.BondDid }
 func (msg MsgUpdateBondStatus) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{[]byte(msg.GetBondDid())}
+	return []sdk.AccAddress{ixo.DidToAddr(msg.GetSignerDid())}
 }
-
-func (msg MsgUpdateBondStatus) GetBondDid() ixo.Did {
-	return msg.BondDid
-}
-
-func (msg MsgUpdateBondStatus) GetStatus() BondStatus {
-	return msg.Data.Status
-}
-
-func (msg MsgUpdateBondStatus) IsNewDid() bool     { return false }
-func (msg MsgUpdateBondStatus) IsWithdrawal() bool { return false }

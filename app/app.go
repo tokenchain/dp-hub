@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"github.com/tokenchain/ixo-blockchain/x/nameservice"
+	"github.com/tokenchain/ixo-blockchain/x/payments"
 	"io"
 	"os"
 
@@ -33,14 +34,14 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x/bonds"
 	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/fees"
-	gmtypes "github.com/tokenchain/ixo-blockchain/x/ixo"
+	dap "github.com/tokenchain/ixo-blockchain/x/ixo"
 	"github.com/tokenchain/ixo-blockchain/x/oracles"
 	"github.com/tokenchain/ixo-blockchain/x/project"
 	"github.com/tokenchain/ixo-blockchain/x/treasury"
 )
 
 const (
-	appName              = "Dark Inter Pool"
+	appName              = "Darkpool"
 	Bech32MainPrefix     = "dx0"
 	Bech32PrefixAccAddr  = Bech32MainPrefix
 	Bech32PrefixAccPub   = Bech32MainPrefix + sdk.PrefixPublic
@@ -69,7 +70,8 @@ var (
 		supply.AppModuleBasic{},
 
 		did.AppModuleBasic{},
-		fees.AppModuleBasic{},
+
+		payments.AppModuleBasic{},
 		project.AppModuleBasic{},
 		bonddoc.AppModuleBasic{},
 		bonds.AppModuleBasic{},
@@ -89,11 +91,11 @@ var (
 		bonds.BatchesIntermediaryAccount: nil,
 		treasury.ModuleName:              {supply.Minter, supply.Burner},
 		nameservice.ModuleName:           {supply.Minter, supply.Burner},
-		fees.FeeRemainderPool:            nil,
+		payments.PayRemainderPool:        nil,
 	}
 
-	// Reserved fees module ID prefixes
-	feesReservedIdPrefixes = []string{}
+	// Reserved payments module ID prefixes
+	paymentsReservedIdPrefixes = []string{}
 )
 
 func MakeCodec() *codec.Codec {
@@ -124,6 +126,7 @@ type ixoApp struct {
 	paramsKeeper       params.Keeper
 
 	didKeeper      did.Keeper
+	paymentsKeeper payments.Keeper
 	feesKeeper     fees.Keeper
 	projectKeeper  project.Keeper
 	bonddocKeeper  bonddoc.Keeper
@@ -139,7 +142,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	cdc := MakeCodec()
 
-	bApp := bam.NewBaseApp(appName, logger, db, gmtypes.DefaultTxDecoder(cdc), baseAppOptions...)
+	bApp := bam.NewBaseApp(appName, logger, db, dap.DefaultTxDecoder(cdc), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 
 	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
@@ -193,8 +196,8 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		app.slashingKeeper.Hooks()))
 
 	app.didKeeper = did.NewKeeper(app.cdc, keys[did.StoreKey])
-	app.feesKeeper = fees.NewKeeper(app.cdc, keys[fees.StoreKey], feesSubspace, app.bankKeeper, feesReservedIdPrefixes)
-	app.projectKeeper = project.NewKeeper(app.cdc, keys[project.StoreKey], projectSubspace, app.accountKeeper, app.feesKeeper)
+	app.paymentsKeeper = payments.NewKeeper(app.cdc, keys[payments.StoreKey], feesSubspace, app.bankKeeper, paymentsReservedIdPrefixes)
+	app.projectKeeper = project.NewKeeper(app.cdc, keys[project.StoreKey], projectSubspace, app.accountKeeper, app.paymentsKeeper)
 	app.bonddocKeeper = bonddoc.NewKeeper(app.cdc, keys[bonddoc.StoreKey])
 	app.bondsKeeper = bonds.NewKeeper(app.bankKeeper, app.supplyKeeper, app.accountKeeper, app.stakingKeeper, keys[bonds.StoreKey], app.cdc)
 	app.oraclesKeeper = oracles.NewKeeper(app.cdc, keys[oracles.StoreKey])
@@ -214,8 +217,8 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		staking.NewAppModule(app.stakingKeeper, app.distributionKeeper, app.accountKeeper, app.supplyKeeper),
 
 		did.NewAppModule(app.didKeeper),
-		fees.NewAppModule(app.feesKeeper, app.bankKeeper),
-		project.NewAppModule(app.projectKeeper, app.feesKeeper, app.bankKeeper),
+		payments.NewAppModule(app.paymentsKeeper, app.bankKeeper),
+		project.NewAppModule(app.projectKeeper, app.paymentsKeeper, app.bankKeeper),
 		bonddoc.NewAppModule(app.bonddocKeeper),
 		bonds.NewAppModule(app.bondsKeeper, app.accountKeeper),
 		treasury.NewAppModule(app.treasuryKeeper),
@@ -294,49 +297,22 @@ func (app *ixoApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList
 
 	return appState, validators, nil
 }
-/*
-func NewIxoAnteHandler(app *ixoApp) sdk.AnteHandler {
-	cosmosAnteHandler := auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer)
-	didAnteHandler := did.NewAnteHandler(app.didKeeper)
-	projectAnteHandler := project.NewAnteHandler(app.projectKeeper, app.didKeeper)
-	bonddocAnteHandler := bonddoc.NewAnteHandler(app.bonddocKeeper)
-	bondsAnteHandler := bonds.NewAnteHandler(app.bondsKeeper, app.didKeeper)
-	treasuryAnteHandler := treasury.NewAnteHandler(app.didKeeper)
 
-	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (_ sdk.Context, _ sdk.Result, abort bool) {
-		msg := tx.GetMsgs()[0]
-		switch msg.Route() {
-		case did.RouterKey:
-			return didAnteHandler(ctx, tx, false)
-		case project.RouterKey:
-			return projectAnteHandler(ctx, tx, false)
-		case bonddoc.RouterKey:
-			return bonddocAnteHandler(ctx, tx, false)
-		case bonds.RouterKey:
-			return bondsAnteHandler(ctx, tx, false)
-		case treasury.RouterKey:
-			return treasuryAnteHandler(ctx, tx, false)
-		default:
-			return cosmosAnteHandler(ctx, tx, false)
-		}
-	}
-}
-*/
 func NewIxoAnteHandler(app *ixoApp) sdk.AnteHandler {
 	didPubKeyGetter := did.GetPubKeyGetter(app.didKeeper)
 	projectPubKeyGetter := project.GetPubKeyGetter(app.projectKeeper, app.didKeeper)
 	bonddocPubKeyGetter := bonddoc.GetPubKeyGetter(app.bonddocKeeper)
 	bondsPubKeyGetter := bonds.GetPubKeyGetter(app.bondsKeeper, app.didKeeper)
 	treasuryPubKeyGetter := treasury.GetPubKeyGetter(app.didKeeper)
-	feesPubKeyGetter := fees.GetPubKeyGetter(app.didKeeper)
+	paymentsPubKeyGetter := payments.GetPubKeyGetter(app.didKeeper)
 
 	cosmosAnteHandler := auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer)
-	didAnteHandler := ixo.NewAnteHandler(app.accountKeeper, app.supplyKeeper, didPubKeyGetter)
-	projectAnteHandler := ixo.NewAnteHandler(app.accountKeeper, app.supplyKeeper, projectPubKeyGetter)
-	bonddocAnteHandler := ixo.NewAnteHandler(app.accountKeeper, app.supplyKeeper, bonddocPubKeyGetter)
-	bondsAnteHandler := ixo.NewAnteHandler(app.accountKeeper, app.supplyKeeper, bondsPubKeyGetter)
-	treasuryAnteHandler := ixo.NewAnteHandler(app.accountKeeper, app.supplyKeeper, treasuryPubKeyGetter)
-	feesAnteHandler := ixo.NewAnteHandler(app.accountKeeper, app.supplyKeeper, feesPubKeyGetter)
+	didAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, didPubKeyGetter)
+	projectAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, projectPubKeyGetter)
+	bonddocAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, bonddocPubKeyGetter)
+	bondsAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, bondsPubKeyGetter)
+	treasuryAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, treasuryPubKeyGetter)
+	feesAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, paymentsPubKeyGetter)
 
 	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (_ sdk.Context, _ sdk.Result, abort bool) {
 		msg := tx.GetMsgs()[0]
@@ -358,4 +334,3 @@ func NewIxoAnteHandler(app *ixoApp) sdk.AnteHandler {
 		}
 	}
 }
-

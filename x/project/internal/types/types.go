@@ -1,7 +1,6 @@
 package types
 
 import (
-	"github.com/tendermint/tendermint/crypto"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -97,8 +96,6 @@ func (pd ProjectDoc) GetEvaluatorPay() int64 {
 	}
 }
 
-type ProjectDocDecoder func(projectEntryBytes []byte) (StoredProjectDoc, error)
-
 type CreateAgentDoc struct {
 	AgentDid ixo.Did `json:"did" yaml:"did"`
 	Role     string  `json:"role" yaml:"role"`
@@ -140,14 +137,4 @@ type WithdrawFundsDoc struct {
 	RecipientDid ixo.Did `json:"recipientDid" yaml:"recipientDid"`
 	Amount       sdk.Int `json:"amount" yaml:"amount"`
 	IsRefund     bool    `json:"isRefund" yaml:"isRefund"`
-}
-
-type ProjectMsg interface {
-	sdk.Msg
-	IsNewDid() bool
-	IsWithdrawal() bool
-}
-
-func StringToAddr(str string) sdk.AccAddress {
-	return sdk.AccAddress(crypto.AddressHash([]byte(str)))
 }

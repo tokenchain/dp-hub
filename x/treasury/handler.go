@@ -1,6 +1,5 @@
 package treasury
 
-//noinspection ALL
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/keeper"

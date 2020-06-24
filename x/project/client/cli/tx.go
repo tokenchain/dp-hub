@@ -3,105 +3,65 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/btcsuite/btcutil/base58"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tokenchain/ixo-blockchain/x/ixo"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
 	"github.com/tokenchain/ixo-blockchain/x/ixo/sovrin"
 	"github.com/tokenchain/ixo-blockchain/x/project/internal/types"
 )
 
-func IxoSignAndBroadcast(cdc *codec.Codec, ctx context.CLIContext, msg sdk.Msg, sovrinDid sovrin.SovrinDid) error {
-	privKey := [64]byte{}
-	copy(privKey[:], base58.Decode(sovrinDid.Secret.SignKey))
-	copy(privKey[32:], base58.Decode(sovrinDid.VerifyKey))
-
-	msgBytes, err := json.Marshal(msg)
-	if err != nil {
-		panic(err)
-	}
-
-	signature := ixo.SignIxoMessage(msgBytes, sovrinDid.Did, privKey)
-	tx := ixo.NewIxoTxSingleMsg(msg, signature)
-
-	bz, err := cdc.MarshalJSON(tx)
-	if err != nil {
-		panic(err)
-	}
-
-	res, err := ctx.BroadcastTx(bz)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(res.String())
-	fmt.Printf("Committed at block %d. Hash: %s\n", res.Height, res.TxHash)
-	return nil
-
-}
-
-func unmarshalSovrinDID(sovrinJson string) sovrin.SovrinDid {
-	sovrinDid := sovrin.SovrinDid{}
-	sovrinErr := json.Unmarshal([]byte(sovrinJson), &sovrinDid)
-	if sovrinErr != nil {
-		panic(sovrinErr)
-	}
-
-	return sovrinDid
-}
-
 func GetCmdCreateProject(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "createProject [sender-did] [project-json] [sovrin-did]",
+		Use:   "create-project [sender-did] [project-json] [sovrin-did]",
 		Short: "Create a new ProjectDoc signed by the sovrinDID of the project",
+		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := context.NewCLIContext().
-				WithCodec(cdc)
-
-			if len(args) != 3 || len(args[0]) == 0 ||
-				len(args[1]) == 0 || len(args[2]) == 0 {
-				return errors.New("You must provide the sender-did, " +
-					"project data, and the project's private key")
-			}
-
 			senderDid := args[0]
 			projectDocStr := args[1]
-			sovrinDid := unmarshalSovrinDID(args[2])
-
-			projectDoc := types.ProjectDoc{}
-			err := json.Unmarshal([]byte(projectDocStr), &projectDoc)
+			sovrinDid, err := sovrin.UnmarshalSovrinDid(args[2])
 			if err != nil {
-				panic(err)
+				return err
 			}
 
-			msg := types.NewMsgCreateProject(senderDid, projectDoc, sovrinDid)
+			var projectDoc types.ProjectDoc
+			err = json.Unmarshal([]byte(projectDocStr), &projectDoc)
+			if err != nil {
+				return err
+			}
 
-			return IxoSignAndBroadcast(cdc, ctx, msg, sovrinDid)
+			cliCtx := context.NewCLIContext().WithCodec(cdc).
+				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+
+			msg := types.NewMsgCreateProject(senderDid, projectDoc, sovrinDid)
+			stdSignMsg := msg.ToStdSignMsg(types.MsgCreateProjectFee)
+
+			res, err := ixo.SignAndBroadcastTxFromStdSignMsg(cliCtx, stdSignMsg, sovrinDid)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(res.String())
+			fmt.Printf("Committed at block %d. Hash: %s\n", res.Height, res.TxHash)
+			return nil
 		},
 	}
 }
 
 func GetCmdUpdateProjectStatus(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "updateProjectStatus [sender-did] [status] [sovrin-did]",
+		Use:   "update-project-status [sender-did] [status] [sovrin-did]",
 		Short: "Update the status of a project signed by the sovrinDID of the project",
+		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := context.NewCLIContext().
-				WithCodec(cdc)
-
-			if len(args) != 3 || len(args[0]) == 0 ||
-				len(args[1]) == 0 || len(args[2]) == 0 {
-				return errors.New("You must provide the sender-did, " +
-					"status, and the project's private key")
-			}
-
 			senderDid := args[0]
 			status := args[1]
-			sovrinDid := unmarshalSovrinDID(args[2])
+			sovrinDid, err := sovrin.UnmarshalSovrinDid(args[2])
+			if err != nil {
+				return err
+			}
 
 			projectStatus := types.ProjectStatus(status)
 			if projectStatus != types.CreatedProject &&
@@ -118,26 +78,23 @@ func GetCmdUpdateProjectStatus(cdc *codec.Codec) *cobra.Command {
 				Status: projectStatus,
 			}
 
+			cliCtx := context.NewCLIContext().WithCodec(cdc).
+				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+
 			msg := types.NewMsgUpdateProjectStatus(senderDid, updateProjectStatusDoc, sovrinDid)
 
-			return IxoSignAndBroadcast(cdc, ctx, msg, sovrinDid)
+			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
 
 func GetCmdCreateAgent(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "createAgent [tx-hash] [sender-did] [agent-did] [role] [project-did]",
+		Use: "create-agent [tx-hash] [sender-did] [agent-did] " +
+			"[role] [project-did]",
 		Short: "Create a new agent on a project signed by the sovrinDID of the project",
+		Args:  cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := context.NewCLIContext().
-				WithCodec(cdc)
-
-			if len(args) != 5 || len(args[0]) == 0 || len(args[1]) == 0 || len(args[2]) == 0 || len(args[3]) == 0 ||
-				len(args[4]) == 0 {
-				return errors.New("You must provide the agentDid, role and the projects private key")
-			}
-
 			txHash := args[0]
 			senderDid := args[1]
 			agentDid := args[2]
@@ -151,27 +108,28 @@ func GetCmdCreateAgent(cdc *codec.Codec) *cobra.Command {
 				Role:     role,
 			}
 
-			sovrinDid := unmarshalSovrinDID(args[4])
+			sovrinDid, err := sovrin.UnmarshalSovrinDid(args[4])
+			if err != nil {
+				return err
+			}
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc).
+				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+
 			msg := types.NewMsgCreateAgent(txHash, senderDid, createAgentDoc, sovrinDid)
 
-			return IxoSignAndBroadcast(cdc, ctx, msg, sovrinDid)
+			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
 
 func GetCmdUpdateAgent(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "updateAgent [tx-hash] [sender-did] [agent-did] [status] [sovrin-did]",
+		Use: "update-agent [tx-hash] [sender-did] [agent-did] " +
+			"[status] [sovrin-did]",
 		Short: "Update the status of an agent on a project signed by the sovrinDID of the project",
+		Args:  cobra.ExactArgs(6),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := context.NewCLIContext().
-				WithCodec(cdc)
-
-			if len(args) != 6 || len(args[0]) == 0 || len(args[1]) == 0 || len(args[2]) == 0 || len(args[3]) == 0 ||
-				len(args[4]) == 0 || len(args[5]) == 0 {
-				return errors.New("You must provide the agentDid, status and the projects private key")
-			}
-
 			txHash := args[0]
 			senderDid := args[1]
 			agentDid := args[2]
@@ -187,26 +145,27 @@ func GetCmdUpdateAgent(cdc *codec.Codec) *cobra.Command {
 				Role:   agentRole,
 			}
 
-			sovrinDid := unmarshalSovrinDID(args[5])
+			sovrinDid, err := sovrin.UnmarshalSovrinDid(args[5])
+			if err != nil {
+				return err
+			}
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc).
+				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+
 			msg := types.NewMsgUpdateAgent(txHash, senderDid, updateAgentDoc, sovrinDid)
 
-			return IxoSignAndBroadcast(cdc, ctx, msg, sovrinDid)
+			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
 
 func GetCmdCreateClaim(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "createClaim [tx-hash] [sender-did] [claim-id] [sovrin-did]",
+		Use:   "create-claim [tx-hash] [sender-did] [claim-id] [sovrin-did]",
 		Short: "Create a new claim on a project signed by the sovrinDID of the project",
+		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := context.NewCLIContext().
-				WithCodec(cdc)
-
-			if len(args) != 4 || len(args[0]) == 0 || len(args[1]) == 0 || len(args[2]) == 0 || len(args[3]) == 0 {
-				return errors.New("You must provide the claimId and the projects private key")
-			}
-
 			txHash := args[0]
 			senderDid := args[1]
 			claimId := args[2]
@@ -214,27 +173,28 @@ func GetCmdCreateClaim(cdc *codec.Codec) *cobra.Command {
 				ClaimID: claimId,
 			}
 
-			sovrinDid := unmarshalSovrinDID(args[3])
+			sovrinDid, err := sovrin.UnmarshalSovrinDid(args[3])
+			if err != nil {
+				return err
+			}
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc).
+				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+
 			msg := types.NewMsgCreateClaim(txHash, senderDid, createClaimDoc, sovrinDid)
 
-			return IxoSignAndBroadcast(cdc, ctx, msg, sovrinDid)
+			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
 
 func GetCmdCreateEvaluation(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "createEvaluation [tx-hash] [sender-did] [claim-id] [status] [sovrin-did]",
+		Use: "create-evaluation [tx-hash] [sender-did] [claim-id] " +
+			"[status] [sovrin-did]",
 		Short: "Create a new claim evaluation on a project signed by the sovrinDID of the project",
+		Args:  cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := context.NewCLIContext().
-				WithCodec(cdc)
-
-			if len(args) != 5 || len(args[0]) == 0 || len(args[1]) == 0 || len(args[2]) == 0 || len(args[3]) == 0 ||
-				len(args[4]) == 0 {
-				return errors.New("You must provide the claimId, status and the projects private key")
-			}
-
 			txHash := args[0]
 			senderDid := args[1]
 			claimId := args[2]
@@ -248,10 +208,17 @@ func GetCmdCreateEvaluation(cdc *codec.Codec) *cobra.Command {
 				Status:  claimStatus,
 			}
 
-			sovrinDid := unmarshalSovrinDID(args[4])
+			sovrinDid, err := sovrin.UnmarshalSovrinDid(args[4])
+			if err != nil {
+				return err
+			}
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc).
+				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+
 			msg := types.NewMsgCreateEvaluation(txHash, senderDid, createEvaluationDoc, sovrinDid)
 
-			return IxoSignAndBroadcast(cdc, ctx, msg, sovrinDid)
+			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
@@ -260,24 +227,25 @@ func GetCmdWithdrawFunds(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "withdraw-funds [sender-did] [data]",
 		Short: "Withdraw funds.",
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := context.NewCLIContext().
-				WithCodec(cdc)
-
-			if len(args) != 2 || len(args[0]) == 0 || len(args[1]) == 0 {
-				return errors.New("You must provide the sender did and data.")
-			}
-
-			senderDid := unmarshalSovrinDID(args[0])
-			var data types.WithdrawFundsDoc
-			err := json.Unmarshal([]byte(args[1]), &data)
+			senderDid, err := sovrin.UnmarshalSovrinDid(args[0])
 			if err != nil {
 				return err
 			}
 
+			var data types.WithdrawFundsDoc
+			err = json.Unmarshal([]byte(args[1]), &data)
+			if err != nil {
+				return err
+			}
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc).
+				WithFromAddress(ixo.DidToAddr(senderDid.Did))
+
 			msg := types.NewMsgWithdrawFunds(senderDid.Did, data)
 
-			return IxoSignAndBroadcast(cdc, ctx, msg, senderDid)
+			return ixo.SignAndBroadcastTxCli(cliCtx, msg, senderDid)
 		},
 	}
 }

@@ -3,9 +3,15 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
 	"strings"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
+const (
+	TypeMsgAddDid        = "add-did"
+	TypeMsgAddCredential = "add-credential"
 )
 
 var (
@@ -13,37 +19,42 @@ var (
 	_ ixo.IxoMsg = MsgAddCredential{}
 )
 
-type MsgAddCredential struct {
-	DidCredential DidCredential `json:"credential" yaml:"credential"`
+type MsgAddDid struct {
+	DidDoc BaseDidDoc `json:"didDoc" yaml:"didDoc"`
 }
 
-type MsgAddDid struct {
-	DidDoc    BaseDidDoc `json:"didDoc" yaml:"didDoc"`
-	SignBytes string     `json:"signBytes" yaml:"signBytes"`
+func (msg *MsgAddDid) UnmarshalJSON(bytes []byte) error {
+	var msg2 struct {
+		DidDoc BaseDidDoc `json:"didDoc" yaml:"didDoc"`
+	}
+	err := json.Unmarshal(bytes, &msg2)
+	if err != nil {
+		return err
+	}
+
+	if msg2.DidDoc.Credentials == nil {
+		msg2.DidDoc.Credentials = []DidCredential{}
+	}
+
+	*msg = msg2
+	return nil
 }
 
 func NewMsgAddDid(did string, publicKey string) MsgAddDid {
-	didDoc := BaseDidDoc{
-		Did:         did,
-		PubKey:      publicKey,
-		Credentials: make([]DidCredential, 0),
-	}
-
 	return MsgAddDid{
-		DidDoc: didDoc,
+		DidDoc: NewBaseDidDoc(did, publicKey),
 	}
 }
 
-func (msg MsgAddDid) Type() string { return "did" }
+func (msg MsgAddDid) Type() string { return TypeMsgAddDid }
 
 func (msg MsgAddDid) Route() string { return RouterKey }
 
+func (msg MsgAddDid) GetSignerDid() ixo.Did { return msg.DidDoc.Did }
 func (msg MsgAddDid) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{[]byte(msg.DidDoc.GetDid())}
+	return []sdk.AccAddress{ixo.DidToAddr(msg.GetSignerDid())}
 }
-func (msg MsgAddDid) GetSignerDid() ixo.Did {
-	return ""
-}
+
 func (msg MsgAddDid) ValidateBasic() sdk.Error {
 	// Check that not empty
 	if strings.TrimSpace(msg.DidDoc.Did) == "" {
@@ -51,6 +62,7 @@ func (msg MsgAddDid) ValidateBasic() sdk.Error {
 	} else if strings.TrimSpace(msg.DidDoc.PubKey) == "" {
 		return ErrorInvalidPubKey(DefaultCodespace, "pubKey should not be empty")
 	}
+
 	// Check DidDoc credentials for empty fields
 	for _, cred := range msg.DidDoc.Credentials {
 		if strings.TrimSpace(cred.Issuer) == "" {
@@ -59,19 +71,20 @@ func (msg MsgAddDid) ValidateBasic() sdk.Error {
 			return ErrorInvalidDid(DefaultCodespace, "claim id should not be empty")
 		}
 	}
+
 	// Check that DID valid
 	if !ixo.IsValidDid(msg.DidDoc.Did) {
 		return ErrorInvalidDid(DefaultCodespace, "did is invalid")
 	}
+
 	return nil
 }
 
 func (msg MsgAddDid) GetSignBytes() []byte {
-	//return []byte(msg.SignBytes)
 	if bz, err := json.Marshal(msg); err != nil {
 		panic(err)
 	} else {
-		return bz
+		return sdk.MustSortJSON(bz)
 	}
 }
 
@@ -79,7 +92,9 @@ func (msg MsgAddDid) String() string {
 	return fmt.Sprintf("MsgAddDid{Did: %v, publicKey: %v}", string(msg.DidDoc.GetDid()), msg.DidDoc.GetPubKey())
 }
 
-func (msg MsgAddDid) IsNewDid() bool { return true }
+type MsgAddCredential struct {
+	DidCredential DidCredential `json:"credential" yaml:"credential"`
+}
 
 func NewMsgAddCredential(did string, credType []string, issuer string, issued string) MsgAddCredential {
 	didCredential := DidCredential{
@@ -96,14 +111,13 @@ func NewMsgAddCredential(did string, credType []string, issuer string, issued st
 		DidCredential: didCredential,
 	}
 }
-func (msg MsgAddCredential) GetSignerDid() ixo.Did {
-	return ""
-}
-func (msg MsgAddCredential) IsNewDid() bool { return false }
-func (msg MsgAddCredential) Type() string   { return "did" }
-func (msg MsgAddCredential) Route() string  { return RouterKey }
+
+func (msg MsgAddCredential) Type() string  { return TypeMsgAddCredential }
+func (msg MsgAddCredential) Route() string { return RouterKey }
+
+func (msg MsgAddCredential) GetSignerDid() ixo.Did { return msg.DidCredential.Issuer }
 func (msg MsgAddCredential) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{[]byte(msg.DidCredential.Issuer)}
+	return []sdk.AccAddress{ixo.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgAddCredential) String() string {
@@ -128,10 +142,9 @@ func (msg MsgAddCredential) ValidateBasic() sdk.Error {
 }
 
 func (msg MsgAddCredential) GetSignBytes() []byte {
-	b, err := json.Marshal(msg)
-	if err != nil {
+	if bz, err := json.Marshal(msg); err != nil {
 		panic(err)
+	} else {
+		return sdk.MustSortJSON(bz)
 	}
-
-	return b
 }

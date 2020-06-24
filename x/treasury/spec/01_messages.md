@@ -8,33 +8,19 @@ func DidToAddr(did ixo.Did) sdk.AccAddress {
 }
 ```
 
-## TreasuryMessage
-
-A general `TreasuryMessage` interface is defind to be implemented by every message in the Treasury module. Each message must implement the `GetPubKey()` and `GetSenderDid()` functions, both of which are used only in the Treasury module's AnteHandler. The embedded sdk.Msg ensures that the Treasury messages also follow the standard Cosmos SDK message interface.
-
-```go
-type TreasuryMessage interface {
-	sdk.Msg
-	GetPubKey() string
-	GetSenderDid() ixo.Did
-}
-``` 
-
 ## MsgSend
 
 Sending of tokens between two addresses identified by DIDs and signed by the sender is done using `MsgSend`. The handler for this message converts the FromDid and ToDid to `sdk.AccAddress` and then uses the Cosmos SDK `Bank` module keeper to perform the send. This message is expected to fail only if the address to which the FromDid maps to does not have enough tokens.
 
 | **Field**              | **Type**         | **Description**                                                                                               |
 |:-----------------------|:-----------------|:--------------------------------------------------------------------------------------------------------------|
-| SignBytes | string    | The bytes for the message signer to sign on |
 | PubKey    | string    | PubKey of the message signer |
 | FromDid   | ixo.Did   | DID of the sender (e.g. `did:ixo:U7GK8p8rVhJMKhBVRCJJ8c`) |
 | ToDid     | ixo.Did   | DID of the recipient (e.g. `did:ixo:U7GK8p8rVhJMKhBVRCJJ8c`) |
-| Amount    | sdk.Coins | The tokens being sent (e.g. `100ixo,200stake`) |
+| Amount    | sdk.Coins | The tokens being sent (e.g. `100uixo,200uixos`) |
 
 ```go
 type MsgSend struct {
-	SignBytes string
 	PubKey    string
 	FromDid   ixo.Did
 	ToDid     ixo.Did
@@ -48,17 +34,15 @@ Sending of tokens between two addresses identified by DIDs and signed by an orac
 
 | **Field**              | **Type**         | **Description**                                                                                               |
 |:-----------------------|:-----------------|:--------------------------------------------------------------------------------------------------------------|
-| SignBytes | string    | The bytes for the message signer to sign on |
 | PubKey    | string    | PubKey of the message signer |
 | OracleDid | ixo.Did   | DID of the oracle (e.g. `did:ixo:U7GK8p8rVhJMKhBVRCJJ8c`) |
 | FromDid   | ixo.Did   | DID of the sender (e.g. `did:ixo:U7GK8p8rVhJMKhBVRCJJ8c`) |
 | ToDid     | ixo.Did   | DID of the recipient (e.g. `did:ixo:U7GK8p8rVhJMKhBVRCJJ8c`) |
-| Amount    | sdk.Coins | The tokens being sent (e.g. `100ixo,200stake`) |
+| Amount    | sdk.Coins | The tokens being sent (e.g. `100uixo,200uixos`) |
 | Proof     | string    | Arbitrary proof backing up this operation (presently unused) |
 
 ```go
 type MsgOracleTransfer struct {
-	SignBytes string
 	PubKey    string
 	OracleDid ixo.Did
 	FromDid   ixo.Did
@@ -74,16 +58,14 @@ Minting of tokens to an address identified by a DID and signed by an oracle is d
 
 | **Field**              | **Type**         | **Description**                                                                                               |
 |:-----------------------|:-----------------|:--------------------------------------------------------------------------------------------------------------|
-| SignBytes | string    | The bytes for the message signer to sign on |
 | PubKey    | string    | PubKey of the message signer |
 | OracleDid | ixo.Did   | DID of the oracle (e.g. `did:ixo:U7GK8p8rVhJMKhBVRCJJ8c`) |
 | ToDid     | ixo.Did   | DID of the recipient (e.g. `did:ixo:U7GK8p8rVhJMKhBVRCJJ8c`) |
-| Amount    | sdk.Coins | The tokens being sent (e.g. `100ixo,200stake`) |
+| Amount    | sdk.Coins | The tokens being sent (e.g. `100uixo,200uixos`) |
 | Proof     | string    | Arbitrary proof backing up this operation (presently unused) |
 
 ```go
 type MsgOracleMint struct {
-	SignBytes string
 	PubKey    string
 	OracleDid ixo.Did
 	ToDid     ixo.Did
@@ -98,16 +80,14 @@ Burning of tokens from an address identified by a DID and signed by an oracle is
 
 | **Field**              | **Type**         | **Description**                                                                                               |
 |:-----------------------|:-----------------|:--------------------------------------------------------------------------------------------------------------|
-| SignBytes | string    | The bytes for the message signer to sign on |
 | PubKey    | string    | PubKey of the message signer |
 | OracleDid | ixo.Did   | DID of the oracle (e.g. `did:ixo:U7GK8p8rVhJMKhBVRCJJ8c`) |
 | FromDid   | ixo.Did   | DID of the sender (e.g. `did:ixo:U7GK8p8rVhJMKhBVRCJJ8c`) |
-| Amount    | sdk.Coins | The tokens being sent (e.g. `100ixo,200stake`) |
+| Amount    | sdk.Coins | The tokens being sent (e.g. `100uixo,200uixos`) |
 | Proof     | string    | Arbitrary proof backing up this operation (presently unused) |
 
 ```go
 type MsgOracleBurn struct {
-	SignBytes string
 	PubKey    string
 	OracleDid ixo.Did
 	FromDid   ixo.Did
