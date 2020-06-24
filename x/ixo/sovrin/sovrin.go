@@ -58,6 +58,21 @@ func FromMnemonic(mnemonic string) SovrinDid {
 	return FromSeed(seed32)
 }
 
+func UnmarshalSovrinDid(jsonSovrinDid string) (SovrinDid, error) {
+	return fromJsonString(jsonSovrinDid)
+}
+
+func fromJsonString(jsonSovrinDid string) (SovrinDid, error) {
+	var did SovrinDid
+	err := json.Unmarshal([]byte(jsonSovrinDid), &did)
+	if err != nil {
+		err := fmt.Errorf("Could not unmarshal did into struct. Error: %s", err.Error())
+		return SovrinDid{}, err
+	}
+
+	return did, nil
+}
+
 func FromSeed(seed [32]byte) SovrinDid {
 	publicKeyBytes, privateKeyBytes, err := ed25519.GenerateKey(bytes.NewReader(seed[0:32]))
 	if err != nil {

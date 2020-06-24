@@ -2,11 +2,9 @@ package fees
 
 import (
 	"encoding/json"
-
+	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/client"
-
 	"github.com/tokenchain/ixo-blockchain/x/fees/client/cli"
-
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -14,7 +12,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
-
 	"github.com/tokenchain/ixo-blockchain/x/fees/client/rest"
 	"github.com/tokenchain/ixo-blockchain/x/fees/internal/keeper"
 )
@@ -46,7 +43,25 @@ func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router
 }
 
 func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
-	return nil
+	feesTxCmd := &cobra.Command{
+		Use:                        ModuleName,
+		Short:                      "fees transaction sub commands",
+		DisableFlagParsing:         true,
+		SuggestionsMinimumDistance: 2,
+		RunE:                       client.ValidateCmd,
+	}
+
+	feesTxCmd.AddCommand(client.PostCommands(
+		cli.GetCmdCreateFee(cdc),
+		cli.GetCmdCreateFeeContract(cdc),
+		cli.GetCmdCreateSubscription(cdc),
+		cli.GetCmdSetFeeContractAuthorisation(cdc),
+		cli.GetCmdGrantFeeDiscount(cdc),
+		cli.GetCmdRevokeFeeDiscount(cdc),
+		cli.GetCmdChargeFee(cdc),
+	)...)
+
+	return feesTxCmd
 }
 
 func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
@@ -59,21 +74,27 @@ func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 	}
 
 	feeQueryCmd.AddCommand(client.GetCommands(
-		cli.GetFeesRequestHandler(cdc),
+		cli.GetParamsRequestHandler(cdc),
+		cli.GetCmdFee(cdc),
+		cli.GetCmdFeeContract(cdc),
+		cli.GetCmdSubscription(cdc),
 	)...)
+
 
 	return feeQueryCmd
 }
 
 type AppModule struct {
 	AppModuleBasic
-	keeper keeper.Keeper
+	keeper     keeper.Keeper
+	bankKeeper bank.Keeper
 }
 
-func NewAppModule(keeper Keeper) AppModule {
+func NewAppModule(keeper Keeper, bankKeeper bank.Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
+		bankKeeper:     bankKeeper,
 	}
 }
 
@@ -89,7 +110,7 @@ func (AppModule) Route() string {
 }
 
 func (am AppModule) NewHandler() sdk.Handler {
-	return nil
+	return NewHandler(am.keeper, am.bankKeeper)
 }
 
 func (AppModule) QuerierRoute() string {
@@ -115,6 +136,6 @@ func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 }
 
-func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	return []abci.ValidatorUpdate{}
+func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+	return EndBlocker(ctx, am.keeper)
 }

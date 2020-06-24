@@ -3,7 +3,6 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"

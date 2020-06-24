@@ -88,7 +88,12 @@ var (
 		bonds.BondsMintBurnAccount:       {supply.Minter, supply.Burner},
 		bonds.BatchesIntermediaryAccount: nil,
 		treasury.ModuleName:              {supply.Minter, supply.Burner},
+		nameservice.ModuleName:           {supply.Minter, supply.Burner},
+		fees.FeeRemainderPool:            nil,
 	}
+
+	// Reserved fees module ID prefixes
+	feesReservedIdPrefixes = []string{}
 )
 
 func MakeCodec() *codec.Codec {
@@ -188,7 +193,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		app.slashingKeeper.Hooks()))
 
 	app.didKeeper = did.NewKeeper(app.cdc, keys[did.StoreKey])
-	app.feesKeeper = fees.NewKeeper(app.cdc, feesSubspace)
+	app.feesKeeper = fees.NewKeeper(app.cdc, keys[fees.StoreKey], feesSubspace, app.bankKeeper, feesReservedIdPrefixes)
 	app.projectKeeper = project.NewKeeper(app.cdc, keys[project.StoreKey], projectSubspace, app.accountKeeper, app.feesKeeper)
 	app.bonddocKeeper = bonddoc.NewKeeper(app.cdc, keys[bonddoc.StoreKey])
 	app.bondsKeeper = bonds.NewKeeper(app.bankKeeper, app.supplyKeeper, app.accountKeeper, app.stakingKeeper, keys[bonds.StoreKey], app.cdc)
@@ -209,7 +214,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		staking.NewAppModule(app.stakingKeeper, app.distributionKeeper, app.accountKeeper, app.supplyKeeper),
 
 		did.NewAppModule(app.didKeeper),
-		fees.NewAppModule(app.feesKeeper),
+		fees.NewAppModule(app.feesKeeper, app.bankKeeper),
 		project.NewAppModule(app.projectKeeper, app.feesKeeper, app.bankKeeper),
 		bonddoc.NewAppModule(app.bonddocKeeper),
 		bonds.NewAppModule(app.bondsKeeper, app.accountKeeper),
@@ -289,7 +294,7 @@ func (app *ixoApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList
 
 	return appState, validators, nil
 }
-
+/*
 func NewIxoAnteHandler(app *ixoApp) sdk.AnteHandler {
 	cosmosAnteHandler := auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer)
 	didAnteHandler := did.NewAnteHandler(app.didKeeper)
@@ -316,3 +321,41 @@ func NewIxoAnteHandler(app *ixoApp) sdk.AnteHandler {
 		}
 	}
 }
+*/
+func NewIxoAnteHandler(app *ixoApp) sdk.AnteHandler {
+	didPubKeyGetter := did.GetPubKeyGetter(app.didKeeper)
+	projectPubKeyGetter := project.GetPubKeyGetter(app.projectKeeper, app.didKeeper)
+	bonddocPubKeyGetter := bonddoc.GetPubKeyGetter(app.bonddocKeeper)
+	bondsPubKeyGetter := bonds.GetPubKeyGetter(app.bondsKeeper, app.didKeeper)
+	treasuryPubKeyGetter := treasury.GetPubKeyGetter(app.didKeeper)
+	feesPubKeyGetter := fees.GetPubKeyGetter(app.didKeeper)
+
+	cosmosAnteHandler := auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer)
+	didAnteHandler := ixo.NewAnteHandler(app.accountKeeper, app.supplyKeeper, didPubKeyGetter)
+	projectAnteHandler := ixo.NewAnteHandler(app.accountKeeper, app.supplyKeeper, projectPubKeyGetter)
+	bonddocAnteHandler := ixo.NewAnteHandler(app.accountKeeper, app.supplyKeeper, bonddocPubKeyGetter)
+	bondsAnteHandler := ixo.NewAnteHandler(app.accountKeeper, app.supplyKeeper, bondsPubKeyGetter)
+	treasuryAnteHandler := ixo.NewAnteHandler(app.accountKeeper, app.supplyKeeper, treasuryPubKeyGetter)
+	feesAnteHandler := ixo.NewAnteHandler(app.accountKeeper, app.supplyKeeper, feesPubKeyGetter)
+
+	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (_ sdk.Context, _ sdk.Result, abort bool) {
+		msg := tx.GetMsgs()[0]
+		switch msg.Route() {
+		case did.RouterKey:
+			return didAnteHandler(ctx, tx, simulate)
+		case project.RouterKey:
+			return projectAnteHandler(ctx, tx, simulate)
+		case bonddoc.RouterKey:
+			return bonddocAnteHandler(ctx, tx, simulate)
+		case bonds.RouterKey:
+			return bondsAnteHandler(ctx, tx, simulate)
+		case treasury.RouterKey:
+			return treasuryAnteHandler(ctx, tx, simulate)
+		case fees.RouterKey:
+			return feesAnteHandler(ctx, tx, simulate)
+		default:
+			return cosmosAnteHandler(ctx, tx, simulate)
+		}
+	}
+}
+

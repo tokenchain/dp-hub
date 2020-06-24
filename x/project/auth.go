@@ -9,6 +9,37 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x/project/internal/types"
 )
 
+func GetPubKeyGetter(keeper Keeper, didKeeper did.Keeper) ixo.PubKeyGetter {
+	return func(ctx sdk.Context, msg ixo.IxoMsg) ([32]byte, sdk.Result) {
+		// Message must be a ProjectMsg
+		projectMsg := msg.(types.ProjectMsg)
+
+		// Get signer PubKey
+		var pubKey [32]byte
+		if projectMsg.IsNewDid() {
+			createProjectMsg := msg.(types.MsgCreateProject)
+			copy(pubKey[:], base58.Decode(createProjectMsg.GetPubKey()))
+		} else {
+			if projectMsg.IsWithdrawal() {
+				signerDid := msg.GetSignerDid()
+				didDoc, _ := didKeeper.GetDidDoc(ctx, signerDid)
+				if didDoc == nil {
+					return pubKey, sdk.ErrUnauthorized("signer did not found").Result()
+				}
+				copy(pubKey[:], base58.Decode(didDoc.GetPubKey()))
+			} else {
+				projectDid := msg.GetSignerDid()
+				projectDoc, err := keeper.GetProjectDoc(ctx, projectDid)
+				if err != nil {
+					return pubKey, sdk.ErrInternal("project did not found").Result()
+				}
+				copy(pubKey[:], base58.Decode(projectDoc.GetPubKey()))
+			}
+		}
+		return pubKey, sdk.Result{}
+	}
+}
+
 func NewAnteHandler(projectKeeper Keeper, didKeeper did.Keeper) sdk.AnteHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (_ sdk.Context, _ sdk.Result, abort bool) {
 

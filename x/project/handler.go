@@ -46,22 +46,29 @@ func NewHandler(k Keeper, fk fees.Keeper, bk bank.Keeper) sdk.Handler {
 }
 
 func handleMsgCreateProject(ctx sdk.Context, k Keeper, msg MsgCreateProject) sdk.Result {
+	projectDid := msg.GetProjectDid()
 
-	_, err := createAccountInProjectAccounts(ctx, k, msg.GetProjectDid(), IxoAccountFeesId)
-	if err != nil {
+	var err sdk.Error
+	if _, err = createAccountInProjectAccounts(ctx, k, projectDid, IxoAccountFeesId); err != nil {
 		return err.Result()
 	}
-
-	_, err = createAccountInProjectAccounts(ctx, k, msg.GetProjectDid(), InternalAccountID(msg.GetProjectDid()))
-	if err != nil {
+	if _, err = createAccountInProjectAccounts(ctx, k, projectDid, IxoAccountPayFeesId); err != nil {
+		return err.Result()
+	}
+	if _, err = createAccountInProjectAccounts(ctx, k, projectDid, InitiatingNodeAccountPayFeesId); err != nil {
+		return err.Result()
+	}
+	if _, err = createAccountInProjectAccounts(ctx, k, projectDid, ValidatingNodeSetAccountFeesId); err != nil {
+		return err.Result()
+	}
+	if _, err = createAccountInProjectAccounts(ctx, k, projectDid, InternalAccountID(projectDid)); err != nil {
 		err.Result()
 	}
-
-	if k.ProjectDocExists(ctx, msg.GetProjectDid()) {
+	if k.ProjectDocExists(ctx, projectDid) {
 		return did.ErrorInvalidDid(types.DefaultCodespace, fmt.Sprintf("Project already exists")).Result()
 	}
 	k.SetProjectDoc(ctx, &msg)
-	k.SetProjectWithdrawalTransactions(ctx, msg.GetProjectDid(), nil)
+	k.SetProjectWithdrawalTransactions(ctx, projectDid, nil)
 
 	return sdk.Result{}
 }
@@ -111,50 +118,41 @@ func handleMsgUpdateProjectStatus(ctx sdk.Context, k Keeper, bk bank.Keeper,
 }
 
 func payoutFees(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid ixo.Did) sdk.Result {
-
 	_, err := payAllFeesToAddress(ctx, k, bk, projectDid, IxoAccountPayFeesId, IxoAccountFeesId)
 	if err != nil {
 		return sdk.ErrInternal("Failed to send coins").Result()
 	}
-
 	_, err = payAllFeesToAddress(ctx, k, bk, projectDid, InitiatingNodeAccountPayFeesId, IxoAccountFeesId)
 	if err != nil {
 		return sdk.ErrInternal("Failed to send coins").Result()
 	}
-
 	_, err = payAllFeesToAddress(ctx, k, bk, projectDid, ValidatingNodeSetAccountFeesId, IxoAccountFeesId)
 	if err != nil {
 		return sdk.ErrInternal("Failed to send coins").Result()
 	}
-
 	ixoDid := k.GetParams(ctx).IxoDid
 	amount := getIxoAmount(ctx, k, bk, projectDid, IxoAccountFeesId)
 	err = payoutAndRecon(ctx, k, bk, projectDid, IxoAccountFeesId, ixoDid, amount)
 	if err != nil {
 		return err.Result()
 	}
-
 	return sdk.Result{}
 }
 
 func payAllFeesToAddress(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid ixo.Did,
 	sendingAddress InternalAccountID, receivingAddress InternalAccountID) (sdk.Events, sdk.Error) {
 	feesToPay := getIxoAmount(ctx, k, bk, projectDid, sendingAddress)
-
 	if feesToPay.Amount.LT(sdk.ZeroInt()) {
 		return nil, sdk.ErrInternal("Negative fee to pay")
 	}
 	if feesToPay.Amount.IsZero() {
 		return nil, nil
 	}
-
 	receivingAccount, err := getAccountInProjectAccounts(ctx, k, projectDid, receivingAddress)
 	if err != nil {
 		return sdk.Events{}, err
 	}
-
 	sendingAccount, _ := getAccountInProjectAccounts(ctx, k, projectDid, sendingAddress)
-
 	return sdk.Events{}, bk.SendCoins(ctx, sendingAccount, receivingAccount, sdk.Coins{feesToPay})
 }
 
@@ -169,135 +167,110 @@ func getIxoAmount(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid ixo.Did,
 }
 
 func handleMsgCreateAgent(ctx sdk.Context, k Keeper, bk bank.Keeper, msg MsgCreateAgent) sdk.Result {
-
 	// Check if project exists
 	_, err := getProjectDoc(ctx, k, msg.GetProjectDid())
 	if err != nil {
 		return sdk.ErrUnknownRequest("Could not find Project").Result()
 	}
-
 	// Create account in project accounts for the agent
 	_, err = createAccountInProjectAccounts(ctx, k, msg.GetProjectDid(), InternalAccountID(msg.Data.AgentDid))
 	if err != nil {
 		err.Result()
 	}
-
 	return sdk.Result{}
 }
 
 func handleMsgUpdateAgent(ctx sdk.Context, k Keeper, bk bank.Keeper, msg MsgUpdateAgent) sdk.Result {
-
 	// Check if project exists
 	_, err := getProjectDoc(ctx, k, msg.GetProjectDid())
 	if err != nil {
 		return sdk.ErrUnknownRequest("Could not find Project").Result()
 	}
-
 	// TODO: implement agent update (or remove functionality)
-
 	return sdk.Result{}
 }
 
 func handleMsgCreateClaim(ctx sdk.Context, k Keeper, fk fees.Keeper, bk bank.Keeper, msg MsgCreateClaim) sdk.Result {
-
 	// Check if project exists
 	_, err := getProjectDoc(ctx, k, msg.GetProjectDid())
 	if err != nil {
 		return sdk.ErrUnknownRequest("Could not find Project").Result()
 	}
-
 	// Process claim fees
 	_, err = processFees(ctx, k, fk, bk, fees.FeeClaimTransaction, msg.GetProjectDid())
 	if err != nil {
 		return err.Result()
 	}
-
 	return sdk.Result{}
 }
 
 func handleMsgCreateEvaluation(ctx sdk.Context, k Keeper, fk fees.Keeper, bk bank.Keeper, msg MsgCreateEvaluation) sdk.Result {
-
 	// Check if project exists
 	projectDoc, err := getProjectDoc(ctx, k, msg.GetProjectDid())
 	if err != nil {
 		return sdk.ErrUnknownRequest("Could not find Project").Result()
 	}
-
 	_, err = processFees(ctx, k, fk, bk, fees.FeeEvaluationTransaction, msg.GetProjectDid())
 	if err != nil {
 		return err.Result()
 	}
-
 	err = processEvaluatorPay(ctx, k, fk, bk, msg.GetProjectDid(),
 		msg.GetSenderDid(), projectDoc.GetEvaluatorPay())
 	if err != nil {
 		return err.Result()
 	}
-
 	return sdk.Result{}
 }
 
 func handleMsgWithdrawFunds(ctx sdk.Context, k Keeper, bk bank.Keeper,
 	msg MsgWithdrawFunds) sdk.Result {
-
 	withdrawFundsDoc := msg.GetWithdrawFundsDoc()
 	projectDoc, err := getProjectDoc(ctx, k, withdrawFundsDoc.ProjectDid)
 	if err != nil {
 		return sdk.ErrUnknownRequest("Could not find Project").Result()
 	}
-
 	if projectDoc.GetStatus() != PaidoutStatus {
 		return sdk.ErrUnknownRequest("Project not in PAIDOUT Status").Result()
 	}
-
 	projectDid := withdrawFundsDoc.ProjectDid
 	recipientDid := withdrawFundsDoc.RecipientDid
 	amount := withdrawFundsDoc.Amount
-
 	// If this is a refund, recipient has to be the project creator
 	if withdrawFundsDoc.IsRefund && (recipientDid != projectDoc.GetSenderDid()) {
 		return sdk.ErrUnknownRequest("Only project creator can get a refund").Result()
 	}
-
 	var fromAccountId InternalAccountID
 	if withdrawFundsDoc.IsRefund {
 		fromAccountId = InternalAccountID(projectDid)
 	} else {
 		fromAccountId = InternalAccountID(recipientDid)
 	}
-
 	amountCoin := sdk.NewCoin(ixo.IxoNativeToken, amount)
 	err = payoutAndRecon(ctx, k, bk, projectDid, fromAccountId, recipientDid, amountCoin)
 	if err != nil {
 		return err.Result()
 	}
-
 	return sdk.Result{}
 }
 
 func payoutAndRecon(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid ixo.Did,
 	fromAccountId InternalAccountID, recipientDid ixo.Did, amount sdk.Coin) sdk.Error {
-
 	ixoBalance := getIxoAmount(ctx, k, bk, projectDid, fromAccountId)
 	if ixoBalance.IsLT(amount) {
 		return sdk.ErrInternal("insufficient funds in specified account")
 	}
-
 	fromAccount, err := getAccountInProjectAccounts(ctx, k, projectDid, fromAccountId)
 	if err != nil {
 		return err
 	}
-
 	recipientAddr := types.StringToAddr(recipientDid)
 	err = bk.SendCoins(ctx, fromAccount, recipientAddr, sdk.Coins{amount})
 	if err != nil {
 		return err
 	}
-
 	var actionId [32]byte
 	dec := sdk.OneDec() // TODO: should increment with each withdrawal
 	copy(actionId[:], dec.Bytes())
-
 	addProjectWithdrawalTransaction(ctx, k, projectDid, actionId, recipientDid, amount)
 	return nil
 }

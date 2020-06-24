@@ -1,6 +1,5 @@
 package nameservice
 
-
 import (
 	"encoding/json"
 
@@ -14,8 +13,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	 "github.com/tokenchain/ixo-blockchain/x/nameservice/client/cli"
-	 "github.com/tokenchain/ixo-blockchain/x/nameservice/client/rest"
+	"github.com/tokenchain/ixo-blockchain/x/nameservice/client/cli"
+	"github.com/tokenchain/ixo-blockchain/x/nameservice/client/rest"
 )
 
 // type check to ensure the interface is properly implemented
@@ -26,6 +25,12 @@ var (
 
 // app module Basics object
 type AppModuleBasic struct{}
+
+type AppModule struct {
+	AppModuleBasic
+	keeper     Keeper
+	bankKeeper bank.Keeper
+}
 
 func (AppModuleBasic) Name() string {
 	return ModuleName
@@ -63,12 +68,6 @@ func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 // Get the root tx command of this module
 func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	return cli.GetTxCmd(StoreKey, cdc)
-}
-
-type AppModule struct {
-	AppModuleBasic
-	keeper     Keeper
-	bankKeeper bank.Keeper
 }
 
 // NewAppModule creates a new AppModule Object

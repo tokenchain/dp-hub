@@ -9,6 +9,18 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
 )
 
+var (
+	_ ixo.IxoMsg = MsgCreateProject{}
+	_ ixo.IxoMsg = MsgUpdateProjectStatus{}
+	_ ixo.IxoMsg = MsgCreateAgent{}
+	_ ixo.IxoMsg = MsgUpdateAgent{}
+	_ ixo.IxoMsg = MsgCreateClaim{}
+	_ ixo.IxoMsg = MsgCreateEvaluation{}
+	_ ixo.IxoMsg = MsgWithdrawFunds{}
+
+	_ StoredProjectDoc = (*MsgCreateProject)(nil)
+)
+
 type MsgCreateProject struct {
 	SignBytes  string     `json:"signBytes" yaml:"signBytes"`
 	TxHash     string     `json:"txHash" yaml:"txHash"`
@@ -18,10 +30,9 @@ type MsgCreateProject struct {
 	Data       ProjectDoc `json:"data" yaml:"data"`
 }
 
-var _ sdk.Msg = MsgCreateProject{}
-
-func (msg MsgCreateProject) Type() string  { return "create-project" }
-func (msg MsgCreateProject) Route() string { return RouterKey }
+func (msg MsgCreateProject) Type() string          { return "create-project" }
+func (msg MsgCreateProject) Route() string         { return RouterKey }
+func (msg MsgCreateProject) GetSignerDid() ixo.Did { return "" }
 func (msg MsgCreateProject) ValidateBasic() sdk.Error {
 	// Check that not empty
 	if valid, err := CheckNotEmpty(msg.PubKey, "PubKey"); !valid {
@@ -35,14 +46,12 @@ func (msg MsgCreateProject) ValidateBasic() sdk.Error {
 	} else if valid, err := CheckNotEmpty(msg.Data.CreatedBy, "CreatedBy"); !valid {
 		return err
 	}
-
 	// Check that DIDs valid
 	if !ixo.IsValidDid(msg.ProjectDid) {
 		return did.ErrorInvalidDid(DefaultCodespace, "project did is invalid")
 	} else if !ixo.IsValidDid(msg.SenderDid) {
 		return did.ErrorInvalidDid(DefaultCodespace, "sender did is invalid")
 	}
-
 	return nil
 }
 
@@ -68,13 +77,15 @@ func (msg *MsgCreateProject) SetStatus(status ProjectStatus) {
 }
 
 func (msg MsgCreateProject) GetSignBytes() []byte {
-	return []byte(msg.SignBytes)
+	//return []byte(msg.SignBytes)
+	if bz, err := json.Marshal(msg); err != nil {
+		panic(err)
+	} else {
+		return bz
+	}
 }
-
 func (msg MsgCreateProject) IsNewDid() bool     { return true }
 func (msg MsgCreateProject) IsWithdrawal() bool { return false }
-
-var _ StoredProjectDoc = (*MsgCreateProject)(nil)
 
 type MsgUpdateProjectStatus struct {
 	SignBytes  string                 `json:"signBytes" yaml:"signBytes"`
@@ -83,10 +94,9 @@ type MsgUpdateProjectStatus struct {
 	ProjectDid ixo.Did                `json:"projectDid" yaml:"projectDid"`
 	Data       UpdateProjectStatusDoc `json:"data" yaml:"data"`
 }
-
+func (msg MsgUpdateProjectStatus) GetSignerDid() ixo.Did { return "" }
 func (msg MsgUpdateProjectStatus) Type() string  { return "update-project-status" }
 func (msg MsgUpdateProjectStatus) Route() string { return RouterKey }
-
 func (msg MsgUpdateProjectStatus) ValidateBasic() sdk.Error {
 	// Check that not empty
 	if valid, err := CheckNotEmpty(msg.ProjectDid, "ProjectDid"); !valid {
@@ -110,7 +120,12 @@ func (msg MsgUpdateProjectStatus) ValidateBasic() sdk.Error {
 }
 
 func (msg MsgUpdateProjectStatus) GetSignBytes() []byte {
-	return []byte(msg.SignBytes)
+	//return []byte(msg.SignBytes)
+	if bz, err := json.Marshal(msg); err != nil {
+		panic(err)
+	} else {
+		return bz
+	}
 }
 
 func (msg MsgUpdateProjectStatus) GetSigners() []sdk.AccAddress {
@@ -135,7 +150,7 @@ type MsgCreateAgent struct {
 	ProjectDid ixo.Did        `json:"projectDid" yaml:"projectDid"`
 	Data       CreateAgentDoc `json:"data" yaml:"data"`
 }
-
+func (msg MsgCreateAgent) GetSignerDid() ixo.Did { return "" }
 func (msg MsgCreateAgent) IsNewDid() bool     { return false }
 func (msg MsgCreateAgent) IsWithdrawal() bool { return false }
 func (msg MsgCreateAgent) Type() string       { return "create-agent" }
@@ -158,20 +173,21 @@ func (msg MsgCreateAgent) ValidateBasic() sdk.Error {
 	} else if !ixo.IsValidDid(msg.Data.AgentDid) {
 		return did.ErrorInvalidDid(DefaultCodespace, "agent did is invalid")
 	}
-
 	return nil
 }
-
 func (msg MsgCreateAgent) GetProjectDid() ixo.Did { return msg.ProjectDid }
 func (msg MsgCreateAgent) GetSenderDid() ixo.Did  { return msg.SenderDid }
 func (msg MsgCreateAgent) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{[]byte(msg.GetProjectDid())}
 }
-
 func (msg MsgCreateAgent) GetSignBytes() []byte {
-	return []byte(msg.SignBytes)
+	//return []byte(msg.SignBytes)
+	if bz, err := json.Marshal(msg); err != nil {
+		panic(err)
+	} else {
+		return bz
+	}
 }
-
 func (msg MsgCreateAgent) String() string {
 	b, err := json.Marshal(msg)
 	if err != nil {
@@ -180,8 +196,6 @@ func (msg MsgCreateAgent) String() string {
 	return string(b)
 }
 
-var _ sdk.Msg = MsgCreateAgent{}
-
 type MsgUpdateAgent struct {
 	SignBytes  string         `json:"signBytes" yaml:"signBytes"`
 	TxHash     string         `json:"txHash" yaml:"txHash"`
@@ -189,7 +203,7 @@ type MsgUpdateAgent struct {
 	ProjectDid ixo.Did        `json:"projectDid" yaml:"projectDid"`
 	Data       UpdateAgentDoc `json:"data" yaml:"data"`
 }
-
+func (msg MsgUpdateAgent) GetSignerDid() ixo.Did { return "" }
 func (msg MsgUpdateAgent) IsNewDid() bool     { return false }
 func (msg MsgUpdateAgent) IsWithdrawal() bool { return false }
 func (msg MsgUpdateAgent) Type() string       { return "update-agent" }
@@ -235,8 +249,6 @@ func (msg MsgUpdateAgent) String() string {
 	return string(b)
 }
 
-var _ sdk.Msg = MsgUpdateAgent{}
-
 type MsgCreateClaim struct {
 	SignBytes  string         `json:"signBytes" yaml:"signBytes"`
 	TxHash     string         `json:"txHash" yaml:"txHash"`
@@ -244,7 +256,7 @@ type MsgCreateClaim struct {
 	ProjectDid ixo.Did        `json:"projectDid" yaml:"projectDid"`
 	Data       CreateClaimDoc `json:"data" yaml:"data"`
 }
-
+func (msg MsgCreateClaim) GetSignerDid() ixo.Did { return "" }
 func (msg MsgCreateClaim) IsNewDid() bool     { return false }
 func (msg MsgCreateClaim) IsWithdrawal() bool { return false }
 func (msg MsgCreateClaim) Type() string       { return "create-claim" }
@@ -289,8 +301,6 @@ func (msg MsgCreateClaim) String() string {
 	return string(b)
 }
 
-var _ sdk.Msg = MsgCreateClaim{}
-
 type MsgCreateEvaluation struct {
 	SignBytes  string              `json:"signBytes" yaml:"signBytes"`
 	TxHash     string              `json:"txHash" yaml:"txHash"`
@@ -298,7 +308,7 @@ type MsgCreateEvaluation struct {
 	ProjectDid ixo.Did             `json:"projectDid" yaml:"projectDid"`
 	Data       CreateEvaluationDoc `json:"data" yaml:"data"`
 }
-
+func (msg MsgCreateEvaluation) GetSignerDid() ixo.Did { return "" }
 func (msg MsgCreateEvaluation) IsNewDid() bool     { return false }
 func (msg MsgCreateEvaluation) IsWithdrawal() bool { return false }
 func (msg MsgCreateEvaluation) Type() string       { return "create-evaluation" }
@@ -343,14 +353,13 @@ func (msg MsgCreateEvaluation) String() string {
 	return string(b)
 }
 
-var _ sdk.Msg = MsgCreateEvaluation{}
-
 type MsgWithdrawFunds struct {
 	SignBytes string           `json:"signBytes" yaml:"signBytes"`
 	SenderDid ixo.Did          `json:"senderDid" yaml:"senderDid"`
 	Data      WithdrawFundsDoc `json:"data" yaml:"data"`
 }
 
+func (msg MsgWithdrawFunds) GetSignerDid() ixo.Did { return "" }
 func (msg MsgWithdrawFunds) IsNewDid() bool     { return false }
 func (msg MsgWithdrawFunds) IsWithdrawal() bool { return true }
 func (msg MsgWithdrawFunds) Type() string       { return "withdraw-funds" }
@@ -407,5 +416,3 @@ func (msg MsgWithdrawFunds) String() string {
 
 	return string(b)
 }
-
-var _ sdk.Msg = MsgWithdrawFunds{}

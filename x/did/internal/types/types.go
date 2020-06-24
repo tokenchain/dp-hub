@@ -10,6 +10,9 @@ import (
 
 var _ ixo.DidDoc = (*BaseDidDoc)(nil)
 
+type DidMsg interface {
+	IsNewDid() bool
+}
 type BaseDidDoc struct {
 	Did         ixo.Did         `json:"did" yaml:"did"`
 	PubKey      string          `json:"pubKey" yaml:"pubKey"`
@@ -68,10 +71,6 @@ func (dd *BaseDidDoc) AddCredential(cred DidCredential) {
 	}
 
 	dd.Credentials = append(dd.Credentials, cred)
-}
-
-type DidMsg interface {
-	IsNewDid() bool
 }
 
 func DidToAddr(did ixo.Did) sdk.AccAddress {
