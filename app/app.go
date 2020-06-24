@@ -242,7 +242,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
-	app.SetAnteHandler(NewIxoAnteHandler(app))
+	app.SetAnteHandler(initAnteHandler(app))
 	app.SetEndBlocker(app.EndBlocker)
 
 	if loadLatest {
@@ -298,7 +298,7 @@ func (app *ixoApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList
 	return appState, validators, nil
 }
 
-func NewIxoAnteHandler(app *ixoApp) sdk.AnteHandler {
+func initAnteHandler(app *ixoApp) sdk.AnteHandler {
 	didPubKeyGetter := did.GetPubKeyGetter(app.didKeeper)
 	projectPubKeyGetter := project.GetPubKeyGetter(app.projectKeeper, app.didKeeper)
 	bonddocPubKeyGetter := bonddoc.GetPubKeyGetter(app.bonddocKeeper)
@@ -313,6 +313,7 @@ func NewIxoAnteHandler(app *ixoApp) sdk.AnteHandler {
 	bondsAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, bondsPubKeyGetter)
 	treasuryAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, treasuryPubKeyGetter)
 	feesAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, paymentsPubKeyGetter)
+	paymentsAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, paymentsPubKeyGetter)
 
 	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (_ sdk.Context, _ sdk.Result, abort bool) {
 		msg := tx.GetMsgs()[0]
@@ -327,6 +328,8 @@ func NewIxoAnteHandler(app *ixoApp) sdk.AnteHandler {
 			return bondsAnteHandler(ctx, tx, simulate)
 		case treasury.RouterKey:
 			return treasuryAnteHandler(ctx, tx, simulate)
+		case payments.RouterKey:
+			return paymentsAnteHandler(ctx, tx, simulate)
 		case fees.RouterKey:
 			return feesAnteHandler(ctx, tx, simulate)
 		default:

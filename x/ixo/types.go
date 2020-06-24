@@ -24,7 +24,7 @@ var (
 	// IsValidDid adapted from the above link but assumes no sub-namespaces
 	// TODO: ValidDid needs to be updated once we no longer want to be able
 	//   to consider project accounts as DIDs (especially in treasury module),
-	//   possibly should just be `^did:(ixo:|sov:)([a-zA-Z0-9]){21,22}$`.
+	//   possibly should just be `^did:(dxp:|sov:)([a-zA-Z0-9]){21,22}$`.
 )
 
 const IxoNativeToken = "udap"
