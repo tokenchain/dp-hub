@@ -52,37 +52,44 @@ I. There exists a trusted third-party that will always perform computations hone
 II. Participants act rationally and will not participate if there is no financial incentive to do so, and will attempt to maximize their own profit. In this way, we do not assume that a participant will act honestly if they can maximize their profit by acting maliciously. 
 
 # Adversarial Assumptions
+
 The Darkpool Protocol makes the following adversarial assumptions:
 I. Adversaries cannot corrupt the trusted third-party defined previously by Assumption (II). Concretely, an adversary cannot subvert the correctness of computations done by the Darkpool network. All platforms built on Darkpool need to make this adversarial assumption.
 II. Adversaries have limited financial, and computational, powers. Limited financial powers are a reasonable assumption to make in the real world, and computational powers are naturally limited by financial powers.
 III.Computationally hard problems used to construct cryptographic primitives are sufficiently secure. This assumption is made by all blockchains that utilize any form of cryptography, including Bitcoin and Ethereum.
 
-Security Model
+## Security Model
+
 Defining a security model allows us to analyze the security guarantees provided by the Darkpool Protocol. The Darkpool Protocol makes use of the real vs. ideal paradigm; analyzing the security of a real world decentralized protocol with respect to some non-existent ideal world in which there is a trusted, and incorruptible, third-party that can be used to handle all sensitive information and perform all sensitive computations (this is not the same as Ethereum, since all transactions and data on Ethereum is publicly available). The security of the Darkpool Protocol can be demonstrated by showing that any possible attack in the real world is also possible in the ideal world. Since the ideal world is trivial to define, the real protocol is secure by implication. This approach to security analysis is typical for decentralized computation protocols in which there are active and passive adversaries. The ideal Darkpool Protocol contains a trusted, and incorruptible, third-party T. Traders submit their orders to T, and T guarantees to never reveal the details of these orders. T constantly attempts to match orders that have been submitted, and when a match is found T informs the respective traders. The traders each submit their cryptocurrencies to T, and if they both do so, T swaps the cryptocurrencies and gives them back to the traders. This completes the trade. The real Darkpool Protocol is considered secure if, and only if, all attacks on the real protocol are also possible on the ideal protocol. From the definition of the ideal Darkpool Protocol it is clear that such an equivalence is sufficient.
 
 The Darkpool Protocol is able to guarantee that, unless the majority of nodes in the network are active adversaries, it is as secure as the ideal world protocol. If 50% of nodes are active adversaries, and they are enjoying the attackers best-case scenario, they are able to reconstruct all orders. However, the Darkpool Protocol ensures that such a best-case scenario is impossible to achieve in the real world. In the typical case, 50% of nodes becoming active adversaries would only allow the adversaries to reconstruct 50% of the orders. A more detailed explanation is given in “Attacks and Defenses”.
 
-Decentralized Order Matching
+## Decentralized Order Matching
+
 Order matching is the process through which nodes match orders against each other without being able to observe the details of the order. To achieve this, traders first breakup their order into a set of order fragments. Note that these fragments do not individually represent a fraction of the order’s value, they simply represent the separation of sensitive data regarding the underlying order. On its own an order fragment reveals nothing about the underlying order, but when at least half of the order fragments for an order are combined, the order can be reconstructed (see “Attacks and Defenses” for details about protecting against this). Each node performs an order matching computation on order fragments from multiple different orders and combines the results with the results from nodes (who are using different fragments). The fragments are constructed in such a way that, after the computations are applied, the resulting fragments can be combined to reveal, not the underlying orders, but the result of the order matching computations for the underlying orders.
+
 This has several nice properties. For one, only half of the order fragments are needed to reconstruct an order. Nodes are incentivized to avoid collusion (and adversaries have a difficult time subverting this system, see “Attacks and Defenses”). This means that if half of the nodes accidentally die, or leave the network halfway through an order matching computation, the network can still finish the computation.
 
-This makes it highly resilient to DDoS attacks, and expected failures.
+## This makes it highly resilient to DDoS attacks, and expected failures.
 
 Order fragments are constructed in such a way that the order matching computations can use any function, applied over a polynomial, and can be involve two or more underlying orders. This allows for very flexible order matching computations. Nodes can match orders based on exact price points, partially match orders (when only some of an order can be matched due to the currently available liquidity), match triplets (or more) of orders to increase liquidity (e.g. the triplet BTC-to-ETH and DOLLAR-to-DAP and DAP-to-DOLLAR, where no match can be found with only pairs). Assuming the existence of a decentralized, consensus-based, data stream for National Best Bid and Offer (NBBO) data, the order matching computations can even involve orders without an explicit price point. 
 
-Winning and Losing 
+## Winning and Losing 
 
 Nodes race to discover order matches. Any match that is found must be registered so that other nodes can see which orders have been closed. The associated traders are notified, and none of the matched orders can be involved in future matches. This is done on the Darkpool network, under Assumption (1). If two orders do not match, they continue to be used in future matching games. If an order cannot be matched before it expires, the associated fee is refunded. The nodes that combine their outputs to register a match are rewarded a fee, to incentivize their honest participation in the order matching game (see “Incentive Layer”). This also incentivizes them to match as many orders as quickly as possible, since this correlates to a higher reward over time. The Darkpool Protocol also includes an Atomic Swapping protocol that is initiated between traders that have had their orders matched. Nodes facilitate passing messages (and where possible, setting up a direct P2P connection between traders) that executes the order. Note that traders cannot be bound to execute on the orders, due to the limited way in which blockchains can communicate (see “Attacks and Defenses” for information about placing false orders). However, using trader bonds, traders can be heavily incentivized to faithfully execute orders.
 
 At no point during order matching, or even after orders have matched, are Darkpool Protocol nodes capable of revealing the details of an order. Even if a malicious adversary is capable of performing a 51% attack, the order fragments are distributed in such a way that the adversary is only able to reconstruct 50% of the orders (the higher attack percentage they achieve, the higher the rate of order reconstruction).
 
-DAP Tokens
+## DAP Tokens
+
 Under Assumption (II), computational nodes must be incentivized to perform the order matching computations. It is unlikely that participants will be willing to run order matching nodes if they have no financial incentive to do so, especially when running and maintaining order matching nodes is not free. The DAP token is introduced to provide this incentivization. It is also used to pay bonds to the Registrar, allowing traders and order matching nodes to participate in the Darkpool. 
 
-Order Fees
+## Order Fees
+
 Fees provide a decentralized mechanism for the users of the system (i.e. traders) to remunerate those that are providing the computational power (i.e. nodes) necessary to fulfill the needs of the users. This is necessary under Assumption (II). Traders pay an order fee, in DAP, when submitting an order. If the order expires before it is matched, the order fee is refunded to the trader. Any node that participates in the decentralized computation for an order that has been matched receives a share of the order fee (the shares are calculated by evenly splitting the order fee amongst all of the participating nodes). The order fee is variable, and under Assumption (II), orders with higher order fees will be favored by the order matching nodes. However, nodes have no incentive to ignore an order, especially since they do not know the identity of the trader, nor the details of the order. The only information available to the node is the amount of DAP that they will receive for successfully matching this order. Note, all order matches will actually result in two payouts to each participating node, one from each side of the match. 
 
-Bonds
+## Bonds
+
 Orders are secured by breaking them down into several order fragments that are distributed throughout the network. An adversary attempting to reconstruct orders could join the network with a large number of nodes in the hope that they will receive the majority of the order fragments (we will see later that this is
 not actually feasible). Similarly, an adversary could submit a large number of false orders (that they do not intend to execute on) in an attempt to probe the legitimate orders. To prevent this class of Sybil attacks, and provide a simple identity mechanism, traders and nodes must submit a bond in DAP before they are allowed to access the network. This bond is associated with a single identity in the Registrar smart contract and the registration status can be queried by anyone. The bond is refunded in full when the trader or node leaves the network. Traders are free to submit a flexible bond, with higher amounts allowing a higher number of parallel open orders (the larger the financial bond, the harder it is to perform a Sybil attack, and so more orders can be submitted safely). 
 
@@ -90,7 +97,8 @@ Nodes must submit a bond in DAP higher than some globally defined threshold (thi
 
 ### Attacks and Defenses
 
-Order Reconstruction
+## Order Reconstruction
+
 The security of an order maintained as long as n/2 of its n order fragments are not discovered by an adversary. If an adversary does acquire n/2 (or more) order fragments, the original order can be reconstructed. As such, it is important to understand the defenses in place against such an attack. 
 
 Nodes in the Darkpool are partitioned into n disjoint sets, where each order share is randomly distributed to at most two nodes in any one set. To model an attack on this topology, we assume that the adversary has full control over which nodes to corrupt (the Darkpool Protocol enforces that nodes are actually randomly distributed amongst the disjoint sets, meaning that this assumption provides the adversary with more power than they have in reality). 
@@ -117,38 +125,45 @@ For a binomial distribution with corresponding probability of success , the prob
 [IMAGE 1.1]
 
 For example, if n=100 and p=0.5, then the probability is approximately 54%. This shows that only with a substantial commitment to order fees compared to the network as a whole, along with many favorable assumptions, is an adversary able to gain insight into the liquidity of the dark pool.
+
 This analysis does not take into account that there is a limited number of orders that can be submitted by any one trader. To submit a large quantity of false orders a trader would also need to stake a large amount of financial power into bond registrations.
 Future versions will also discuss methods by which traders must forfeit their bond if they do not execute on false orders. Taking these three parts of the analysis into account: the high amount of order fees required to gain insight into the dark pool, the high amount of bond required to submit that many orders, and the high amount of bond sacrificed when false orders are not executed, Adversarial Assumption (II) prevents adversaries from being able to expose the liquidity of the dark pool by submitting false orders.
 
-Sybil Attacks
+## Sybil Attacks
+
 In the Darkpool Protocol, defending against order reconstruction attacks (and false order attacks) requires associating an identity with a node (or trader). This opens the possibility for an adversary to forge multiple identities, known as a Sybil attack, in an attempt to subvert the network.
 To protect against this, all nodes and traders are required to commit a bond in order to register an identity. Under the Adversarial Assumption (2), adversaries have limited financial power, we can be sure that an adversary cannot forge a large number of identities.
 For malicious nodes, the bond needs to discourage the registration of a large number of nodes and the acquisition of a sufficiently large number of order shares during the distribution of order shares (see “Order Reconstruction”). For this method to be effective, the bond must be high enough that an adversary cannot register a large number of nodes, but small enough that honest nodes are still able to participate.
 The bond amount should be globally consistent (all nodes must meet the same threshold) but dynamic, to account for fluctuations in the value of the bonded currency. For malicious traders, the bond can be used to further discourage the submission of a large number of false orders (see “False Orders”). This is done by requiring that a trader submit orders that point to their registered bond. There is a linear relationship between the bond amount, and the maximum number of orders. Therefore, a trader that submits a bond of B and is allowed M open orders could instead submit a bond of B/2 and be allowed M/2 open orders. The registration of bonds will be handled by the Ethereum network, and are incorruptible by Assumption (1).
 
-Darkpool Terminal
+## Darkpool Terminal
+
 We introduce a web-based decentralized application (DApp) for traders to interface with the Darkpool Protocol. This real-time terminal provides traders with the capability to place, cancel or amend orders. Users can also view the status and history of their orders, visible only to themselves. 
 
-Economics and the Dollar Reserve
+## Economics and the Dollar Reserve
+
 When the Darkpool Association released its ideas for the operations of the Dollar Reserve, the document was intended to be a proof of concept rather than a finished roadmap for the project. Since June 2019, we have met with many different organizations, regulators, policymakers, and academics to understand key concerns and integrate actionable improvements into the economic design of the Darkpool network. These consultations and meetings around the world have been invaluable in informing our direction. In particular, the Association greatly appreciates the thorough and thoughtful research the G7 working group completed on stablecoins. The concerns raised in the report helped highlight immediate questions to be answered, as well as longer-term challenges that may emerge.
 
 A key concern that was shared was the potential for the multi-currency Dollar Coin (DOLLAR) to interfere with monetary sovereignty and monetary policy if the network reaches significant scale in a country (i.e., DOLLAR becomes a substitute for domestic currency). While we believe this is unlikely because DOLLAR introduces foreign exchange exposure for coin holders in domestic transactions and the use of DOLLAR may be subject to restrictions, such as foreign exchange controls, we take this concern seriously.
 
 The Darkpool network is designed to be a globally accessible and low-cost payment system — a complement to, not a replacement for, domestic currencies. The stabilization of currencies and value preservation are key efforts that are properly within the exclusive remit of the public sector. Therefore, we are augmenting the Darkpool network by including single-currency stablecoins (e.g., DOLLAR, CNY, HKD, EUR, etc.) and planning to increase the number of single-currency stablecoins over time. These will enable a range of domestic use cases by giving people and businesses the ability to transact in a stablecoin denominated in their own currency. Each single-currency stablecoin will be supported by a Reserve of cash or cash-equivalents and very short-term government securities denominated in that currency and issued by the home country of that currency. Single-currency stablecoins will only be minted and burned in response to market demand for that coin. Because of the 1:1 backing of each coin, this approach would not result in new net money creation.
 
-What is Proof of Stake (PoS)?
+## What is Proof of Stake (PoS)?
+
 If you know how Bitcoin works, you’re probably familiar with Proof of Work (PoW). It’s the mechanism that allows transactions to be gathered into blocks. Then, these blocks are linked together to create the blockchain. More specifically, miners compete to solve a complex mathematical puzzle, and whoever solves it first gets the right to add the next block to the blockchain.
 
 Proof of Work has proven to be a very robust mechanism to facilitate consensus in a decentralized manner. The problem is, it involves a lot of arbitrary computation. The puzzle the miners are competing to solve serves no purpose other than keeping the network secure. One could argue, this in itself makes this excess of computation justifiable. At this point, you might be wondering: are there other ways to maintain decentralized consensus without the high computational cost?
 
 Enter Proof of Stake. The main idea is that participants can lock coins (their “stake”), and at particular intervals, the protocol randomly assigns the right to one of them to validate the next block. Typically, the probability of being chosen is proportional to the amount of coins – the more coins locked up, the higher the chances.
 
-Staking selection process
+## Staking selection process
+
 This way, what determines which participants create a block isn’t based on their ability to solve hash challenges as it is with Proof of Work. Instead, it’s determined by how many staking coins they are holding.
 
 Some might argue that the production of blocks through staking enables a higher degree of scalability for blockchains. This is one of the reasons the Ethereum network is planned to migrate from PoW to PoS in a set of technical upgrades collectively referred to as ETH 2.0.
 
-What is Delegated Proof of Stake (DPoS)?
+## What is Delegated Proof of Stake (DPoS)?
+
 An alternative version of this mechanism was developed in 2014 by Daniel Larimer called Delegated Proof of Stake (DPoS). It was first used as a part of the BitShares blockchain, but soon after, other networks adopted the model. These include Steem and EOS, which were also created by Larimer.
 
 DPoS allows users to commit their coin balances as votes, where voting power is proportional to the number of coins held. These votes are then used to elect a number of delegates who manage the blockchain on behalf of their voters, ensuring security and consensus. Typically, the staking rewards are distributed to these elected delegates, who then distribute part of the rewards to their electors proportionally to their individual contributions.
@@ -157,7 +172,8 @@ The DPoS model allows for consensus to be achieved with a lower number of valida
 
 Simply put, DPoS allows users to signal their influence through other participants of the network.
 
-How does staking work?
+## How does staking work?
+
 As we’ve discussed before, Proof of Work blockchains rely on mining to add new blocks to the blockchain. In contrast, Proof of Stake chains produce and validate new blocks through the process of staking. Staking involves validators who lock up their coins so they can be randomly selected by the protocol at specific intervals to create a block. Usually, participants that stake larger amounts have a higher chance of being chosen as the next block validator.
 
 This allows for blocks to be produced without relying on specialized mining hardware, such as ASICs. While ASIC mining requires a significant investment in hardware, staking requires a direct investment in the cryptocurrency itself. So, instead of competing for the next block with computational work, PoS validators are selected based on the number of coins they are staking. The “stake” (the coin holding) is what incentivizes validators to maintain network security. If they fail to do that, their entire stake might be at risk
@@ -166,13 +182,13 @@ While each Proof of Stake blockchain has its particular staking currency, some n
 
 On a very practical level, staking just means keeping funds in a suitable wallet. This enables essentially anyone to perform various network functions in return for staking rewards. It may also include adding funds to a staking pool, which we’ll cover shortly.
 
-Liquid Proof-of-Stake (LPoS)
+## Liquid Proof-of-Stake (LPoS)
 
 In LPoS, delegation is optional. Token holders can delegate validation rights to other token holders without custody, meaning that the tokens remain in the delegators’ wallet. Additionally, only the validator is penalized in case of security fault (e.g. double-endorsing or double-baking). LPoS also offer voting rights, except that as a token holder you get to vote directly in the protocol amendments, and not only in who secures the network like in DPoS.
 
 LPoS was first introduced by Tezos, an on-chain governance protocol, created by Kathleen and Arthur Breitman, which has been running smoothly in mainnet since September 2018. LPoS in Tezos has proven to be very successful, with a current stake rate of approximately 80% spread across 450 validators and 13,000 delegators. The number of delegators is technically limited by the bond size minimum requirement, and with current parameters could go up to around 70,000 — Great decentralization 🏆.
 
-Bonded Proof-of-Stake (BPoS)
+## Bonded Proof-of-Stake (BPoS)
 
 BPoS is very similar to LPoS: delegation is optional, non-custodial, and token holders benefit from voting rights in protocol amendments. Although, there is a reason why it is called BPoS: in case of safety or liveness fault, a portion of the validators and delegators’ stake will be slashed. In LPoS, only the validator is at risk of slashing, while the delegator’s only risk is to miss on some rewards/interests in case its validator is dishonest or not efficient.
 
@@ -180,13 +196,16 @@ This BPoS mechanism has the advantage of providing a clear solution to the issue
 
 BPoS was first introduced by projects such as Cosmos and IRISnet (which build on the Cosmos SDK / Tendermint). Both are very interesting inter-chain protocols to have a look at 🚀. We’ve written a short introduction to IRISnet if you are curious. In BPoS protocols such as Cosmos and IRISnet, there will be a limited number of validators, starting at 100, with selection based on the size of their total stake (own stake + delegations).
 
-Entrothy
+## Entrothy
+
 We believe this approach can lower costs and enable new functionality while giving maximum flexibility and control to the Darkpool network for how the Darkpool payment system is used in their countries. The creation of DOLLAR has needs to be defined by active circulations from the Darkpool network and the DOLLAR must be minted by a fixed calculation and it is defined as entropy. The active serving amount for staking validator with DAP can be burned for the amount of DOLLAR to be entropied. This consensus mechanism allows the external liquidation providers to swap DOLLAR with USDT. As the result, the increase of price in DAP makes entroy of DOLLAR which is backed by ERC20 USDT with 1:1 backing DOLLAR-USDT relationship in Darkpool.
 
-Circulations
+## Circulations
+
 Initially, the Association expects to offer a small number of single-currency stablecoins based on the presence of highly liquid and safe government securities markets in the relevant currencies. We hope to work with regulators, central banks, and financial institutions around the world to expand the number of single-currency stablecoins available on the Darkpool network over time and to explore the technical, operational, and legal requirements to access direct custody with them. In particular, if adoption in a region without a single-currency stablecoin on the network generates concerns about currency substitution, then the Association could work with the relevant central bank and regulators to make a stablecoin available on the Darkpool network. The Association welcomes feedback on how it can help support local monetary and macroprudential policies.
 
-Transfer
+## Transfer
+
 For countries that do not have a single-currency stablecoin on the Darkpool network, we believe DOLLAR is a neutral and low-volatility alternative that could ensure users in such regions can benefit from accessing the network and increased financial inclusion. In this context, DOLLAR could operate as a settlement coin in cross-border transactions, and people and businesses could convert the DOLLAR they receive into local currency to spend on goods and services through third-party financial service providers. For example, consider a Darkpool user in the US wanting to send money to their family in another country. The sender in the US would likely use DOLLAR as their default Darkpool stable coin to make the transfer. If the receiver lives in a region with a different single-currency stablecoin on the Darkpool network, the sender could transfer that single-currency stablecoin or the receiver could convert USDT to that single-currency stablecoin or local currency through a third-party financial service provider, providing a convenient and simple option for the receiver to access and use the funds. If a single-currency stablecoin is not available, the transfer could be made in DOLLAR. The receiver could convert DOLLAR into their local currency through a third-party financial service provider to buy goods and services in that currency. The Darkpool network would not itself provide for, record, or settle conversions between Darkpool Coins and fiat currency or other digital assets; instead, as noted, any such exchange functionality would be conducted by third-party financial service providers. Regardless of the region, we expect to require all Virtual Asset Service Providers (VASPs), such as currency exchanges that have addresses on the Darkpool Blockchain to hold and transfer Darkpool Coins, to fully comply with all applicable foreign exchange limitations and capital controls in order to mitigate currency substitution risk.
 
 Moreover, our hope is that as central banks develop central bank digital currencies (CBDCs), these CBDCs could be directly integrated with the Darkpool network, removing the need for Darkpool Networks to manage the associated Reserves, thus reducing credit and custody risk. As an example, if a central bank develops a digital representation of the US dollar, euro, or British pound, Hong Kong dollar the Association could replace the applicable single-currency stablecoin with the CBDC.
@@ -195,10 +214,12 @@ Single-currency stablecoins simplify the design of DOLLAR. DOLLAR can be impleme
 
 The Darkpool network is intended to support global, cross-border exchanges by extending the functionality of fiat currencies, which are appropriately under the governance and control of the consensus BPOS. Under this new approach, we seek to reduce concerns around monetary sovereignty and help usher in more accessible payments and financial products for people and businesses around the world.
 
-The Darkpool Reserve and protections
+## The Darkpool Reserve and protections
+
 A key objective of the Darkpool network’s economic design is building trust in an efficient payment method. Each stablecoin on the Darkpool network will be fully backed by a Reserve of high-quality liquid assets and supported by a competitive network of resellers and exchanges buying and selling each coin. That means that Darkpool Coin holders should have a high degree of assurance they can convert their Darkpool Coins into local currency.
 
-Custody and Designated Dealers
+## Custody and Designated Dealers
+
 The assets comprising the Reserve will be held by a geographically distributed network of well-capitalized custodian banks to provide both security and decentralization of the assets. We expect that these institutions will already have a number of risk mitigation practices in place. The Association proposes to put additional measures in place with these custodians that are designed to ensure that Reserve assets cannot be used for lending, pledging or repledging, or otherwise be removed, even temporarily, from the Reserve’s account or encumbered to secure an obligation of a custodian unrelated to the custody services provided to Darkpool Networks.
 
 Darkpool Networks will not directly interface with consumers, but will instead partner with a select number of Designated Dealers to extend liquidity to consumer-facing products, such as wallets and exchanges. These Designated Dealers will commit to making markets within tight spreads and will be able to accommodate high volumes of trading. If extreme circumstances occur and Designated Dealers no longer make markets in Darkpool Coins, Darkpool Networks will call on a pre-existing arrangement with a third-party administrator or dealer to assist, in an administrative capacity, in burning Darkpool Coins for end users and liquidating assets comprising the Reserve to make payment as appropriate. These emergency operations will always be implemented under the guidance of the consensus government.
@@ -227,7 +248,8 @@ The ecosystem of DAP Chain comprises of 4 different components:
 3. BandChain — a blockchain for decentralized data oracle. It enables DAP Chain to consume traditional exchange trading symbol (traded symbol for gold) and DAP price feed from external sources.
 4. Relayers — third-party software that relay packets between multiple blockchains. They allow multiple blockchains to interoperate in a secure and trustless manner.
 
-ETH Bridge Zone
+## ETH Bridge Zone
+
 Unidirectional Peggy is the starting point for cross chain value transfers from the Ethereum blockchain to DP-SDK based blockchains as part of the Ethereum DP Bridge project. The system accepts incoming transfers of Ethereum tokens on an Ethereum smart contract, locking them while the transaction is validated and equitable funds issued to the intended recipient on the DP bridge chain.
 
 Unidirectional Peggy focuses on core features for unidirectional transfers. This prototype includes functionality to safely lock and unlock Ethereum, and mint corresponding representative tokens on the DP chain.
