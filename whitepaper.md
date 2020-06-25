@@ -284,7 +284,7 @@ Once a claim has been processed by the Oracle, the status is returned
 If the claim is successful, new tokens representing Ethereum are minted via the Bank module
 
 Architecture Diagram
-[https://github.com/swishlabsco/cosmos-ethereum-bridge/blob/master/ethbridge.jpg?raw=true](theDiagram)
+[Paper](https://github.com/swishlabsco/cosmos-ethereum-bridge/blob/master/ethbridge.jpg?raw=true)
 
 
 How to get involved
