@@ -44,5 +44,5 @@ bash demo_tx_broadcast_rest.sh  # Option 4
 bash demo_tx_broadcast_rpc.sh   # Option 5
 ```
 
-- [Whitepaper](https://www.find.com)
+- [Whitepaper](https://github.com/tokenchain/ixo-blockchain/blob/master/whitepaper.md)
 
