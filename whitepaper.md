@@ -228,9 +228,9 @@ The ecosystem of DAP Chain comprises of 4 different components:
 4. Relayers — third-party software that relay packets between multiple blockchains. They allow multiple blockchains to interoperate in a secure and trustless manner.
 
 ETH Bridge Zone
-Unidirectional Peggy is the starting point for cross chain value transfers from the Ethereum blockchain to DP-SDK based blockchains as part of the Ethereum DP Bridge project. The system accepts incoming transfers of Ethereum tokens on an Ethereum smart contract, locking them while the transaction is validated and equitable funds issued to the intended recipient on the Cosmos bridge chain.
+Unidirectional Peggy is the starting point for cross chain value transfers from the Ethereum blockchain to DP-SDK based blockchains as part of the Ethereum DP Bridge project. The system accepts incoming transfers of Ethereum tokens on an Ethereum smart contract, locking them while the transaction is validated and equitable funds issued to the intended recipient on the DP bridge chain.
 
-Unidirectional Peggy focuses on core features for unidirectional transfers. This prototype includes functionality to safely lock and unlock Ethereum, and mint corresponding representative tokens on the Cosmos chain.
+Unidirectional Peggy focuses on core features for unidirectional transfers. This prototype includes functionality to safely lock and unlock Ethereum, and mint corresponding representative tokens on the DP chain.
 
 The architecture consists of 4 parts. Each part, and the logical flow of operations is described below.
 
