@@ -1,19 +1,21 @@
-#Darkpool - the digital asset exchange
+# Darkpool - the digital asset exchange
 
-#Abstract
+# Abstract
 
 The market capitalization and trading volume of cryptocurrencies is growing rapidly every month. With institutional investors arriving into the cryptocurrency market, the development of alternative trading systems is critical for trading large blocks of cryptographic assets while maintaining minimal price slippage and market impact.
 
 We introduce Darkpool, a decentralized open-source dark pool protocol facilitating atomic swaps between cryptocurrency pairs across the Bitcoin and Ethereum blockchains. Trades are placed on a hidden order book and are matched through an engine built on a multi-party computation protocol. This provides order execution without exposing market sensitive information such as price and volume at a certain position, which would provide an advantage to other traders. Darkpool removes the need for a trusted intermediary to operate a dark pool and provides crypto-economic incentives through a protocol token for governance; enabling the development of a secure, decentralized, scalable dark pool protocol capable of handling billions in trading volume daily. 
 
-#Introduction
+# Introduction
+
 The advent of blockchain technologies has enabled the development of an entirely new class of assets backed by cryptographic verification. Bitcoin (BTC) and Ethereum (ETH) are two blockchain-based cryptocurrencies which, as of eclipse the aggregate market capitalization of all other cryptocurrencies.
 
 In November 2017, the volumes for BTC and ETH trades exceeded USD $181B (not including over-thecounter and trades executed on private forums). This statistic, coupled with the announcements of Bitcoin futures markets from CME Group and NASDAQ, signals interest from institutional investors looking to gain exposure to digital cryptographic assets. With institutions and HNWIs looking to deploy vast amounts of wealth into cryptocurrencies, we must develop the underlying infrastructure to support such volumes.
 
 At a fundamental level, dark pools are private exchanges where financial assets and instruments are traded and matched by an engine running on a hidden order book. These exchanges are primarily created to serve institutional or HNW retail investors who require a system where significant volumes of assets can be block traded with minimal price slippage. Dark pools are estimated to represent approximately 15% of all trading volume of all US stock trades [6]. Extrapolating this statistic for BTC and ETH volumes, a dark pool for such has the potential to execute USD $27.2B of orders monthly. We introduce the Darkpool Protocol which facilitates the exchange of Ethereum, ERC20 and Bitcoin cryptocurrencies through a decentralized dark pool. This is enabled through research within subfields of cryptography such as secure multi-party computation, which allow us to develop a matching engine to run on the distributed hidden order book. We facilitate cross-chain trades through atomic swaps and implement proper economic incentives to ensure these trades are executed thoroughly. Compared to a centralized dark pool or exchange, the Darkpool Protocol removes the risk of asset theft, confiscation or possibility of interference from a malicious exchange operator. This leads to greater trust between institutional investors placing block orders and dark pool exchanges leveraging the Darkpool protocol. Additionally, the Darkpool Protocol is available universally and is highly transparent with regards to how the underlying protocol operates. 
 
-#Elementary Components
+# Elementary Components
+
 ● Decentralized hidden order book
 ○ A decentralized, hidden order book.
 ● Decentralized order matching
@@ -29,25 +31,27 @@ Motivation
 ● Trustless, equitable access to dark pools
 ● Centralization risk
 
-Darkpool Protocol
+# Darkpool Protocol
+
 How the Darkpool Protocol works
-The primary technical goal of the Darkpool Protocol is to enable a decentralized network of nodes to
-match orders, without knowing anything about the orders. While it might seem like this is impossible, it can be achieved by applying cryptographic techniques that have been thoroughly researched over that last 30 years; modifying them to be suitable for the world of decentralized computation.
+The primary technical goal of the Darkpool Protocol is to enable a decentralized network of nodes to match orders, without knowing anything about the orders. While it might seem like this is impossible, it can be achieved by applying cryptographic techniques that have been thoroughly researched over that last 30 years; modifying them to be suitable for the world of decentralized computation.
+
 The Darkpool Protocol uses the BPOS [1] to break down orders into a large number of order fragments, and distributes them throughout the network. Orders cannot be reconstructed unless a majority of the order fragments are recombined. To prevent this from happening, the Darkpool Protocol defines in the native chain mechanism called the Registrar that organizes nodes into a network topology that makes it unreasonably difficult for an adversary to acquire the enough of the order fragments to reconstruct an order. As long as traders respect the network topology defined by the Registrar, their orders will be safe. If they fail to do so, only their own orders are at risk of exposure. Using order fragments from two different orders, a node can cooperate with other nodes that hold other order fragments for the same two orders to perform a decentralized computation that will determine if the two orders match. The decentralized computation does not expose the order fragments, and performs a random scaling of the final output [2][3]. This prevents nodes from reconstructing the original orders, and prevents them from using the output to infer anything about the orders. A Zero knowledge proof is used to verify the integrity of the computation, without revealing any information. These proofs are simple and efficient, allowing them to be performed by an public chain called the bonds [3]. After two orders have been matched, an atomic swap is initiated between the two traders over the Darkpool Hub Network, a decentralized peer-to-peer network. Using standard asymmetric encryption primitives, the details of the atomic swap are kept secure. 
 
-System Properties 
+## System Properties
+
 The Darkpool Protocol provides the following properties:
 1. The identity of the traders is secure within the Dark Pool. The underlying cryptocurrency that is being traded may provide different limitations for privacy.
 2. Traders do not have to remain connected to the network while their orders are being matched. Once an order is placed, nodes will run the matching computation until a match is found, or the order is expired (either manually, or by passing a deadline designated by the trader).
 3. An order is secure until it is matched. After being matched, some details of the order are revealed to the matching parties. This is the natural limit of security for an order, since both parties know what they submitted, and both parties need to know when a match has occurred. Note that information disclosed in these cases does not provide any informational advantage to either party.
 4. The total liquidity of the Darkpool cannot be reasonably estimated by any participant. 
 
-Assumptions
+# Assumptions
 The Darkpool Protocol is built on the following assumptions:
 I. There exists a trusted third-party that will always perform computations honestly, but has limited computational power (i.e. 21 supernode consensus).
 II. Participants act rationally and will not participate if there is no financial incentive to do so, and will attempt to maximize their own profit. In this way, we do not assume that a participant will act honestly if they can maximize their profit by acting maliciously. 
 
-Adversarial Assumptions
+# Adversarial Assumptions
 The Darkpool Protocol makes the following adversarial assumptions:
 I. Adversaries cannot corrupt the trusted third-party defined previously by Assumption (II). Concretely, an adversary cannot subvert the correctness of computations done by the Darkpool network. All platforms built on Darkpool need to make this adversarial assumption.
 II. Adversaries have limited financial, and computational, powers. Limited financial powers are a reasonable assumption to make in the real world, and computational powers are naturally limited by financial powers.
@@ -84,7 +88,7 @@ not actually feasible). Similarly, an adversary could submit a large number of f
 
 Nodes must submit a bond in DAP higher than some globally defined threshold (this threshold can be set as needed, to keep the bond requirement above a sufficiently large financial commitment). Since this threshold is dynamic, nodes can alter the bond amount however they choose but will not be able to participate unless their bond is above the threshold. During verification, the Challenger and the Provers (usually the trader and a group of order matching nodes, respectively) put their bond on the line. If the Challenger is correct, the Prover that is unable to provide evidence of a truthful computation loses their bond. Likewise, if all Provers are correct, the Challenger loses their bond. In this way, the DAP bond also acts as a disincentive to attempt to cheat. 
 
-Attacks and Defenses
+### Attacks and Defenses
 
 Order Reconstruction
 The security of an order maintained as long as n/2 of its n order fragments are not discovered by an adversary. If an adversary does acquire n/2 (or more) order fragments, the original order can be reconstructed. As such, it is important to understand the defenses in place against such an attack. 
@@ -100,7 +104,8 @@ Let X be the number of successfully acquired order fragments, p be the probabili
 
 This formulation relies on n, the number of disjoint sets, which is directly proportional to the number of nodes in the Darkpool. 
 
-False Orders
+### False Orders
+
 When two orders are matched, both of the matching parties learn that there exists some corresponding order in the Darkpool (otherwise a match would not have occurred). An adversary can take advantage of this in an attempt to gain insight into the liquidity of the Darkpool.
 Assume that there are n legitimate orders in the dark pool when there is no adversary. To simplify the analysis we also assume, in the favor of the adversary, that the adversary knows the maximum price point of orders in the dark pool (realistically, this is impossible and the adversary would have to make several guesses).
 If we assume that none of the legitimate orders have matches, the adversary needs to submit n false orders (at the maximum price point) to discover all orders. Compared to the fees paid by the rest of the network, the adversary needs to match 100% of the financial commitments to order fees made by the network. By Assumption (II) this is not realistic, and becomes more and more difficult as the Darkpool is used.
@@ -234,13 +239,13 @@ The architecture consists of 4 parts. Each part, and the logical flow of operati
 3. The EthBridge Module
 4. The Oracle Module
 
-The smart contracts
+## The smart contracts
 
 First, the smart contract is deployed to an Ethereum network. A user can then send Ethereum to that smart contract to lock up their Ethereum and trigger the transfer flow.
 
 In this prototype, the system is managed by the contract's deployer, designated internally as the relayer, a trusted third-party which can unlock funds and return them their original sender. If the contract’s balances under threat, the relayer can pause the system, temporarily preventing users from depositing additional funds.
 
-The Relayer
+## The Relayer
 
 The Relayer is a service which interfaces with both blockchains, allowing validators to attest on the Cosmos blockchain that specific events on the Ethereum blockchain have occurred. Through the Relayer service, validators witness the events and submit proof in the form of signed hashes to the Cosmos based modules, which are responsible for aggregating and tallying the Validators’ signatures and their respective signing power.
 
@@ -251,7 +256,7 @@ when an event is seen, parse information associated with the Ethereum transactio
 uses this information to build an unsigned DP transaction
 signs and send this transaction to Tendermint.
 
-The EthBridge Module
+## The EthBridge Module
 
 The EthBridge module is a DP-SDK module that is responsible for receiving and decoding transactions involving Ethereum Bridge claims and for processing the result of a successful claim.
 
@@ -263,7 +268,7 @@ The oracle claim is given a unique ID based on the nonce from the ethereum trans
 The generic claim is forwarded to the Oracle module.
 The EthBridge module will resume later if the claim succeeds.
 
-The Oracle Module
+## The Oracle Module
 
 The Oracle module is intended to be a more generic oracle module that can take arbitrary claims from different validators, hold onto them and perform consensus on those claims once a certain threshold is reached. In this project it is used to find consensus on claims about activity on an Ethereum chain, but it is designed and intended to be able to be used for any other kinds of oracle-like functionality in future (eg: claims about the weather).
 
@@ -275,7 +280,8 @@ Once a threshold of stake of the active Tendermint validator set is claiming the
 If a threshold of stake of the active Tendermint validator set disagrees, the claim is updated to be a failure
 The status of the claim is returned to the module that provided the claim.
 
-The EthBridge Module (Part 2)
+## The EthBridge Module (Part 2)
+
 The EthBridge module also contains logic for how a result should be processed.
 
 The process is as follows:
