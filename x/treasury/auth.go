@@ -3,13 +3,14 @@ package treasury
 import (
 	"github.com/btcsuite/btcutil/base58"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 
 	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
 )
 
 func GetPubKeyGetter(didKeeper did.Keeper) ixo.PubKeyGetter {
-	return func(ctx sdk.Context, msg ixo.IxoMsg) ([32]byte, sdk.Result) {
+	return func(ctx sdk.Context, msg types.IxoMsg) ([32]byte, sdk.Result) {
 
 		// Get signer PubKey
 		var pubKey [32]byte

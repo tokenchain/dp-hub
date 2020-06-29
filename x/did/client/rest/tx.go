@@ -3,6 +3,7 @@ package rest
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/types/rest"
+	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"net/http"
 	"time"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/sovrin"
 )
 
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
@@ -28,7 +28,7 @@ func createDidRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		mode := r.URL.Query().Get("mode")
 		cliCtx = cliCtx.WithBroadcastMode(mode)
 
-		sovrinDid, err := sovrin.UnmarshalSovrinDid(didDocParam)
+		sovrinDid, err := types2.UnmarshalSovrinDid(didDocParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -65,7 +65,7 @@ func addCredentialRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		sovrinDid, err := sovrin.UnmarshalSovrinDid(didDocParam)
+		sovrinDid, err := types2.UnmarshalSovrinDid(didDocParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))

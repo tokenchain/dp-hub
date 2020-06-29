@@ -3,7 +3,9 @@ package types
 import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	"github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"sort"
 )
 
@@ -44,7 +46,7 @@ func NewFunctionParam(param string, value sdk.Int) FunctionParam {
 
 type FunctionParams []FunctionParam
 
-func (fps FunctionParams) Validate(functionType string) sdk.Error {
+func (fps FunctionParams) Validate(functionType string) error {
 	// Come up with list of expected parameters
 	expectedParams, err := GetRequiredParamsForFunctionType(functionType)
 	if err != nil {
@@ -53,7 +55,7 @@ func (fps FunctionParams) Validate(functionType string) sdk.Error {
 
 	// Check that number of params is as expected
 	if len(fps) != len(expectedParams) {
-		return ErrIncorrectNumberOfFunctionParameters(DefaultCodespace, len(expectedParams))
+		return x.ErrIncorrectNumberOfFunctionParameters(len(expectedParams))
 	}
 
 	// Check that params match and all values are positive
@@ -61,9 +63,9 @@ func (fps FunctionParams) Validate(functionType string) sdk.Error {
 	for _, p := range expectedParams {
 		val, ok := fpsMap[p]
 		if !ok {
-			return ErrFunctionParameterMissingOrNonInteger(DefaultCodespace, p)
+			return x.ErrFunctionParameterMissingOrNonInteger(p)
 		} else if !val.IsPositive() {
-			return ErrArgumentMustBePositive(DefaultCodespace, "FunctionParams:"+p)
+			return x.ErrArgumentMustBePositive("FunctionParams:" + p)
 		}
 	}
 
@@ -94,7 +96,7 @@ type Bond struct {
 	Token                  string         `json:"token" yaml:"token"`
 	Name                   string         `json:"name" yaml:"name"`
 	Description            string         `json:"description" yaml:"description"`
-	CreatorDid             ixo.Did        `json:"creator_did" yaml:"creator_did"`
+	CreatorDid             types.Did      `json:"creator_did" yaml:"creator_did"`
 	FunctionType           string         `json:"function_type" yaml:"function_type"`
 	FunctionParameters     FunctionParams `json:"function_parameters" yaml:"function_parameters"`
 	ReserveTokens          []string       `json:"reserve_tokens" yaml:"reserve_tokens"`
@@ -109,16 +111,16 @@ type Bond struct {
 	CurrentSupply          sdk.Coin       `json:"current_supply" yaml:"current_supply"`
 	AllowSells             string         `json:"allow_sells" yaml:"allow_sells"`
 	BatchBlocks            sdk.Uint       `json:"batch_blocks" yaml:"batch_blocks"`
-	BondDid                ixo.Did        `json:"bond_did" yaml:"bond_did"`
+	BondDid                types.Did      `json:"bond_did" yaml:"bond_did"`
 	CreatorPubKey          string         `json:"pub_key" yaml:"pub_key"`
 }
 
-func NewBond(token, name, description string, creatorDid ixo.Did,
+func NewBond(token, name, description string, creatorDid types.Did,
 	creatorPubKey, functionType string, functionParameters FunctionParams,
 	reserveTokens []string, reserveAdddress sdk.AccAddress, txFeePercentage,
 	exitFeePercentage sdk.Dec, feeAddress sdk.AccAddress, maxSupply sdk.Coin,
 	orderQuantityLimits sdk.Coins, sanityRate, sanityMarginPercentage sdk.Dec,
-	allowSells string, batchBlocks sdk.Uint, bondDid ixo.Did) Bond {
+	allowSells string, batchBlocks sdk.Uint, bondDid types.Did) Bond {
 
 	// Ensure tokens and coins are sorted
 	sort.Strings(reserveTokens)
@@ -151,12 +153,12 @@ func NewBond(token, name, description string, creatorDid ixo.Did,
 //noinspection GoNilness
 func (bond Bond) GetNewReserveDecCoins(amount sdk.Dec) (coins sdk.DecCoins) {
 	for _, r := range bond.ReserveTokens {
-		coins = coins.Add(sdk.DecCoins{sdk.NewDecCoinFromDec(r, amount)})
+		coins = coins.Add(sdk.NewDecCoinFromDec(r, amount))
 	}
 	return coins
 }
 
-func (bond Bond) GetPricesAtSupply(supply sdk.Int) (result sdk.DecCoins, err sdk.Error) {
+func (bond Bond) GetPricesAtSupply(supply sdk.Int) (result sdk.DecCoins, err error) {
 	if supply.IsNegative() {
 		panic(fmt.Sprintf("negative supply for bond %s", bond))
 	}
@@ -184,7 +186,7 @@ func (bond Bond) GetPricesAtSupply(supply sdk.Int) (result sdk.DecCoins, err sdk
 		temp3 := SquareRootInt(temp2)
 		result = bond.GetNewReserveDecCoins(aDec.Mul(sdk.NewDecFromInt(temp1).Quo(temp3).Add(sdk.OneDec())))
 	case SwapperFunction:
-		return nil, ErrFunctionNotAvailableForFunctionType(DefaultCodespace)
+		return nil, errors.Wrap(x.ErrFunctionNotAvailableForFunctionType, "")
 	default:
 		panic("unrecognized function type")
 	}
@@ -196,7 +198,7 @@ func (bond Bond) GetPricesAtSupply(supply sdk.Int) (result sdk.DecCoins, err sdk
 	return result, nil
 }
 
-func (bond Bond) GetCurrentPricesPT(reserveBalances sdk.Coins) (sdk.DecCoins, sdk.Error) {
+func (bond Bond) GetCurrentPricesPT(reserveBalances sdk.Coins) (sdk.DecCoins, error) {
 	// Note: PT stands for "per token"
 	switch bond.FunctionType {
 	case PowerFunction:
@@ -292,7 +294,7 @@ func (bond Bond) GetReserveDeltaForLiquidityDelta(mintOrBurn sdk.Int, reserveBal
 	}
 }
 
-func (bond Bond) GetPricesToMint(mint sdk.Int, reserveBalances sdk.Coins) (sdk.DecCoins, sdk.Error) {
+func (bond Bond) GetPricesToMint(mint sdk.Int, reserveBalances sdk.Coins) (sdk.DecCoins, error) {
 	if mint.IsNegative() {
 		panic(fmt.Sprintf("negative mint amount for bond %s", bond))
 	} else if reserveBalances.IsAnyNegative() {
@@ -322,7 +324,7 @@ func (bond Bond) GetPricesToMint(mint sdk.Int, reserveBalances sdk.Coins) (sdk.D
 		return bond.GetNewReserveDecCoins(priceToMint), nil
 	case SwapperFunction:
 		if bond.CurrentSupply.Amount.IsZero() {
-			return nil, ErrFunctionRequiresNonZeroCurrentSupply(DefaultCodespace)
+			return nil, errors.Wrap(x.ErrFunctionRequiresNonZeroCurrentSupply, "")
 		}
 		return bond.GetReserveDeltaForLiquidityDelta(mint, reserveBalances), nil
 	default:
@@ -362,7 +364,7 @@ func (bond Bond) GetReturnsForBurn(burn sdk.Int, reserveBalances sdk.Coins) sdk.
 	// Note: fees have to be deducted from these returns to get actual returns
 }
 
-func (bond Bond) GetReturnsForSwap(from sdk.Coin, toToken string, reserveBalances sdk.Coins) (returns sdk.Coins, txFee sdk.Coin, err sdk.Error) {
+func (bond Bond) GetReturnsForSwap(from sdk.Coin, toToken string, reserveBalances sdk.Coins) (returns sdk.Coins, txFee sdk.Coin, err error) {
 	if from.IsNegative() {
 		panic(fmt.Sprintf("negative from amount for bond %s", bond))
 	} else if reserveBalances.IsAnyNegative() {
@@ -373,13 +375,13 @@ func (bond Bond) GetReturnsForSwap(from sdk.Coin, toToken string, reserveBalance
 	case PowerFunction:
 		fallthrough
 	case SigmoidFunction:
-		return nil, sdk.Coin{}, ErrFunctionNotAvailableForFunctionType(DefaultCodespace)
+		return nil, sdk.Coin{}, errors.Wrap(x.ErrFunctionNotAvailableForFunctionType, "")
 	case SwapperFunction:
 		// Check that from and to are reserve tokens
 		if from.Denom != bond.ReserveTokens[0] && from.Denom != bond.ReserveTokens[1] {
-			return nil, sdk.Coin{}, ErrTokenIsNotAValidReserveToken(DefaultCodespace, from.Denom)
+			return nil, sdk.Coin{}, x.ErrTokenIsNotAValidReserveToken(from.Denom)
 		} else if toToken != bond.ReserveTokens[0] && toToken != bond.ReserveTokens[1] {
-			return nil, sdk.Coin{}, ErrTokenIsNotAValidReserveToken(DefaultCodespace, toToken)
+			return nil, sdk.Coin{}, x.ErrTokenIsNotAValidReserveToken(toToken)
 		}
 
 		inAmt := from.Amount
@@ -392,7 +394,7 @@ func (bond Bond) GetReturnsForSwap(from sdk.Coin, toToken string, reserveBalance
 
 		// Check that at least 1 token is going in
 		if inAmt.IsZero() {
-			return nil, sdk.Coin{}, ErrSwapAmountTooSmallToGiveAnyReturn(DefaultCodespace, from.Denom, toToken)
+			return nil, sdk.Coin{}, x.ErrSwapAmountTooSmallToGiveAnyReturn(from.Denom, toToken)
 		}
 
 		// Calculate output amount using Uniswap formula: Δy = (Δx*y)/(x+Δx)
@@ -400,9 +402,9 @@ func (bond Bond) GetReturnsForSwap(from sdk.Coin, toToken string, reserveBalance
 
 		// Check that not giving out all of the available outRes or nothing at all
 		if outAmt.Equal(outRes) {
-			return nil, sdk.Coin{}, ErrSwapAmountCausesReserveDepletion(DefaultCodespace, from.Denom, toToken)
+			return nil, sdk.Coin{}, x.ErrSwapAmountCausesReserveDepletion(from.Denom, toToken)
 		} else if outAmt.IsZero() {
-			return nil, sdk.Coin{}, ErrSwapAmountTooSmallToGiveAnyReturn(DefaultCodespace, from.Denom, toToken)
+			return nil, sdk.Coin{}, x.ErrSwapAmountTooSmallToGiveAnyReturn(from.Denom, toToken)
 		} else if outAmt.IsNegative() {
 			panic(fmt.Sprintf("negative return for swap result for bond %s", bond))
 		}
@@ -426,7 +428,7 @@ func (bond Bond) GetExitFee(reserveAmount sdk.DecCoin) sdk.Coin {
 //noinspection GoNilness
 func (bond Bond) GetTxFees(reserveAmounts sdk.DecCoins) (fees sdk.Coins) {
 	for _, r := range reserveAmounts {
-		fees = fees.Add(sdk.Coins{bond.GetTxFee(r)})
+		fees = fees.Add(bond.GetTxFee(r))
 	}
 	return fees
 }
@@ -434,7 +436,7 @@ func (bond Bond) GetTxFees(reserveAmounts sdk.DecCoins) (fees sdk.Coins) {
 //noinspection GoNilness
 func (bond Bond) GetExitFees(reserveAmounts sdk.DecCoins) (fees sdk.Coins) {
 	for _, r := range reserveAmounts {
-		fees = fees.Add(sdk.Coins{bond.GetExitFee(r)})
+		fees = fees.Add(bond.GetExitFee(r))
 	}
 	return fees
 }

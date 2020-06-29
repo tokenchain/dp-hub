@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tokenchain/ixo-blockchain/x/fees/internal/types"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/sovrin"
+	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"strings"
 )
 
@@ -17,7 +17,7 @@ const (
 	FALSE = "false"
 )
 
-func parseBool(boolStr, boolName string) (bool, sdk.Error) {
+func parseBool(boolStr, boolName string) (bool, error) {
 	boolStr = strings.ToLower(strings.TrimSpace(boolStr))
 	if boolStr == TRUE {
 		return true, nil
@@ -40,7 +40,7 @@ func GetCmdCreateFee(cdc *codec.Codec) *cobra.Command {
 			feeStr := args[0]
 			sovrinDidStr := args[1]
 
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
@@ -89,7 +89,7 @@ func GetCmdCreateFeeContract(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
@@ -123,7 +123,7 @@ func GetCmdCreateSubscription(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
@@ -159,7 +159,7 @@ func GetCmdSetFeeContractAuthorisation(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err2 := sovrin.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err2 := types2.UnmarshalSovrinDid(sovrinDidStr)
 			if err2 != nil {
 				return err2
 			}
@@ -196,7 +196,7 @@ func GetCmdGrantFeeDiscount(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
@@ -226,7 +226,7 @@ func GetCmdRevokeFeeDiscount(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
@@ -250,7 +250,7 @@ func GetCmdChargeFee(cdc *codec.Codec) *cobra.Command {
 			feeContractIdStr := args[0]
 			sovrinDidStr := args[1]
 
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}

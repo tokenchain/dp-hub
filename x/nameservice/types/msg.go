@@ -2,6 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	r "github.com/cosmos/cosmos-sdk/types/errors"
 
 )
 
@@ -46,12 +47,12 @@ func (osg MsgSetName) Route() string { return RouterKey }
 func (osg MsgSetName) Type() string { return "set_name" }
 
 // ValidateBasic runs stateless checks on the message
-func (osg MsgSetName) ValidateBasic() sdk.Error {
+func (osg MsgSetName) ValidateBasic() error {
 	if osg.Owner.Empty() {
-		return sdk.ErrInvalidAddress(osg.Owner.String())
+		return r.Wrap(r.ErrInvalidAddress, osg.Owner.String())
 	}
 	if len(osg.Name) == 0 || len(osg.Value) == 0 {
-		return sdk.ErrUnknownRequest("Name and/or Value cannot be empty")
+		return r.Wrap(r.ErrUnknownAddress, "Name and/or Value cannot be empty")
 	}
 	return nil
 }
@@ -83,15 +84,15 @@ func (osg MsgBuyName) Route() string { return RouterKey }
 func (osg MsgBuyName) Type() string { return "buy_name" }
 
 // ValidateBasic runs stateless checks on the message
-func (osg MsgBuyName) ValidateBasic() sdk.Error {
+func (osg MsgBuyName) ValidateBasic() error {
 	if osg.Buyer.Empty() {
-		return sdk.ErrInvalidAddress(osg.Buyer.String())
+		return r.Wrap(r.ErrInvalidAddress, osg.Buyer.String())
 	}
 	if len(osg.Name) == 0 {
-		return sdk.ErrUnknownRequest("Name cannot be empty")
+		return r.Wrap(r.ErrUnknownAddress,"Name cannot be empty")
 	}
 	if !osg.Bid.IsAllPositive() {
-		return sdk.ErrInsufficientFunds("")
+		return r.Wrap(r.ErrInsufficientFunds,"")
 	}
 	return nil
 }
@@ -123,12 +124,12 @@ func (osg MsgDeleteName) Route() string { return RouterKey }
 func (osg MsgDeleteName) Type() string { return "delete_name" }
 
 // ValidateBasic runs stateless checks on the message
-func (osg MsgDeleteName) ValidateBasic() sdk.Error {
+func (osg MsgDeleteName) ValidateBasic() error {
 	if osg.Owner.Empty() {
-		return sdk.ErrInvalidAddress(osg.Owner.String())
+		return r.Wrap(r.ErrInvalidAddress, osg.Owner.String())
 	}
 	if len(osg.Name) == 0 {
-		return sdk.ErrUnknownRequest("name cannot be empty in validation")
+		return r.Wrap(r.ErrUnknownRequest, "name cannot be empty in validation")
 	}
 	return nil
 }

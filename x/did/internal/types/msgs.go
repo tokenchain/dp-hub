@@ -3,10 +3,12 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	er "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 const (
@@ -15,8 +17,8 @@ const (
 )
 
 var (
-	_ ixo.IxoMsg = MsgAddDid{}
-	_ ixo.IxoMsg = MsgAddCredential{}
+	_ types.IxoMsg = MsgAddDid{}
+	_ types.IxoMsg = MsgAddCredential{}
 )
 
 type MsgAddDid struct {
@@ -50,31 +52,31 @@ func (msg MsgAddDid) Type() string { return TypeMsgAddDid }
 
 func (msg MsgAddDid) Route() string { return RouterKey }
 
-func (msg MsgAddDid) GetSignerDid() ixo.Did { return msg.DidDoc.Did }
+func (msg MsgAddDid) GetSignerDid() types.Did { return msg.DidDoc.Did }
 func (msg MsgAddDid) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ixo.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
 
-func (msg MsgAddDid) ValidateBasic() sdk.Error {
+func (msg MsgAddDid) ValidateBasic() error {
 	// Check that not empty
 	if strings.TrimSpace(msg.DidDoc.Did) == "" {
-		return ErrorInvalidDid(DefaultCodespace, "did should not be empty")
+		return er.Wrap(x.ErrorInvalidDidE, "did should not be empty")
 	} else if strings.TrimSpace(msg.DidDoc.PubKey) == "" {
-		return ErrorInvalidPubKey(DefaultCodespace, "pubKey should not be empty")
+		return er.Wrap(x.ErrorInvalidPubKey, "pubKey should not be empty")
 	}
 
 	// Check DidDoc credentials for empty fields
 	for _, cred := range msg.DidDoc.Credentials {
 		if strings.TrimSpace(cred.Issuer) == "" {
-			return ErrorInvalidIssuer(DefaultCodespace, "issuer should not be empty")
+			return er.Wrap(x.ErrorInvalidIssuer, "issuer should not be empty")
 		} else if strings.TrimSpace(cred.Claim.Id) == "" {
-			return ErrorInvalidDid(DefaultCodespace, "claim id should not be empty")
+			return er.Wrap(x.ErrorInvalidDidE, "claim id should not be empty")
 		}
 	}
 
 	// Check that DID valid
-	if !ixo.IsValidDid(msg.DidDoc.Did) {
-		return ErrorInvalidDid(DefaultCodespace, "did is invalid")
+	if !types.IsValidDid(msg.DidDoc.Did) {
+		return er.Wrap(x.ErrorInvalidDidE, "did is invalid")
 	}
 
 	return nil
@@ -111,36 +113,29 @@ func NewMsgAddCredential(did string, credType []string, issuer string, issued st
 		DidCredential: didCredential,
 	}
 }
-
-func (msg MsgAddCredential) Type() string  { return TypeMsgAddCredential }
-func (msg MsgAddCredential) Route() string { return RouterKey }
-
-func (msg MsgAddCredential) GetSignerDid() ixo.Did { return msg.DidCredential.Issuer }
+func (msg MsgAddCredential) Type() string          { return TypeMsgAddCredential }
+func (msg MsgAddCredential) Route() string           { return RouterKey }
+func (msg MsgAddCredential) GetSignerDid() types.Did { return msg.DidCredential.Issuer }
 func (msg MsgAddCredential) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ixo.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
-
 func (msg MsgAddCredential) String() string {
 	return fmt.Sprintf("MsgAddCredential{Did: %v, Type: %v, Signer: %v}",
 		string(msg.DidCredential.Claim.Id), msg.DidCredential.CredType, string(msg.DidCredential.Issuer))
 }
-
-func (msg MsgAddCredential) ValidateBasic() sdk.Error {
+func (msg MsgAddCredential) ValidateBasic() error {
 	// Check if empty
 	if strings.TrimSpace(msg.DidCredential.Claim.Id) == "" {
-		return ErrorInvalidDid(DefaultCodespace, "claim id should not be empty")
+		return er.Wrap(x.ErrorInvalidDidE, "claim id should not be empty")
 	} else if strings.TrimSpace(msg.DidCredential.Issuer) == "" {
-		return ErrorInvalidIssuer(DefaultCodespace, "issuer should not be empty")
+		return er.Wrap(x.ErrorInvalidIssuer, "issuer should not be empty")
 	}
-
 	// Check that DID valid
-	if !ixo.IsValidDid(msg.DidCredential.Issuer) {
-		return ErrorInvalidDid(DefaultCodespace, "issuer did is invalid")
+	if !types.IsValidDid(msg.DidCredential.Issuer) {
+		return er.Wrap(x.ErrorInvalidDidE, "issuer id is invalid")
 	}
-
 	return nil
 }
-
 func (msg MsgAddCredential) GetSignBytes() []byte {
 	if bz, err := json.Marshal(msg); err != nil {
 		panic(err)

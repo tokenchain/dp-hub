@@ -3,12 +3,14 @@ package did
 import (
 	"github.com/btcsuite/btcutil/base58"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 )
 
 func GetPubKeyGetter(keeper Keeper) ixo.PubKeyGetter {
-	return func(ctx sdk.Context, msg ixo.IxoMsg) ([32]byte, sdk.Result) {
+	return func(ctx sdk.Context, msg types2.IxoMsg) ([32]byte, error) {
 
 		// Get signer PubKey
 		var pubKey [32]byte
@@ -19,12 +21,12 @@ func GetPubKeyGetter(keeper Keeper) ixo.PubKeyGetter {
 			did := msg.GetSignerDid()
 			didDoc, _ := keeper.GetDidDoc(ctx, did)
 			if didDoc == nil {
-				return pubKey, sdk.ErrUnauthorized("Issuer did not found").Result()
+				return pubKey, x.Unauthorized("Issuer did not found")
 			}
 			copy(pubKey[:], base58.Decode(didDoc.GetPubKey()))
 		default:
-			return pubKey, sdk.ErrUnknownRequest("No match for message type.").Result()
+			return pubKey, x.UnknownRequest("No match for message type.")
 		}
-		return pubKey, sdk.Result{}
+		return pubKey, nil
 	}
 }

@@ -5,10 +5,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
+	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/client"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/sovrin"
+	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"net/http"
 	"strings"
 )
@@ -86,17 +87,17 @@ func createBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		reserveTokens := strings.Split(req.ReserveTokens, ",")
 
 		// Parse tx fee percentage
-		txFeePercentageDec, err := sdk.NewDecFromStr(req.TxFeePercentage)
-		if err != nil {
-			err = types.ErrArgumentMissingOrNonFloat(types.DefaultCodespace, "tx fee percentage")
+		txFeePercentageDec, errc := sdk.NewDecFromStr(req.TxFeePercentage)
+		if errc != nil {
+			err = x.ErrArgumentMissingOrNonFloat("tx fee percentage")
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		// Parse exit fee percentage
-		exitFeePercentageDec, err := sdk.NewDecFromStr(req.ExitFeePercentage)
-		if err != nil {
-			err = types.ErrArgumentMissingOrNonFloat(types.DefaultCodespace, "exit fee percentage")
+		exitFeePercentageDec, errc := sdk.NewDecFromStr(req.ExitFeePercentage)
+		if errc != nil {
+			err = x.ErrArgumentMissingOrNonFloat("exit fee percentage")
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
@@ -139,13 +140,13 @@ func createBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		// Parse batch blocks
 		batchBlocks, err2 := sdk.ParseUint(req.BatchBlocks)
 		if err2 != nil {
-			err := types.ErrArgumentMissingOrNonUInteger(types.DefaultCodespace, "max batch blocks")
+			err := x.ErrArgumentMissingOrNonUInteger("max batch blocks")
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		// Parse creator's sovrin DID
-		creatorDid, err2 := sovrin.UnmarshalSovrinDid(req.CreatorDid)
+		creatorDid, err2 := types2.UnmarshalSovrinDid(req.CreatorDid)
 		if err2 != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err2.Error())
 			return
@@ -195,7 +196,7 @@ func editBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// Parse editor's sovrin DID
-		editorDid, err := sovrin.UnmarshalSovrinDid(req.EditorDid)
+		editorDid, err := types2.UnmarshalSovrinDid(req.EditorDid)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -252,7 +253,7 @@ func buyHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// Parse buyer's sovrin DID
-		buyerDid, err := sovrin.UnmarshalSovrinDid(req.BuyerDid)
+		buyerDid, err := types2.UnmarshalSovrinDid(req.BuyerDid)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -300,7 +301,7 @@ func sellHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// Parse seller's sovrin DID
-		sellerDid, err := sovrin.UnmarshalSovrinDid(req.SellerDid)
+		sellerDid, err := types2.UnmarshalSovrinDid(req.SellerDid)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -350,7 +351,7 @@ func swapHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// Parse swapper's sovrin DID
-		swapperDid, err := sovrin.UnmarshalSovrinDid(req.SwapperDid)
+		swapperDid, err := types2.UnmarshalSovrinDid(req.SwapperDid)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))

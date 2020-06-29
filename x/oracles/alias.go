@@ -15,7 +15,7 @@ const (
 	BurnCap     = types.BurnCap
 	TransferCap = types.TransferCap
 
-	DefaultCodespace = types.DefaultCodespace
+	//DefaultCodespace = types.DefaultCodespace
 )
 
 type (

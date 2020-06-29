@@ -1,5 +1,4 @@
-package types
-
+package ixo
 
 const (
 	ModuleName        = "dapx"
@@ -14,4 +13,3 @@ const (
 	FeeContractIdPrefix  = FeeIdPrefix + "contract:"
 	SubscriptionIdPrefix = FeeIdPrefix + "subscription:"
 )
-

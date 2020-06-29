@@ -1,6 +1,8 @@
 package types
 
-import "github.com/tokenchain/ixo-blockchain/x/ixo"
+import (
+	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+)
 
 const (
 	// ModuleName is the name of this module
@@ -35,15 +37,15 @@ var (
 	BondDidsKeyPrefix    = []byte{0x03} // key for bond DIDs
 )
 
-func GetBondKey(bondDid ixo.Did) []byte {
+func GetBondKey(bondDid types.Did) []byte {
 	return append(BondsKeyPrefix, []byte(bondDid)...)
 }
 
-func GetBatchKey(bondDid ixo.Did) []byte {
+func GetBatchKey(bondDid types.Did) []byte {
 	return append(BatchesKeyPrefix, []byte(bondDid)...)
 }
 
-func GetLastBatchKey(bondDid ixo.Did) []byte {
+func GetLastBatchKey(bondDid types.Did) []byte {
 	return append(LastBatchesKeyPrefix, []byte(bondDid)...)
 }
 

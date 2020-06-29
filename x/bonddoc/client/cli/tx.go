@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 
 	"github.com/tokenchain/ixo-blockchain/x/bonddoc/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/sovrin"
 )
 
 func GetCmdCreateBond(cdc *codec.Codec) *cobra.Command {
@@ -20,7 +20,7 @@ func GetCmdCreateBond(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			senderDid := args[0]
 			bondDocStr := args[1]
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(args[2])
+			sovrinDid, err := types2.UnmarshalSovrinDid(args[2])
 			if err != nil {
 				return err
 			}
@@ -32,7 +32,7 @@ func GetCmdCreateBond(cdc *codec.Codec) *cobra.Command {
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgCreateBond(senderDid, bondDoc, sovrinDid)
 
@@ -49,7 +49,7 @@ func GetCmdUpdateBondStatus(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			senderDid := args[0]
 			status := args[1]
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(args[2])
+			sovrinDid, err := types2.UnmarshalSovrinDid(args[2])
 			if err != nil {
 				return err
 			}
@@ -70,7 +70,7 @@ func GetCmdUpdateBondStatus(cdc *codec.Codec) *cobra.Command {
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgUpdateBondStatus(senderDid, updateBondStatusDoc, sovrinDid)
 

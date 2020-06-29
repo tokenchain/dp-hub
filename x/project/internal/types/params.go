@@ -4,7 +4,7 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 )
 
 // Parameter store keys
@@ -15,8 +15,8 @@ var (
 
 // project parameters
 type Params struct {
-	IxoDid                       ixo.Did `json:"ixo_did" yaml:"ixo_did"`
-	ProjectMinimumInitialFunding sdk.Int `json:"project_minimum_initial_funding" yaml:"project_minimum_initial_funding"`
+	IxoDid                       types.Did `json:"ixo_did" yaml:"ixo_did"`
+	ProjectMinimumInitialFunding sdk.Int   `json:"project_minimum_initial_funding" yaml:"project_minimum_initial_funding"`
 }
 
 // ParamTable for project module.
@@ -24,7 +24,7 @@ func ParamKeyTable() params.KeyTable {
 	return params.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-func NewParams(projectMinimumInitialFunding sdk.Int, ixoDid ixo.Did) Params {
+func NewParams(projectMinimumInitialFunding sdk.Int, ixoDid types.Did) Params {
 	return Params{
 		IxoDid:                       ixoDid,
 		ProjectMinimumInitialFunding: projectMinimumInitialFunding,
@@ -35,8 +35,8 @@ func NewParams(projectMinimumInitialFunding sdk.Int, ixoDid ixo.Did) Params {
 // default project module parameters
 func DefaultParams() Params {
 	return Params{
-		IxoDid:                       ixo.Did(""),  // blank
-		ProjectMinimumInitialFunding: sdk.OneInt(), // 1
+		IxoDid:                       types.Did(""), // blank
+		ProjectMinimumInitialFunding: sdk.OneInt(),  // 1
 	}
 }
 

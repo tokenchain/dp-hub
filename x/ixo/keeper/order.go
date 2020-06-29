@@ -1,14 +1,7 @@
 package keeper
 
-import (
-	"fmt"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
-	"strings"
-)
-
-func (k Keeper) AddOrder(ctx sdk.Context, buyer sdk.AccAddress, amount sdk.Coins) (uint64, sdk.Error) {
+/*
+func (k Keeper) AddOrder(ctx sdk.Context, buyer sdk.AccAddress, amount sdk.Coins) (uint64, error) {
 	orderID := k.GetNextOrderCount(ctx)
 	// TODO: Config chain name
 	collateralChain := "band-cosmoshub"
@@ -36,16 +29,18 @@ func (k Keeper) AddOrder(ctx sdk.Context, buyer sdk.AccAddress, amount sdk.Coins
 	k.SetOrder(ctx, orderID, types.NewOrder(buyer, amount))
 
 	return orderID, nil
-}
+}*/
 
 // SetOrder saves the given order to the store without performing any validation.
-func (k Keeper) SetOrder(ctx sdk.Context, id uint64, order types.Order) {
+/*func (k Keeper) SetOrder(ctx sdk.Context, id uint64, order types.Order) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.OrderStoreKey(id), k.cdc.MustMarshalBinaryBare(order))
-}
+}*/
 
 // GetOrder gets the given order from the store
-func (k Keeper) GetOrder(ctx sdk.Context, id uint64) (types.Order, sdk.Error) {
+
+/*
+func (k Keeper) GetOrder(ctx sdk.Context, id uint64) (types.Order, error) {
 	store := ctx.KVStore(k.storeKey)
 	if !store.Has(types.OrderStoreKey(id)) {
 		return types.Order{}, sdkerrors.Wrapf(sdkerrors.ErrKeyNotFound, "order %d not found", id)
@@ -54,4 +49,4 @@ func (k Keeper) GetOrder(ctx sdk.Context, id uint64) (types.Order, sdk.Error) {
 	var order types.Order
 	k.cdc.MustUnmarshalBinaryBare(bz, &order)
 	return order, nil
-}
+}*/

@@ -2,19 +2,16 @@ package oracles
 
 import (
 	"encoding/json"
-
 	"github.com/cosmos/cosmos-sdk/client"
-
-	"github.com/tokenchain/ixo-blockchain/x/oracles/client/cli"
-
 	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
-
+	"github.com/tokenchain/ixo-blockchain/x/oracles/client/cli"
 	"github.com/tokenchain/ixo-blockchain/x/oracles/client/rest"
 	"github.com/tokenchain/ixo-blockchain/x/oracles/internal/keeper"
 )
@@ -59,7 +56,7 @@ func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	oraclesQueryCmd.AddCommand(client.GetCommands(
+	oraclesQueryCmd.AddCommand(flags.GetCommands(
 		cli.GetOraclesRequestHandler(cdc),
 	)...)
 
@@ -83,6 +80,7 @@ func (AppModule) Name() string {
 }
 
 func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
+
 }
 
 func (AppModule) Route() string {

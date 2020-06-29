@@ -1,4 +1,4 @@
-package sovrin
+package types
 
 import (
 	"bytes"

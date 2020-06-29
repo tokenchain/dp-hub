@@ -1,10 +1,10 @@
 package keeper
-
+/*
 import (
 	"encoding/binary"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x/nameservice/types"
+	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 )
 
 type Keeper struct {
@@ -45,3 +45,4 @@ func (k Keeper) GetNextOrderCount(ctx sdk.Context) uint64 {
 	store.Set(types.OrdersCountStoreKey, bz)
 	return orderCount + 1
 }
+*/

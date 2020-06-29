@@ -2,12 +2,12 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/sovrin"
+	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"strings"
 )
 
 func NewMsgSetFeeContractAuthorisation(feeContractId string, authorised bool,
-	payerDid sovrin.SovrinDid) MsgSetFeeContractAuthorisation {
+	payerDid types.SovrinDid) MsgSetFeeContractAuthorisation {
 	return MsgSetFeeContractAuthorisation{
 		PubKey:        payerDid.VerifyKey,
 		PayerDid:      payerDid.Did,
@@ -16,7 +16,7 @@ func NewMsgSetFeeContractAuthorisation(feeContractId string, authorised bool,
 	}
 }
 
-func NewMsgCreateFee(fee Fee, creatorDid sovrin.SovrinDid) MsgCreateFee {
+func NewMsgCreateFee(fee Fee, creatorDid types.SovrinDid) MsgCreateFee {
 	return MsgCreateFee{
 		PubKey:     creatorDid.VerifyKey,
 		CreatorDid: creatorDid.Did,
@@ -25,7 +25,7 @@ func NewMsgCreateFee(fee Fee, creatorDid sovrin.SovrinDid) MsgCreateFee {
 }
 
 func NewMsgCreateFeeContract(feeId, feeContractId string, payer sdk.AccAddress,
-	canDeauthorise bool, discountId sdk.Uint, creatorDid sovrin.SovrinDid) MsgCreateFeeContract {
+	canDeauthorise bool, discountId sdk.Uint, creatorDid types.SovrinDid) MsgCreateFeeContract {
 	return MsgCreateFeeContract{
 		PubKey:         creatorDid.VerifyKey,
 		CreatorDid:     creatorDid.Did,
@@ -38,7 +38,7 @@ func NewMsgCreateFeeContract(feeId, feeContractId string, payer sdk.AccAddress,
 }
 
 func NewMsgCreateSubscription(subscriptionId, feeContractId string, maxPeriods sdk.Uint,
-	period Period, creatorDid sovrin.SovrinDid) MsgCreateSubscription {
+	period Period, creatorDid types.SovrinDid) MsgCreateSubscription {
 	return MsgCreateSubscription{
 		PubKey:         creatorDid.VerifyKey,
 		CreatorDid:     creatorDid.Did,
@@ -50,7 +50,7 @@ func NewMsgCreateSubscription(subscriptionId, feeContractId string, maxPeriods s
 }
 
 func NewMsgGrantFeeDiscount(feeContractId string, discountId sdk.Uint,
-	recipient sdk.AccAddress, creatorDid sovrin.SovrinDid) MsgGrantFeeDiscount {
+	recipient sdk.AccAddress, creatorDid types.SovrinDid) MsgGrantFeeDiscount {
 	return MsgGrantFeeDiscount{
 		PubKey:        creatorDid.VerifyKey,
 		SenderDid:     creatorDid.Did,
@@ -61,7 +61,7 @@ func NewMsgGrantFeeDiscount(feeContractId string, discountId sdk.Uint,
 }
 
 func NewMsgRevokeFeeDiscount(feeContractId string, holder sdk.AccAddress,
-	creatorDid sovrin.SovrinDid) MsgRevokeFeeDiscount {
+	creatorDid types.SovrinDid) MsgRevokeFeeDiscount {
 	return MsgRevokeFeeDiscount{
 		PubKey:        creatorDid.VerifyKey,
 		SenderDid:     creatorDid.Did,
@@ -70,7 +70,7 @@ func NewMsgRevokeFeeDiscount(feeContractId string, holder sdk.AccAddress,
 	}
 }
 
-func NewMsgChargeFee(feeContractId string, creatorDid sovrin.SovrinDid) MsgChargeFee {
+func NewMsgChargeFee(feeContractId string, creatorDid types.SovrinDid) MsgChargeFee {
 	return MsgChargeFee{
 		PubKey:        creatorDid.VerifyKey,
 		SenderDid:     creatorDid.Did,

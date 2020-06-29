@@ -13,6 +13,7 @@ import (
 	"github.com/gorilla/mux"
 	utils2 "github.com/tokenchain/ixo-blockchain/client/utils"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"github.com/tokenchain/ixo-blockchain/x/project"
 	"io/ioutil"
 	"net/http"
@@ -196,7 +197,7 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// all messages must be of type ixo.IxoMsg
-		ixoMsg, ok := msg.(ixo.IxoMsg)
+		ixoMsg, ok := msg.(types.IxoMsg)
 		if !ok {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, sdk.ErrInternal("msg must be ixo.IxoMsg").Error())
 			return
@@ -211,7 +212,7 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 				project.MsgCreateProjectFee)
 		default:
 			// Deduce and set signer address
-			signerAddress := ixo.DidToAddr(ixoMsg.GetSignerDid())
+			signerAddress := types.DidToAddr(ixoMsg.GetSignerDid())
 			cliCtx = cliCtx.WithFromAddress(signerAddress)
 
 			txBldr, err := utils.PrepareTxBuilder(auth.NewTxBuilderFromCLI(), cliCtx)
@@ -228,9 +229,9 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 			}
 
 			// Create dummy tx with blank signature for fee approximation
-			signature := ixo.IxoSignature{}
+			signature := types.IxoSignature{}
 			signature.Created = signature.Created.Add(1) // maximizes signature length
-			tx := ixo.NewIxoTxSingleMsg(
+			tx := types.NewIxoTxSingleMsg(
 				stdSignMsg.Msgs[0], stdSignMsg.Fee, signature, stdSignMsg.Memo)
 
 			// Approximate fee

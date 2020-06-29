@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/gorilla/mux"
 	"github.com/tokenchain/ixo-blockchain/x/fees/internal/types"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	"github.com/gorilla/mux"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/sovrin"
+	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"net/http"
-	"github.com/cosmos/cosmos-sdk/types/rest"
 	"strings"
 )
 
@@ -58,7 +58,7 @@ func createFeeHandler(ctx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -113,7 +113,7 @@ func createFeeContractHandler(ctx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -162,7 +162,7 @@ func createSubscriptionHandler(ctx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -201,7 +201,7 @@ func setFeeContractAuthorisationHandler(ctx context.CLIContext) http.HandlerFunc
 			return
 		}
 
-		sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -248,7 +248,7 @@ func grantFeeDiscountHandler(ctx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -287,7 +287,7 @@ func revokeFeeDiscountHandler(ctx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -318,7 +318,7 @@ func chargeFeeHandler(ctx context.CLIContext) http.HandlerFunc {
 		mode := r.URL.Query().Get("mode")
 		ctx = ctx.WithBroadcastMode(mode)
 
-		sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))

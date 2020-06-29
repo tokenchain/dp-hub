@@ -5,6 +5,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -58,7 +59,7 @@ func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	bondTxCmd.AddCommand(client.PostCommands(
+	bondTxCmd.AddCommand(flags.PostCommands(
 		cli.GetCmdCreateBond(cdc),
 		cli.GetCmdUpdateBondStatus(cdc),
 	)...)
@@ -75,7 +76,7 @@ func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	bondQueryCmd.AddCommand(client.GetCommands(
+	bondQueryCmd.AddCommand(flags.GetCommands(
 		cli.GetCmdBondDoc(cdc),
 	)...)
 

@@ -1,6 +1,8 @@
 package types
 
-import "github.com/tokenchain/ixo-blockchain/x/ixo"
+import (
+	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+)
 
 const (
 	ModuleName   = "oracles"
@@ -13,6 +15,6 @@ var (
 	OracleKey = []byte{0x00}
 )
 
-func GetOraclePrefixKey(did ixo.Did) []byte {
+func GetOraclePrefixKey(did types.Did) []byte {
 	return append(OracleKey, []byte(did)...)
 }

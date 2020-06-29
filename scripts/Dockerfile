@@ -1,4 +1,4 @@
-FROM golang:1.13
+FROM golang:1.14.4
 
 WORKDIR /go/src/github.com/cosmos/peggy
 

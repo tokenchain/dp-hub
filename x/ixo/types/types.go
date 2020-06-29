@@ -1,9 +1,11 @@
-package ixo
+package types
 
 import (
 	"encoding/json"
 	"fmt"
+	err "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/tendermint/tendermint/crypto"
+	"github.com/tokenchain/ixo-blockchain/x"
 	"gopkg.in/yaml.v2"
 	"regexp"
 	"time"
@@ -99,27 +101,28 @@ func (tx IxoTx) GetMsgs() []sdk.Msg { return tx.Msgs }
 
 func (tx IxoTx) GetMemo() string { return "" }
 
-func (tx IxoTx) ValidateBasic() sdk.Error {
+func (tx IxoTx) ValidateBasic() error {
 	// Fee validation
 	if tx.Fee.Gas > maxGasWanted {
-		return sdk.ErrGasOverflow(fmt.Sprintf("invalid gas supplied; %d > %d", tx.Fee.Gas, maxGasWanted))
+		return err.Wrapf(x.ErrGasOverflow, "invalid gas supplied; %d > %d", tx.Fee.Gas, maxGasWanted)
+		//return sdk.ErrGasOverflow(fmt.Sprintf("invalid gas supplied; %d > %d", tx.Fee.Gas, maxGasWanted))
 	}
 	if tx.Fee.Amount.IsAnyNegative() {
-		return sdk.ErrInsufficientFee(fmt.Sprintf("invalid fee %s amount provided", tx.Fee.Amount))
+		//return sdk.ErrInsufficientFee(fmt.Sprintf("invalid fee %s amount provided", tx.Fee.Amount))
+		return err.Wrapf(err.ErrInsufficientFee, "invalid fee %s amount provided", tx.Fee.Amount)
 	}
 
 	// Signatures validation
 	var ixoSigs = tx.GetSignatures()
 	if len(ixoSigs) == 0 {
-		return sdk.ErrNoSignatures("no signers")
+		return err.Wrap(err.ErrNoSignatures, "no signers")
 	}
 	if len(ixoSigs) != 1 {
-		return sdk.ErrUnauthorized("there can only be one signer")
+		return err.Wrap(err.ErrUnauthorized, "there can only be one signer")
 	}
-
 	// Messages validation
 	if len(tx.Msgs) != 1 {
-		return sdk.ErrUnauthorized("there can only be one message")
+		return err.Wrap(err.ErrUnauthorized, "there can only be one message")
 	}
 
 	return nil
@@ -153,35 +156,35 @@ type DidDoc interface {
 }
 
 func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
-	return func(txBytes []byte) (sdk.Tx, sdk.Error) {
+	return func(txBytes []byte) (sdk.Tx, error) {
 
 		if len(txBytes) == 0 {
-			return nil, sdk.ErrTxDecode("txBytes are empty")
+			return nil, err.Wrap(err.ErrTxDecode, "txBytes are empty")
 		}
 
 		if string(txBytes[0:1]) == "{" {
 			var upTx map[string]interface{}
-			err := json.Unmarshal(txBytes, &upTx)
-			if err != nil {
-				return nil, sdk.ErrTxDecode(err.Error())
+			er := json.Unmarshal(txBytes, &upTx)
+			if er != nil {
+				return nil, err.Wrap(err.ErrTxDecode, er.Error())
 			}
 
 			payloadArray := upTx["payload"].([]interface{})
 			if len(payloadArray) != 1 {
-				return nil, sdk.ErrTxDecode("Multiple messages not supported")
+				return nil, err.Wrap(err.ErrTxDecode, "Multiple messages not supported")
 			}
 
 			var tx IxoTx
-			err = cdc.UnmarshalJSON(txBytes, &tx)
-			if err != nil {
-				return nil, sdk.ErrTxDecode("").TraceSDK(err.Error())
+			er = cdc.UnmarshalJSON(txBytes, &tx)
+			if er != nil {
+				return nil, err.Wrap(err.ErrTxDecode, er.Error())
 			}
 			return tx, nil
 		} else {
 			var tx = auth.StdTx{}
-			err := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &tx)
-			if err != nil {
-				return nil, sdk.ErrTxDecode("").TraceSDK(err.Error())
+			er := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &tx)
+			if er != nil {
+				return nil, err.Wrap(err.ErrTxDecode, er.Error())
 			}
 			return tx, nil
 		}

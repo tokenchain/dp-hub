@@ -3,9 +3,10 @@ package types
 import (
 	"encoding/json"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/pkg/errors"
+	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/sovrin"
+	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"strings"
 )
 
@@ -18,21 +19,21 @@ const (
 )
 
 var (
-	_ ixo.IxoMsg = MsgCreateBond{}
-	_ ixo.IxoMsg = MsgEditBond{}
-	_ ixo.IxoMsg = MsgBuy{}
-	_ ixo.IxoMsg = MsgSell{}
-	_ ixo.IxoMsg = MsgSwap{}
+	_ types.IxoMsg = MsgCreateBond{}
+	_ types.IxoMsg = MsgEditBond{}
+	_ types.IxoMsg = MsgBuy{}
+	_ types.IxoMsg = MsgSell{}
+	_ types.IxoMsg = MsgSwap{}
 )
 
 type MsgCreateBond struct {
-	BondDid                ixo.Did        `json:"bond_did" yaml:"bond_did"`
+	BondDid                types.Did      `json:"bond_did" yaml:"bond_did"`
 	Token                  string         `json:"token" yaml:"token"`
 	Name                   string         `json:"name" yaml:"name"`
 	Description            string         `json:"description" yaml:"description"`
 	FunctionType           string         `json:"function_type" yaml:"function_type"`
 	FunctionParameters     FunctionParams `json:"function_parameters" yaml:"function_parameters"`
-	CreatorDid             ixo.Did        `json:"creator_did" yaml:"creator_did"`
+	CreatorDid             types.Did      `json:"creator_did" yaml:"creator_did"`
 	CreatorPubKey          string         `json:"pub_key" yaml:"pub_key"`
 	ReserveTokens          []string       `json:"reserve_tokens" yaml:"reserve_tokens"`
 	TxFeePercentage        sdk.Dec        `json:"tx_fee_percentage" yaml:"tx_fee_percentage"`
@@ -46,11 +47,11 @@ type MsgCreateBond struct {
 	BatchBlocks            sdk.Uint       `json:"batch_blocks" yaml:"batch_blocks"`
 }
 
-func NewMsgCreateBond(token, name, description string, creatorDid sovrin.SovrinDid,
+func NewMsgCreateBond(token, name, description string, creatorDid types.SovrinDid,
 	functionType string, functionParameters FunctionParams, reserveTokens []string,
 	txFeePercentage, exitFeePercentage sdk.Dec, feeAddress sdk.AccAddress, maxSupply sdk.Coin,
 	orderQuantityLimits sdk.Coins, sanityRate, sanityMarginPercentage sdk.Dec,
-	allowSell string, batchBlocks sdk.Uint, bondDid ixo.Did) MsgCreateBond {
+	allowSell string, batchBlocks sdk.Uint, bondDid types.Did) MsgCreateBond {
 	return MsgCreateBond{
 		BondDid:                bondDid,
 		Token:                  token,
@@ -73,35 +74,35 @@ func NewMsgCreateBond(token, name, description string, creatorDid sovrin.SovrinD
 	}
 }
 
-func (msg MsgCreateBond) ValidateBasic() sdk.Error {
+func (msg MsgCreateBond) ValidateBasic() error {
 	// Check if empty
 	if strings.TrimSpace(msg.BondDid) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "BondDid")
+		return x.ErrArgumentCannotBeEmpty("BondDid")
 	} else if strings.TrimSpace(msg.Token) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "Token")
+		return x.ErrArgumentCannotBeEmpty("Token")
 	} else if strings.TrimSpace(msg.Name) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "Name")
+		return x.ErrArgumentCannotBeEmpty("Name")
 	} else if strings.TrimSpace(msg.Description) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "Description")
+		return x.ErrArgumentCannotBeEmpty("Description")
 	} else if strings.TrimSpace(msg.CreatorDid) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "CreatorDid")
+		return x.ErrArgumentCannotBeEmpty("CreatorDid")
 	} else if strings.TrimSpace(msg.CreatorPubKey) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "CreatorPubKey")
+		return x.ErrArgumentCannotBeEmpty("CreatorPubKey")
 	} else if len(msg.ReserveTokens) == 0 {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "Reserve token")
+		return x.ErrArgumentCannotBeEmpty("Reserve token")
 	} else if msg.FeeAddress.Empty() {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "Fee address")
+		return x.ErrArgumentCannotBeEmpty("Fee address")
 	} else if strings.TrimSpace(msg.FunctionType) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "Function type")
+		return x.ErrArgumentCannotBeEmpty("Function type")
 	} else if strings.TrimSpace(msg.AllowSells) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "AllowSells")
+		return x.ErrArgumentCannotBeEmpty("AllowSells")
 	}
 	// Note: FunctionParameters can be empty
 
 	// Check that bond token is a valid token name
 	err := CheckCoinDenom(msg.Token)
 	if err != nil {
-		return ErrInvalidCoinDenomination(DefaultCodespace, msg.Token)
+		return x.ErrInvalidCoinDenomination(msg.Token)
 	}
 
 	// Validate function parameters
@@ -118,51 +119,51 @@ func (msg MsgCreateBond) ValidateBasic() sdk.Error {
 
 	// Validate coins
 	if !msg.MaxSupply.IsValid() {
-		return sdk.ErrInternal("max supply is invalid")
+		return x.IntErr("max supply is invalid")
 	} else if !msg.OrderQuantityLimits.IsValid() {
-		return sdk.ErrInternal("order quantity limits are invalid")
+		return x.IntErr("order quantity limits are invalid")
 	}
 
 	// Check that max supply denom matches token denom
 	if msg.MaxSupply.Denom != msg.Token {
-		return ErrMaxSupplyDenomDoesNotMatchTokenDenom(DefaultCodespace)
+		return x.ErrMaxSupplyDenomDoesNotMatchTokenDenom()
 	}
 
 	// Check that Sanity values not negative
 	if msg.SanityRate.IsNegative() {
-		return ErrArgumentCannotBeNegative(DefaultCodespace, "SanityRate")
+		return x.ErrArgumentCannotBeNegative("SanityRate")
 	} else if msg.SanityMarginPercentage.IsNegative() {
-		return ErrArgumentCannotBeNegative(DefaultCodespace, "SanityMarginPercentage")
+		return x.ErrArgumentCannotBeNegative("SanityMarginPercentage")
 	}
 
 	// Check that true or false
 	if msg.AllowSells != TRUE && msg.AllowSells != FALSE {
-		return ErrArgumentMissingOrNonBoolean(DefaultCodespace, "AllowSells")
+		return x.ErrArgumentMissingOrNonBoolean("AllowSells")
 	}
 
 	// Check FeePercentages not negative and don't add up to 100
 	if msg.TxFeePercentage.IsNegative() {
-		return ErrArgumentCannotBeNegative(DefaultCodespace, "TxFeePercentage")
+		return x.ErrArgumentCannotBeNegative("TxFeePercentage")
 	} else if msg.ExitFeePercentage.IsNegative() {
-		return ErrArgumentCannotBeNegative(DefaultCodespace, "ExitFeePercentage")
+		return x.ErrArgumentCannotBeNegative("ExitFeePercentage")
 	} else if msg.TxFeePercentage.Add(msg.ExitFeePercentage).GTE(sdk.NewDec(100)) {
-		return ErrFeesCannotBeOrExceed100Percent(DefaultCodespace)
+		return errors.Wrap(x.ErrFeesCannotBeOrExceed100Percent, "Sum of fees is or exceeds 100 percent")
 	}
 
 	// Check that not zero
 	if msg.BatchBlocks.IsZero() {
-		return ErrArgumentMustBePositive(DefaultCodespace, "BatchBlocks")
+		return x.ErrArgumentMustBePositive("BatchBlocks")
 	} else if msg.MaxSupply.Amount.IsZero() {
-		return ErrArgumentMustBePositive(DefaultCodespace, "MaxSupply")
+		return x.ErrArgumentMustBePositive("MaxSupply")
 	}
 
 	// Note: uniqueness of reserve tokens checked when parsing
 
 	// Check that DIDs valid
-	if !ixo.IsValidDid(msg.BondDid) {
-		return did.ErrorInvalidDid(DefaultCodespace, "bond did is invalid")
-	} else if !ixo.IsValidDid(msg.CreatorDid) {
-		return did.ErrorInvalidDid(DefaultCodespace, "creator did is invalid")
+	if !types.IsValidDid(msg.BondDid) {
+		return did.ErrorInvalidDid("bond did is invalid")
+	} else if !types.IsValidDid(msg.CreatorDid) {
+		return did.ErrorInvalidDid("creator did is invalid")
 	}
 
 	return nil
@@ -176,9 +177,9 @@ func (msg MsgCreateBond) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgCreateBond) GetSignerDid() ixo.Did { return msg.CreatorDid }
+func (msg MsgCreateBond) GetSignerDid() types.Did { return msg.CreatorDid }
 func (msg MsgCreateBond) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ixo.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateBond) Route() string { return RouterKey }
@@ -186,19 +187,19 @@ func (msg MsgCreateBond) Route() string { return RouterKey }
 func (msg MsgCreateBond) Type() string { return TypeMsgCreateBond }
 
 type MsgEditBond struct {
-	BondDid                ixo.Did `json:"bond_did" yaml:"bond_did"`
-	Token                  string  `json:"token" yaml:"token"`
-	Name                   string  `json:"name" yaml:"name"`
-	Description            string  `json:"description" yaml:"description"`
-	OrderQuantityLimits    string  `json:"order_quantity_limits" yaml:"order_quantity_limits"`
-	SanityRate             string  `json:"sanity_rate" yaml:"sanity_rate"`
-	SanityMarginPercentage string  `json:"sanity_margin_percentage" yaml:"sanity_margin_percentage"`
-	EditorDid              ixo.Did `json:"editor_did" yaml:"editor_did"`
-	EditorPubKey           string  `json:"pub_key" yaml:"pub_key"`
+	BondDid                types.Did `json:"bond_did" yaml:"bond_did"`
+	Token                  string    `json:"token" yaml:"token"`
+	Name                   string    `json:"name" yaml:"name"`
+	Description            string    `json:"description" yaml:"description"`
+	OrderQuantityLimits    string    `json:"order_quantity_limits" yaml:"order_quantity_limits"`
+	SanityRate             string    `json:"sanity_rate" yaml:"sanity_rate"`
+	SanityMarginPercentage string    `json:"sanity_margin_percentage" yaml:"sanity_margin_percentage"`
+	EditorDid              types.Did `json:"editor_did" yaml:"editor_did"`
+	EditorPubKey           string    `json:"pub_key" yaml:"pub_key"`
 }
 
 func NewMsgEditBond(token, name, description, orderQuantityLimits, sanityRate,
-	sanityMarginPercentage string, editorDid sovrin.SovrinDid, bondDid ixo.Did) MsgEditBond {
+	sanityMarginPercentage string, editorDid types.SovrinDid, bondDid types.Did) MsgEditBond {
 	return MsgEditBond{
 		BondDid:                bondDid,
 		Token:                  token,
@@ -212,24 +213,24 @@ func NewMsgEditBond(token, name, description, orderQuantityLimits, sanityRate,
 	}
 }
 
-func (msg MsgEditBond) ValidateBasic() sdk.Error {
+func (msg MsgEditBond) ValidateBasic() error {
 	// Check if empty
 	if strings.TrimSpace(msg.BondDid) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "BondDid")
+		return x.ErrArgumentCannotBeEmpty("BondDid")
 	} else if strings.TrimSpace(msg.Token) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "Token")
+		return x.ErrArgumentCannotBeEmpty("Token")
 	} else if strings.TrimSpace(msg.Name) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "Name")
+		return x.ErrArgumentCannotBeEmpty("Name")
 	} else if strings.TrimSpace(msg.Description) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "Description")
+		return x.ErrArgumentCannotBeEmpty("Description")
 	} else if strings.TrimSpace(msg.SanityRate) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "SanityRate")
+		return x.ErrArgumentCannotBeEmpty("SanityRate")
 	} else if strings.TrimSpace(msg.SanityMarginPercentage) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "SanityMarginPercentage")
+		return x.ErrArgumentCannotBeEmpty("SanityMarginPercentage")
 	} else if strings.TrimSpace(msg.EditorDid) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "EditorDid")
+		return x.ErrArgumentCannotBeEmpty("EditorDid")
 	} else if strings.TrimSpace(msg.EditorPubKey) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "EditorPubKey")
+		return x.ErrArgumentCannotBeEmpty("EditorPubKey")
 	}
 	// Note: order quantity limits can be blank
 
@@ -247,14 +248,14 @@ func (msg MsgEditBond) ValidateBasic() sdk.Error {
 		}
 	}
 	if !atLeaseOneEdit {
-		return ErrDidNotEditAnything(DefaultCodespace)
+		return x.ErrDidNotEditAnything()
 	}
 
 	// Check that DIDs valid
-	if !ixo.IsValidDid(msg.BondDid) {
-		return did.ErrorInvalidDid(DefaultCodespace, "bond did is invalid")
-	} else if !ixo.IsValidDid(msg.EditorDid) {
-		return did.ErrorInvalidDid(DefaultCodespace, "editor did is invalid")
+	if !types.IsValidDid(msg.BondDid) {
+		return did.ErrorInvalidDid("bond did is invalid")
+	} else if !types.IsValidDid(msg.EditorDid) {
+		return did.ErrorInvalidDid("editor did is invalid")
 	}
 
 	return nil
@@ -268,9 +269,9 @@ func (msg MsgEditBond) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgEditBond) GetSignerDid() ixo.Did { return msg.EditorDid }
+func (msg MsgEditBond) GetSignerDid() types.Did { return msg.EditorDid }
 func (msg MsgEditBond) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ixo.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgEditBond) Route() string { return RouterKey }
@@ -278,15 +279,15 @@ func (msg MsgEditBond) Route() string { return RouterKey }
 func (msg MsgEditBond) Type() string { return TypeMsgEditBond }
 
 type MsgBuy struct {
-	BuyerDid  ixo.Did   `json:"buyer_did" yaml:"buyer_did"`
+	BuyerDid  types.Did `json:"buyer_did" yaml:"buyer_did"`
 	PubKey    string    `json:"pub_key" yaml:"pub_key"`
 	Amount    sdk.Coin  `json:"amount" yaml:"amount"`
 	MaxPrices sdk.Coins `json:"max_prices" yaml:"max_prices"`
-	BondDid   ixo.Did   `json:"bond_did" yaml:"bond_did"`
+	BondDid   types.Did `json:"bond_did" yaml:"bond_did"`
 }
 
-func NewMsgBuy(buyerDid sovrin.SovrinDid, amount sdk.Coin, maxPrices sdk.Coins,
-	bondDid ixo.Did) MsgBuy {
+func NewMsgBuy(buyerDid types.SovrinDid, amount sdk.Coin, maxPrices sdk.Coins,
+	bondDid types.Did) MsgBuy {
 	return MsgBuy{
 		BuyerDid:  buyerDid.Did,
 		PubKey:    buyerDid.VerifyKey,
@@ -296,33 +297,33 @@ func NewMsgBuy(buyerDid sovrin.SovrinDid, amount sdk.Coin, maxPrices sdk.Coins,
 	}
 }
 
-func (msg MsgBuy) ValidateBasic() sdk.Error {
+func (msg MsgBuy) ValidateBasic() error {
 	// Check if empty
 	if strings.TrimSpace(msg.BuyerDid) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "BuyerDid")
+		return x.ErrArgumentCannotBeEmpty("BuyerDid")
 	} else if strings.TrimSpace(msg.PubKey) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "PubKey")
+		return x.ErrArgumentCannotBeEmpty("PubKey")
 	} else if strings.TrimSpace(msg.BondDid) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "BondDid")
+		return x.ErrArgumentCannotBeEmpty("BondDid")
 	}
 
 	// Check that amount valid and non zero
 	if !msg.Amount.IsValid() {
-		return sdk.ErrInternal("amount is invalid")
+		return x.IntErr("amount is invalid")
 	} else if msg.Amount.Amount.IsZero() {
-		return ErrArgumentMustBePositive(DefaultCodespace, "Amount")
+		return x.ErrArgumentMustBePositive("Amount")
 	}
 
 	// Check that maxPrices valid
 	if !msg.MaxPrices.IsValid() {
-		return sdk.ErrInternal("maxprices is invalid")
+		return x.IntErr("maxprices is invalid")
 	}
 
 	// Check that DIDs valid
-	if !ixo.IsValidDid(msg.BondDid) {
-		return did.ErrorInvalidDid(DefaultCodespace, "bond did is invalid")
-	} else if !ixo.IsValidDid(msg.BuyerDid) {
-		return did.ErrorInvalidDid(DefaultCodespace, "buyer did is invalid")
+	if !types.IsValidDid(msg.BondDid) {
+		return did.ErrorInvalidDid("bond did is invalid")
+	} else if !types.IsValidDid(msg.BuyerDid) {
+		return did.ErrorInvalidDid("buyer did is invalid")
 	}
 
 	return nil
@@ -336,9 +337,9 @@ func (msg MsgBuy) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgBuy) GetSignerDid() ixo.Did { return msg.BuyerDid }
+func (msg MsgBuy) GetSignerDid() types.Did { return msg.BuyerDid }
 func (msg MsgBuy) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ixo.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgBuy) Route() string { return RouterKey }
@@ -346,13 +347,13 @@ func (msg MsgBuy) Route() string { return RouterKey }
 func (msg MsgBuy) Type() string { return TypeMsgBuy }
 
 type MsgSell struct {
-	SellerDid ixo.Did  `json:"seller_did" yaml:"seller_did"`
-	PubKey    string   `json:"pub_key" yaml:"pub_key"`
-	Amount    sdk.Coin `json:"amount" yaml:"amount"`
-	BondDid   ixo.Did  `json:"bond_did" yaml:"bond_did"`
+	SellerDid types.Did `json:"seller_did" yaml:"seller_did"`
+	PubKey    string    `json:"pub_key" yaml:"pub_key"`
+	Amount    sdk.Coin  `json:"amount" yaml:"amount"`
+	BondDid   types.Did `json:"bond_did" yaml:"bond_did"`
 }
 
-func NewMsgSell(sellerDid sovrin.SovrinDid, amount sdk.Coin, bondDid ixo.Did) MsgSell {
+func NewMsgSell(sellerDid types.SovrinDid, amount sdk.Coin, bondDid types.Did) MsgSell {
 	return MsgSell{
 		SellerDid: sellerDid.Did,
 		PubKey:    sellerDid.VerifyKey,
@@ -361,28 +362,28 @@ func NewMsgSell(sellerDid sovrin.SovrinDid, amount sdk.Coin, bondDid ixo.Did) Ms
 	}
 }
 
-func (msg MsgSell) ValidateBasic() sdk.Error {
+func (msg MsgSell) ValidateBasic() error {
 	// Check if empty
 	if strings.TrimSpace(msg.SellerDid) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "SellerDid")
+		return x.ErrArgumentCannotBeEmpty("SellerDid")
 	} else if strings.TrimSpace(msg.PubKey) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "PubKey")
+		return x.ErrArgumentCannotBeEmpty("PubKey")
 	} else if strings.TrimSpace(msg.BondDid) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "BondDid")
+		return x.ErrArgumentCannotBeEmpty("BondDid")
 	}
 
 	// Check that amount valid and non zero
 	if !msg.Amount.IsValid() {
-		return sdk.ErrInternal("amount is invalid")
+		return x.IntErr("amount is invalid")
 	} else if msg.Amount.Amount.IsZero() {
-		return ErrArgumentMustBePositive(DefaultCodespace, "Amount")
+		return x.ErrArgumentMustBePositive("Amount")
 	}
 
 	// Check that DIDs valid
-	if !ixo.IsValidDid(msg.BondDid) {
-		return did.ErrorInvalidDid(DefaultCodespace, "bond did is invalid")
-	} else if !ixo.IsValidDid(msg.SellerDid) {
-		return did.ErrorInvalidDid(DefaultCodespace, "seller did is invalid")
+	if !types.IsValidDid(msg.BondDid) {
+		return did.ErrorInvalidDid("bond did is invalid")
+	} else if !types.IsValidDid(msg.SellerDid) {
+		return did.ErrorInvalidDid("seller did is invalid")
 	}
 
 	return nil
@@ -396,9 +397,9 @@ func (msg MsgSell) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgSell) GetSignerDid() ixo.Did { return msg.SellerDid }
+func (msg MsgSell) GetSignerDid() types.Did { return msg.SellerDid }
 func (msg MsgSell) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ixo.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgSell) Route() string { return RouterKey }
@@ -406,15 +407,15 @@ func (msg MsgSell) Route() string { return RouterKey }
 func (msg MsgSell) Type() string { return TypeMsgSell }
 
 type MsgSwap struct {
-	SwapperDid ixo.Did  `json:"swapper_did" yaml:"swapper_did"`
-	PubKey     string   `json:"pub_key" yaml:"pub_key"`
-	BondDid    ixo.Did  `json:"bond_did" yaml:"bond_did"`
-	From       sdk.Coin `json:"from" yaml:"from"`
-	ToToken    string   `json:"to_token" yaml:"to_token"`
+	SwapperDid types.Did `json:"swapper_did" yaml:"swapper_did"`
+	PubKey     string    `json:"pub_key" yaml:"pub_key"`
+	BondDid    types.Did `json:"bond_did" yaml:"bond_did"`
+	From       sdk.Coin  `json:"from" yaml:"from"`
+	ToToken    string    `json:"to_token" yaml:"to_token"`
 }
 
-func NewMsgSwap(swapperDid sovrin.SovrinDid, from sdk.Coin, toToken string,
-	bondDid ixo.Did) MsgSwap {
+func NewMsgSwap(swapperDid types.SovrinDid, from sdk.Coin, toToken string,
+	bondDid types.Did) MsgSwap {
 	return MsgSwap{
 		SwapperDid: swapperDid.Did,
 		PubKey:     swapperDid.VerifyKey,
@@ -424,21 +425,21 @@ func NewMsgSwap(swapperDid sovrin.SovrinDid, from sdk.Coin, toToken string,
 	}
 }
 
-func (msg MsgSwap) ValidateBasic() sdk.Error {
+func (msg MsgSwap) ValidateBasic() error {
 	// Check if empty
 	if strings.TrimSpace(msg.SwapperDid) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "SwapperDid")
+		return x.ErrArgumentCannotBeEmpty("SwapperDid")
 	} else if strings.TrimSpace(msg.PubKey) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "PubKey")
+		return x.ErrArgumentCannotBeEmpty("PubKey")
 	} else if strings.TrimSpace(msg.BondDid) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "BondDid")
+		return x.ErrArgumentCannotBeEmpty("BondDid")
 	} else if strings.TrimSpace(msg.ToToken) == "" {
-		return ErrArgumentCannotBeEmpty(DefaultCodespace, "ToToken")
+		return x.ErrArgumentCannotBeEmpty("ToToken")
 	}
 
 	// Validate from amount
 	if !msg.From.IsValid() {
-		return sdk.ErrInternal("from amount is invalid")
+		return x.IntErr("from amount is invalid")
 	}
 
 	// Validate to token
@@ -449,21 +450,21 @@ func (msg MsgSwap) ValidateBasic() sdk.Error {
 
 	// Check if from and to the same token
 	if msg.From.Denom == msg.ToToken {
-		return ErrFromAndToCannotBeTheSameToken(DefaultCodespace)
+		return x.ErrFromAndToCannotBeTheSameToken()
 	}
 
 	// Check that non zero
 	if msg.From.Amount.IsZero() {
-		return ErrArgumentMustBePositive(DefaultCodespace, "FromAmount")
+		return x.ErrArgumentMustBePositive("FromAmount")
 	}
 
 	// Note: From denom and amount must be valid since sdk.Coin
 
 	// Check that DIDs valid
-	if !ixo.IsValidDid(msg.BondDid) {
-		return did.ErrorInvalidDid(DefaultCodespace, "bond did is invalid")
-	} else if !ixo.IsValidDid(msg.SwapperDid) {
-		return did.ErrorInvalidDid(DefaultCodespace, "swapper did is invalid")
+	if !types.IsValidDid(msg.BondDid) {
+		return did.ErrorInvalidDid("bond did is invalid")
+	} else if !types.IsValidDid(msg.SwapperDid) {
+		return did.ErrorInvalidDid("swapper did is invalid")
 	}
 
 	return nil
@@ -477,9 +478,9 @@ func (msg MsgSwap) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgSwap) GetSignerDid() ixo.Did { return msg.SwapperDid }
+func (msg MsgSwap) GetSignerDid() types.Did { return msg.SwapperDid }
 func (msg MsgSwap) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ixo.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgSwap) Route() string { return RouterKey }

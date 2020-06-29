@@ -2,12 +2,13 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/sovrin"
+	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"strings"
 )
 
 func NewMsgSetPaymentContractAuthorisation(contractId string, authorised bool,
-	payerDid sovrin.SovrinDid) MsgSetPaymentContractAuthorisation {
+	payerDid types.SovrinDid) MsgSetPaymentContractAuthorisation {
 	return MsgSetPaymentContractAuthorisation{
 		PubKey:            payerDid.VerifyKey,
 		PayerDid:          payerDid.Did,
@@ -17,7 +18,7 @@ func NewMsgSetPaymentContractAuthorisation(contractId string, authorised bool,
 }
 
 func NewMsgCreatePaymentTemplate(template PaymentTemplate,
-	creatorDid sovrin.SovrinDid) MsgCreatePaymentTemplate {
+	creatorDid types.SovrinDid) MsgCreatePaymentTemplate {
 	return MsgCreatePaymentTemplate{
 		PubKey:          creatorDid.VerifyKey,
 		CreatorDid:      creatorDid.Did,
@@ -27,7 +28,7 @@ func NewMsgCreatePaymentTemplate(template PaymentTemplate,
 
 func NewMsgCreatePaymentContract(templateId, contractId string,
 	payer sdk.AccAddress, canDeauthorise bool, discountId sdk.Uint,
-	creatorDid sovrin.SovrinDid) MsgCreatePaymentContract {
+	creatorDid types.SovrinDid) MsgCreatePaymentContract {
 	return MsgCreatePaymentContract{
 		PubKey:            creatorDid.VerifyKey,
 		CreatorDid:        creatorDid.Did,
@@ -40,7 +41,7 @@ func NewMsgCreatePaymentContract(templateId, contractId string,
 }
 
 func NewMsgCreateSubscription(subscriptionId, contractId string, maxPeriods sdk.Uint,
-	period Period, creatorDid sovrin.SovrinDid) MsgCreateSubscription {
+	period Period, creatorDid types.SovrinDid) MsgCreateSubscription {
 	return MsgCreateSubscription{
 		PubKey:            creatorDid.VerifyKey,
 		CreatorDid:        creatorDid.Did,
@@ -52,7 +53,7 @@ func NewMsgCreateSubscription(subscriptionId, contractId string, maxPeriods sdk.
 }
 
 func NewMsgGrantDiscount(contractId string, discountId sdk.Uint,
-	recipient sdk.AccAddress, creatorDid sovrin.SovrinDid) MsgGrantDiscount {
+	recipient sdk.AccAddress, creatorDid types.SovrinDid) MsgGrantDiscount {
 	return MsgGrantDiscount{
 		PubKey:            creatorDid.VerifyKey,
 		SenderDid:         creatorDid.Did,
@@ -63,7 +64,7 @@ func NewMsgGrantDiscount(contractId string, discountId sdk.Uint,
 }
 
 func NewMsgRevokeDiscount(contractId string, holder sdk.AccAddress,
-	creatorDid sovrin.SovrinDid) MsgRevokeDiscount {
+	creatorDid types.SovrinDid) MsgRevokeDiscount {
 	return MsgRevokeDiscount{
 		PubKey:            creatorDid.VerifyKey,
 		SenderDid:         creatorDid.Did,
@@ -72,7 +73,7 @@ func NewMsgRevokeDiscount(contractId string, holder sdk.AccAddress,
 	}
 }
 
-func NewMsgEffectPayment(contractId string, creatorDid sovrin.SovrinDid) MsgEffectPayment {
+func NewMsgEffectPayment(contractId string, creatorDid types.SovrinDid) MsgEffectPayment {
 	return MsgEffectPayment{
 		PubKey:            creatorDid.VerifyKey,
 		SenderDid:         creatorDid.Did,
@@ -80,9 +81,9 @@ func NewMsgEffectPayment(contractId string, creatorDid sovrin.SovrinDid) MsgEffe
 	}
 }
 
-func CheckNotEmpty(value string, name string) (valid bool, err sdk.Error) {
+func CheckNotEmpty(value string, name string) (valid bool, err error) {
 	if strings.TrimSpace(value) == "" {
-		return false, sdk.ErrUnknownRequest(name + " is empty.")
+		return false, x.UnknownRequest(name + " is empty.")
 	} else {
 		return true, nil
 	}

@@ -4,6 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
 )
 
@@ -32,13 +33,13 @@ func (k Keeper) PaymentTemplateExists(ctx sdk.Context, templateId string) bool {
 	return store.Has(types.GetPaymentTemplateKey(templateId))
 }
 
-func (k Keeper) GetPaymentTemplate(ctx sdk.Context, templateId string) (types.PaymentTemplate, sdk.Error) {
+func (k Keeper) GetPaymentTemplate(ctx sdk.Context, templateId string) (types.PaymentTemplate, error) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetPaymentTemplateKey(templateId)
 
 	bz := store.Get(key)
 	if bz == nil {
-		return types.PaymentTemplate{}, sdk.ErrInternal("invalid payment template")
+		return types.PaymentTemplate{}, x.IntErr("invalid payment template")
 	}
 
 	var template types.PaymentTemplate
@@ -53,7 +54,7 @@ func (k Keeper) SetPaymentTemplate(ctx sdk.Context, template types.PaymentTempla
 	store.Set(key, k.cdc.MustMarshalBinaryLengthPrefixed(template))
 }
 
-func (k Keeper) DiscountIdExists(ctx sdk.Context, templateId string, discountId sdk.Uint) (bool, sdk.Error) {
+func (k Keeper) DiscountIdExists(ctx sdk.Context, templateId string, discountId sdk.Uint) (bool, error) {
 	// Get payment template
 	template, err := k.GetPaymentTemplate(ctx, templateId)
 	if err != nil {
@@ -94,13 +95,13 @@ func (k Keeper) PaymentContractExists(ctx sdk.Context, contractId string) bool {
 	return store.Has(types.GetPaymentContractKey(contractId))
 }
 
-func (k Keeper) GetPaymentContract(ctx sdk.Context, contractId string) (types.PaymentContract, sdk.Error) {
+func (k Keeper) GetPaymentContract(ctx sdk.Context, contractId string) (types.PaymentContract, error) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetPaymentContractKey(contractId)
 
 	bz := store.Get(key)
 	if bz == nil {
-		return types.PaymentContract{}, sdk.ErrInternal("invalid payment contract")
+		return types.PaymentContract{}, x.IntErr("invalid payment contract")
 	}
 
 	var contract types.PaymentContract
@@ -116,7 +117,7 @@ func (k Keeper) SetPaymentContract(ctx sdk.Context, contract types.PaymentContra
 }
 
 func (k Keeper) SetPaymentContractAuthorised(ctx sdk.Context, contractId string,
-	authorised bool) sdk.Error {
+	authorised bool) error {
 	contract, err := k.GetPaymentContract(ctx, contractId)
 	if err != nil {
 		return err
@@ -124,7 +125,7 @@ func (k Keeper) SetPaymentContractAuthorised(ctx sdk.Context, contractId string,
 
 	// If de-authorising, check if can be de-authorised
 	if !authorised && !contract.CanDeauthorise {
-		return types.ErrPaymentContractCannotBeDeauthorised(types.DefaultCodespace)
+		return types.ErrPaymentContractCannotBeDeauthorised()
 	}
 
 	// Set authorised state
@@ -134,7 +135,7 @@ func (k Keeper) SetPaymentContractAuthorised(ctx sdk.Context, contractId string,
 	return nil
 }
 
-func (k Keeper) GrantDiscount(ctx sdk.Context, contractId string, discountId sdk.Uint) sdk.Error {
+func (k Keeper) GrantDiscount(ctx sdk.Context, contractId string, discountId sdk.Uint) error {
 	// Get payment contract
 	contract, err := k.GetPaymentContract(ctx, contractId)
 	if err != nil {
@@ -147,7 +148,7 @@ func (k Keeper) GrantDiscount(ctx sdk.Context, contractId string, discountId sdk
 	return nil
 }
 
-func (k Keeper) RevokeDiscount(ctx sdk.Context, contractId string) sdk.Error {
+func (k Keeper) RevokeDiscount(ctx sdk.Context, contractId string) error {
 	// Get payment contract
 	contract, err := k.GetPaymentContract(ctx, contractId)
 	if err != nil {
@@ -163,7 +164,7 @@ func (k Keeper) RevokeDiscount(ctx sdk.Context, contractId string) sdk.Error {
 // -------------------------------------------------------- PaymentContracts payment
 
 func applyDiscount(template types.PaymentTemplate, contract types.PaymentContract,
-	payAmount sdk.Coins) (sdk.Coins, sdk.Error) {
+	payAmount sdk.Coins) (sdk.Coins, error) {
 
 	// No discounts held
 	if contract.DiscountId.IsZero() {
@@ -177,11 +178,11 @@ func applyDiscount(template types.PaymentTemplate, contract types.PaymentContrac
 		return nil, err
 	}
 	discountPercentDec := discountPercent.Quo(sdk.NewDec(100)) // 50 -> 0.5
-	discountAmt, _ := sdk.NewDecCoins(payAmount).MulDec(discountPercentDec).TruncateDecimal()
+	discountAmt, _ := sdk.NewDecCoinsFromCoins(payAmount...).MulDec(discountPercentDec).TruncateDecimal()
 
 	// Confirm that discount is not greater than the payAmount
 	if discountAmt.IsAnyGT(payAmount) {
-		return nil, types.ErrDiscountPercentageGreaterThan100(types.DefaultCodespace)
+		return nil, types.ErrDiscountPercentageGreaterThan100()
 	}
 
 	// Return payAmount with discount deducted
@@ -214,7 +215,7 @@ func adjustForMaximums(template types.PaymentTemplate, cumulative sdk.Coins) {
 }
 
 func (k Keeper) EffectPayment(ctx sdk.Context, bankKeeper bank.Keeper,
-	contractId string) (effected bool, err sdk.Error) {
+	contractId string) (effected bool, err error) {
 
 	contract, err := k.GetPaymentContract(ctx, contractId)
 	if err != nil {
@@ -238,7 +239,7 @@ func (k Keeper) EffectPayment(ctx sdk.Context, bankKeeper bank.Keeper,
 	if err != nil {
 		return false, err
 	}
-	cumulative := contract.CumulativePay.Add(payAmount)
+	cumulative := contract.CumulativePay.Add(payAmount...)
 
 	// In-place cumulative adjustments (i.e. considering minimums and maximums)
 	adjustForMinimums(template, contract, cumulative)
@@ -257,7 +258,7 @@ func (k Keeper) EffectPayment(ctx sdk.Context, bankKeeper bank.Keeper,
 
 	// Total input is pay plus current remainder in PayRemainderPool
 	inputFromPayRemainderPool := contract.CurrentRemainder
-	totalInputAmount := pay.Add(inputFromPayRemainderPool)
+	totalInputAmount := pay.Add(inputFromPayRemainderPool...)
 
 	// Calculate list of outputs and calculate the total output to payees based
 	// on the calculated wallet distributions
@@ -270,7 +271,7 @@ func (k Keeper) EffectPayment(ctx sdk.Context, bankKeeper bank.Keeper,
 
 		// If amount not zero, update total and add as output
 		if !outputAmt.IsZero() {
-			outputToPayees = outputToPayees.Add(outputAmt)
+			outputToPayees = outputToPayees.Add(outputAmt...)
 			address := template.WalletDistribution[i].Address
 			outputs = append(outputs, bank.NewOutput(address, outputAmt))
 		}
@@ -297,9 +298,9 @@ func (k Keeper) EffectPayment(ctx sdk.Context, bankKeeper bank.Keeper,
 	}
 
 	// Update and save payment contract
-	contract.CumulativePay = contract.CumulativePay.Add(pay)
+	contract.CumulativePay = contract.CumulativePay.Add(pay...)
 	contract.CurrentRemainder = contract.CurrentRemainder.Add(
-		outputToPayRemainderPool).Sub(inputFromPayRemainderPool)
+		outputToPayRemainderPool...).Sub(inputFromPayRemainderPool)
 	k.SetPaymentContract(ctx, contract)
 
 	return true, nil

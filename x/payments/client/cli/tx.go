@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -10,7 +11,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 
-	"github.com/tokenchain/ixo-blockchain/x/ixo/sovrin"
 	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
 )
 
@@ -19,15 +19,14 @@ const (
 	FALSE = "false"
 )
 
-func parseBool(boolStr, boolName string) (bool, sdk.Error) {
+func parseBool(boolStr, boolName string) (bool, error) {
 	boolStr = strings.ToLower(strings.TrimSpace(boolStr))
 	if boolStr == TRUE {
 		return true, nil
 	} else if boolStr == FALSE {
 		return false, nil
 	} else {
-		return false, types.ErrInvalidArgument(types.DefaultCodespace, ""+
-			fmt.Sprintf("%s is not a valid bool (true/false)", boolName))
+		return false, types.ErrInvalidArgument(fmt.Sprintf("%s is not a valid bool (true/false)", boolName))
 	}
 }
 
@@ -40,7 +39,7 @@ func GetCmdCreatePaymentTemplate(cdc *codec.Codec) *cobra.Command {
 			templateJsonStr := args[0]
 			sovrinDidStr := args[1]
 
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
@@ -52,7 +51,7 @@ func GetCmdCreatePaymentTemplate(cdc *codec.Codec) *cobra.Command {
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgCreatePaymentTemplate(template, sovrinDid)
 
@@ -90,13 +89,13 @@ func GetCmdCreatePaymentContract(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgCreatePaymentContract(
 				templateIdStr, contractIdStr, payerAddr,
@@ -125,7 +124,7 @@ func GetCmdCreateSubscription(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
@@ -137,7 +136,7 @@ func GetCmdCreateSubscription(cdc *codec.Codec) *cobra.Command {
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgCreateSubscription(subIdStr,
 				contractIdStr, maxPeriods, period, sovrinDid)
@@ -163,13 +162,13 @@ func GetCmdSetPaymentContractAuthorisation(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err2 := sovrin.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err2 := types2.UnmarshalSovrinDid(sovrinDidStr)
 			if err2 != nil {
 				return err2
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgSetPaymentContractAuthorisation(
 				contractIdStr, authorised, sovrinDid)
@@ -201,13 +200,13 @@ func GetCmdGrantPaymentDiscount(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgGrantDiscount(
 				contractIdStr, discountId, recipientAddr, sovrinDid)
@@ -232,13 +231,13 @@ func GetCmdRevokePaymentDiscount(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgRevokeDiscount(
 				contractIdStr, holderAddr, sovrinDid)
@@ -257,13 +256,13 @@ func GetCmdEffectPayment(cdc *codec.Codec) *cobra.Command {
 			contractIdStr := args[0]
 			sovrinDidStr := args[1]
 
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgEffectPayment(contractIdStr, sovrinDid)
 

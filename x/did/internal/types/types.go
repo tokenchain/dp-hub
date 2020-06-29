@@ -2,18 +2,18 @@ package types
 
 import (
 	"errors"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 )
 
-var _ ixo.DidDoc = (*BaseDidDoc)(nil)
+var _ types.DidDoc = (*BaseDidDoc)(nil)
 
 type BaseDidDoc struct {
-	Did         ixo.Did         `json:"did" yaml:"did"`
+	Did         types.Did       `json:"did" yaml:"did"`
 	PubKey      string          `json:"pubKey" yaml:"pubKey"`
 	Credentials []DidCredential `json:"credentials" yaml:"credentials"`
 }
 
-func NewBaseDidDoc(did ixo.Did, pubKey string) BaseDidDoc {
+func NewBaseDidDoc(did types.Did, pubKey string) BaseDidDoc {
 	return BaseDidDoc{
 		Did:         did,
 		PubKey:      pubKey,
@@ -21,11 +21,11 @@ func NewBaseDidDoc(did ixo.Did, pubKey string) BaseDidDoc {
 	}
 }
 
-func (dd BaseDidDoc) GetDid() ixo.Did                 { return dd.Did }
-func (dd BaseDidDoc) GetPubKey() string               { return dd.PubKey }
+func (dd BaseDidDoc) GetDid() types.Did { return dd.Did }
+func (dd BaseDidDoc) GetPubKey() string { return dd.PubKey }
 func (dd BaseDidDoc) GetCredentials() []DidCredential { return dd.Credentials }
 
-func (dd BaseDidDoc) SetDid(did ixo.Did) error {
+func (dd BaseDidDoc) SetDid(did types.Did) error {
 	if len(dd.Did) != 0 {
 		return errors.New("cannot override BaseDidDoc did")
 	}
@@ -54,15 +54,15 @@ func (dd *BaseDidDoc) AddCredential(cred DidCredential) {
 }
 
 type DidCredential struct {
-	CredType []string `json:"type" yaml:"type"`
-	Issuer   ixo.Did  `json:"issuer" yaml:"issuer"`
-	Issued   string   `json:"issued" yaml:"issued"`
-	Claim    Claim    `json:"claim" yaml:"claim"`
+	CredType []string  `json:"type" yaml:"type"`
+	Issuer   types.Did `json:"issuer" yaml:"issuer"`
+	Issued   string    `json:"issued" yaml:"issued"`
+	Claim    Claim     `json:"claim" yaml:"claim"`
 }
 
 type Claim struct {
-	Id           ixo.Did `json:"id" yaml:"id"`
-	KYCValidated bool    `json:"KYCValidated" yaml:"KYCValidated"`
+	Id           types.Did `json:"id" yaml:"id"`
+	KYCValidated bool      `json:"KYCValidated" yaml:"KYCValidated"`
 }
 
 type Credential struct{}

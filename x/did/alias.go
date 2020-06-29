@@ -1,6 +1,7 @@
 package did
 
 import (
+	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 )
@@ -11,7 +12,7 @@ const (
 	RouterKey    = types.RouterKey
 	StoreKey     = types.StoreKey
 
-	DefaultCodespace = types.DefaultCodespace
+	DefaultCodespace = types.ModuleName
 )
 
 type (
@@ -32,5 +33,5 @@ var (
 	// variable aliases
 	ModuleCdc = types.ModuleCdc
 
-	ErrorInvalidDid = types.ErrorInvalidDid
+	ErrorInvalidDid = x.ErrorInvalidDidE
 )

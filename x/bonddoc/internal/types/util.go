@@ -1,14 +1,12 @@
 package types
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	er "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"strings"
-
-	"github.com/tokenchain/ixo-blockchain/x/ixo/sovrin"
 )
 
-func NewMsgCreateBond(senderDid ixo.Did, bondDoc BondDoc, bondDid sovrin.SovrinDid) MsgCreateBond {
+func NewMsgCreateBond(senderDid types.Did, bondDoc BondDoc, bondDid types.SovrinDid) MsgCreateBond {
 	return MsgCreateBond{
 		TxHash:    "",
 		SenderDid: senderDid,
@@ -18,7 +16,7 @@ func NewMsgCreateBond(senderDid ixo.Did, bondDoc BondDoc, bondDid sovrin.SovrinD
 	}
 }
 
-func NewMsgUpdateBondStatus(senderDid ixo.Did, updateBondStatusDoc UpdateBondStatusDoc, bondDid sovrin.SovrinDid) MsgUpdateBondStatus {
+func NewMsgUpdateBondStatus(senderDid types.Did, updateBondStatusDoc UpdateBondStatusDoc, bondDid types.SovrinDid) MsgUpdateBondStatus {
 	return MsgUpdateBondStatus{
 		SenderDid: senderDid,
 		BondDid:   bondDid.Did,
@@ -26,9 +24,9 @@ func NewMsgUpdateBondStatus(senderDid ixo.Did, updateBondStatusDoc UpdateBondSta
 	}
 }
 
-func CheckNotEmpty(value string, name string) (valid bool, err sdk.Error) {
+func CheckNotEmpty(value string, name string) (valid bool, err error) {
 	if strings.TrimSpace(value) == "" {
-		return false, sdk.ErrUnknownRequest(name + " is empty.")
+		return false, er.Wrapf(er.ErrUnknownRequest, "%s is empty", name)
 	} else {
 		return true, nil
 	}

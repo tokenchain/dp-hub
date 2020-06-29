@@ -3,6 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
+	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -10,7 +11,6 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/cosmos/cosmos-sdk/types/rest"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
 	"github.com/tokenchain/ixo-blockchain/x/project/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/project/internal/types"
 )
@@ -34,7 +34,7 @@ func queryProjectDocRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		vars := mux.Vars(r)
 		didAddr := vars["did"]
 
-		key := ixo.Did(didAddr)
+		key := types2.Did(didAddr)
 		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
 			keeper.QueryProjectDoc, key), nil)
 		if err != nil {

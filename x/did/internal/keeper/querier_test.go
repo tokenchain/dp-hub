@@ -1,18 +1,18 @@
 package keeper
 
 import (
+	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
 )
 
 func TestQueryDidDocs(t *testing.T) {
 	ctx, k, cdc := CreateTestInput()
-	cdc.RegisterInterface((*ixo.DidDoc)(nil), nil)
+	cdc.RegisterInterface((*types2.DidDoc)(nil), nil)
 	err := k.SetDidDoc(ctx, &types.ValidDidDoc)
 	require.Nil(t, err)
 
