@@ -66,6 +66,6 @@ VERSION=$(cat version.txt)
 increment_version $VERSION > version.txt
 echo $VERSION
 git add .
-git commit -m "modified changes with edition v$VERSION"
+git commit -m "compile success modification v$VERSION"
 #git remote add origin https://gitee.com/jjhoc/b-explorer-settings.git
-#git push -u origin master
+git push -u origin master
