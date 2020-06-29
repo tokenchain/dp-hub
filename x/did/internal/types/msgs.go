@@ -48,15 +48,12 @@ func NewMsgAddDid(did string, publicKey string) MsgAddDid {
 	}
 }
 
-func (msg MsgAddDid) Type() string { return TypeMsgAddDid }
-
-func (msg MsgAddDid) Route() string { return RouterKey }
-
+func (msg MsgAddDid) Type() string            { return TypeMsgAddDid }
+func (msg MsgAddDid) Route() string           { return RouterKey }
 func (msg MsgAddDid) GetSignerDid() types.Did { return msg.DidDoc.Did }
 func (msg MsgAddDid) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
-
 func (msg MsgAddDid) ValidateBasic() error {
 	// Check that not empty
 	if strings.TrimSpace(msg.DidDoc.Did) == "" {
@@ -113,7 +110,7 @@ func NewMsgAddCredential(did string, credType []string, issuer string, issued st
 		DidCredential: didCredential,
 	}
 }
-func (msg MsgAddCredential) Type() string          { return TypeMsgAddCredential }
+func (msg MsgAddCredential) Type() string            { return TypeMsgAddCredential }
 func (msg MsgAddCredential) Route() string           { return RouterKey }
 func (msg MsgAddCredential) GetSignerDid() types.Did { return msg.DidCredential.Issuer }
 func (msg MsgAddCredential) GetSigners() []sdk.AccAddress {

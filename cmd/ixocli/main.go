@@ -53,11 +53,11 @@ func main() {
 		client.ConfigCmd(app.DefaultCLIHome),
 		queryCmd(cdc),
 		txCmd(cdc),
-		version.Cmd,
-		flags.LineBreak,
 		lcd.ServeCommand(cdc, registerRoutes),
 		flags.LineBreak,
 		keys.Commands(),
+		flags.LineBreak,
+		version.Cmd,
 		flags.LineBreak,
 		flags.NewCompletionCmd(rootCmd, true),
 	)

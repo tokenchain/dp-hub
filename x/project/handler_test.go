@@ -15,7 +15,6 @@ import (
 )
 
 func TestHandler_CreateClaim(t *testing.T) {
-
 	ctx, k, cdc, paymentsKeeper, bankKeeper := keeper.CreateTestInput()
 	codec.RegisterCrypto(cdc)
 	cdc.RegisterConcrete(types.MsgCreateProject{}, "project/CreateProject", nil)
@@ -32,8 +31,7 @@ func TestHandler_CreateClaim(t *testing.T) {
 		SenderDid:  "senderDid",
 		Data:       types.CreateClaimDoc{ClaimID: "claim1"},
 	}
-
-	res := handleMsgCreateClaim(ctx, k, paymentsKeeper, bankKeeper, projectMsg)
+	res, _ := handleMsgCreateClaim(ctx, k, paymentsKeeper, bankKeeper, projectMsg)
 	require.NotNil(t, res)
 }
 
@@ -44,12 +42,11 @@ func TestHandler_ProjectMsg(t *testing.T) {
 	cdc.RegisterInterface((*exported.Account)(nil), nil)
 	cdc.RegisterConcrete(&auth.BaseAccount{}, "cosmos-sdk/Account", nil)
 
-	res := handleMsgCreateProject(ctx, k, types.ValidCreateProjectMsg)
-	require.True(t, res.IsOK())
-
-	res = handleMsgCreateProject(ctx, k, types.ValidCreateProjectMsg)
-	require.False(t, res.IsOK())
-
+	res, err := handleMsgCreateProject(ctx, k, types.ValidCreateProjectMsg)
+	require.NoError(t, err)
+	res, err = handleMsgCreateProject(ctx, k, types.ValidCreateProjectMsg)
+	require.NoError(t, err)
+	require.NotNil(t, res)
 }
 func Test_CreateEvaluation(t *testing.T) {
 	ctx, k, cdc, fk, bk := keeper.CreateTestInput()
@@ -94,17 +91,19 @@ func Test_CreateEvaluation(t *testing.T) {
 		},
 	}
 
-	var err sdk.Error
-	_, err = createAccountInProjectAccounts(ctx, k, msg.GetProjectDid(), IxoAccountFeesId)
+	_, err := createAccountInProjectAccounts(ctx, k, msg.GetProjectDid(), IxoAccountFeesId)
 	require.Nil(t, err)
-	_, err = createAccountInProjectAccounts(ctx, k, msg.GetProjectDid(), InternalAccountID(msg.GetProjectDid()))
+	acc, err := createAccountInProjectAccounts(ctx, k, msg.GetProjectDid(), InternalAccountID(msg.GetProjectDid()))
 	require.Nil(t, err)
-
+	require.NotNil(t, acc)
 	require.False(t, k.ProjectDocExists(ctx, msg.GetProjectDid()))
 	k.SetProjectDoc(ctx, &msg)
 
-	res := handleMsgCreateEvaluation(ctx, k, fk, bk, evaluationMsg)
+	res, err := handleMsgCreateEvaluation(ctx, k, fk, bk, evaluationMsg)
+
+	require.NoError(t, err)
 	require.NotNil(t, res)
+
 }
 
 func Test_WithdrawFunds(t *testing.T) {
@@ -140,15 +139,19 @@ func Test_WithdrawFunds(t *testing.T) {
 		},
 	}
 
-	var err sdk.Error
-	_, err = createAccountInProjectAccounts(ctx, k, msg1.GetProjectDid(), IxoAccountFeesId)
+	_, err := createAccountInProjectAccounts(ctx, k, msg1.GetProjectDid(), IxoAccountFeesId)
 	require.Nil(t, err)
-	_, err = createAccountInProjectAccounts(ctx, k, msg1.GetProjectDid(), InternalAccountID(msg1.GetProjectDid()))
-	require.Nil(t, err)
+
+	account, errf := createAccountInProjectAccounts(ctx, k, msg1.GetProjectDid(), InternalAccountID(msg1.GetProjectDid()))
+	//	require.Nil(t, err)
+	require.NoError(t, errf)
+	require.NotNil(t, account)
 
 	require.False(t, k.ProjectDocExists(ctx, msg1.GetProjectDid()))
 	k.SetProjectDoc(ctx, &msg1)
 
-	res := handleMsgWithdrawFunds(ctx, k, bk, msg)
+	res, err := handleMsgWithdrawFunds(ctx, k, bk, msg)
+	require.NoError(t, err)
 	require.NotNil(t, res)
+
 }

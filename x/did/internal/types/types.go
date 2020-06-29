@@ -21,10 +21,9 @@ func NewBaseDidDoc(did types.Did, pubKey string) BaseDidDoc {
 	}
 }
 
-func (dd BaseDidDoc) GetDid() types.Did { return dd.Did }
-func (dd BaseDidDoc) GetPubKey() string { return dd.PubKey }
+func (dd BaseDidDoc) GetDid() types.Did               { return dd.Did }
+func (dd BaseDidDoc) GetPubKey() string               { return dd.PubKey }
 func (dd BaseDidDoc) GetCredentials() []DidCredential { return dd.Credentials }
-
 func (dd BaseDidDoc) SetDid(did types.Did) error {
 	if len(dd.Did) != 0 {
 		return errors.New("cannot override BaseDidDoc did")
@@ -34,7 +33,6 @@ func (dd BaseDidDoc) SetDid(did types.Did) error {
 
 	return nil
 }
-
 func (dd BaseDidDoc) SetPubKey(pubKey string) error {
 	if len(dd.PubKey) != 0 {
 		return errors.New("cannot override BaseDidDoc pubKey")
@@ -44,7 +42,6 @@ func (dd BaseDidDoc) SetPubKey(pubKey string) error {
 
 	return nil
 }
-
 func (dd *BaseDidDoc) AddCredential(cred DidCredential) {
 	if dd.Credentials == nil {
 		dd.Credentials = make([]DidCredential, 0)
@@ -59,10 +56,8 @@ type DidCredential struct {
 	Issued   string    `json:"issued" yaml:"issued"`
 	Claim    Claim     `json:"claim" yaml:"claim"`
 }
-
 type Claim struct {
 	Id           types.Did `json:"id" yaml:"id"`
 	KYCValidated bool      `json:"KYCValidated" yaml:"KYCValidated"`
 }
-
 type Credential struct{}
