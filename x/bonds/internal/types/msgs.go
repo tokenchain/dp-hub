@@ -5,7 +5,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"strings"
 )
@@ -161,9 +160,9 @@ func (msg MsgCreateBond) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !types.IsValidDid(msg.BondDid) {
-		return did.ErrorInvalidDid("bond did is invalid")
+		return x.ErrInvalidDid("bond did is invalid")
 	} else if !types.IsValidDid(msg.CreatorDid) {
-		return did.ErrorInvalidDid("creator did is invalid")
+		return x.ErrInvalidDid("creator did is invalid")
 	}
 
 	return nil
@@ -248,14 +247,14 @@ func (msg MsgEditBond) ValidateBasic() error {
 		}
 	}
 	if !atLeaseOneEdit {
-		return x.ErrDidNotEditAnything()
+		return ErrDidNotEditAnything()
 	}
 
 	// Check that DIDs valid
 	if !types.IsValidDid(msg.BondDid) {
-		return did.ErrorInvalidDid("bond did is invalid")
+		return x.ErrInvalidDid("bond did is invalid")
 	} else if !types.IsValidDid(msg.EditorDid) {
-		return did.ErrorInvalidDid("editor did is invalid")
+		return x.ErrInvalidDid("editor did is invalid")
 	}
 
 	return nil
@@ -321,9 +320,9 @@ func (msg MsgBuy) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !types.IsValidDid(msg.BondDid) {
-		return did.ErrorInvalidDid("bond did is invalid")
+		return x.ErrInvalidDid("bond did is invalid")
 	} else if !types.IsValidDid(msg.BuyerDid) {
-		return did.ErrorInvalidDid("buyer did is invalid")
+		return x.ErrInvalidDid("buyer did is invalid")
 	}
 
 	return nil
@@ -381,9 +380,9 @@ func (msg MsgSell) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !types.IsValidDid(msg.BondDid) {
-		return did.ErrorInvalidDid("bond did is invalid")
+		return x.ErrInvalidDid("bond did is invalid")
 	} else if !types.IsValidDid(msg.SellerDid) {
-		return did.ErrorInvalidDid("seller did is invalid")
+		return x.ErrInvalidDid("seller did is invalid")
 	}
 
 	return nil
@@ -450,7 +449,7 @@ func (msg MsgSwap) ValidateBasic() error {
 
 	// Check if from and to the same token
 	if msg.From.Denom == msg.ToToken {
-		return x.ErrFromAndToCannotBeTheSameToken()
+		return ErrFromAndToCannotBeTheSameToken()
 	}
 
 	// Check that non zero
@@ -462,9 +461,9 @@ func (msg MsgSwap) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !types.IsValidDid(msg.BondDid) {
-		return did.ErrorInvalidDid("bond did is invalid")
+		return x.ErrInvalidDid("bond did is invalid")
 	} else if !types.IsValidDid(msg.SwapperDid) {
-		return did.ErrorInvalidDid("swapper did is invalid")
+		return x.ErrInvalidDid("swapper did is invalid")
 	}
 
 	return nil

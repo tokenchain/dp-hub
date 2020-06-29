@@ -2,6 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"strings"
 )
@@ -49,9 +50,9 @@ func NewMsgOracleBurn(fromDid types.Did, amount sdk.Coins,
 	}
 }
 
-func CheckNotEmpty(value string, name string) (valid bool, err sdk.Error) {
+func CheckNotEmpty(value string, name string) (valid bool, err error) {
 	if strings.TrimSpace(value) == "" {
-		return false, sdk.ErrUnknownRequest(name + " is empty.")
+		return false, x.UnknownRequest(name + " is empty.")
 	} else {
 		return true, nil
 	}

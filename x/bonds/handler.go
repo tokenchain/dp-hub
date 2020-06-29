@@ -67,9 +67,9 @@ func handleMsgCreateBond(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgCre
 	}
 
 	if keeper.BondExists(ctx, msg.BondDid) {
-		return nil, x.ErrBondAlreadyExists(msg.BondDid)
+		return nil, types.ErrBondAlreadyExists(msg.BondDid)
 	} else if keeper.BondDidExists(ctx, msg.Token) {
-		return nil, x.ErrBondTokenIsTaken(msg.Token)
+		return nil, types.ErrBondTokenIsTaken(msg.Token)
 	} else if msg.Token == keeper.StakingKeeper.GetParams(ctx).BondDenom {
 		return nil, x.ErrBondTokenCannotBeStakingToken()
 	}
@@ -133,7 +133,7 @@ func handleMsgEditBond(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgEditB
 
 	bond, found := keeper.GetBond(ctx, msg.BondDid)
 	if !found {
-		return nil, x.ErrBondDoesNotExist(msg.BondDid)
+		return nil, types.ErrBondDoesNotExist(msg.BondDid)
 	}
 
 	if bond.CreatorDid != msg.EditorDid {
@@ -213,7 +213,7 @@ func handleMsgBuy(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgBuy) (*sdk
 
 	bond, found := keeper.GetBond(ctx, msg.BondDid)
 	if !found {
-		return nil, x.ErrBondDoesNotExist(msg.BondDid)
+		return nil, types.ErrBondDoesNotExist(msg.BondDid)
 	}
 
 	// Check that bond token used belongs to this bond
@@ -284,7 +284,7 @@ func performFirstSwapperFunctionBuy(ctx sdk.Context, keeper keeper.Keeper, msg t
 
 	bond, found := keeper.GetBond(ctx, msg.BondDid)
 	if !found {
-		return nil, x.ErrBondDoesNotExist(msg.BondDid)
+		return nil, types.ErrBondDoesNotExist(msg.BondDid)
 	}
 
 	// Check that bond token used belongs to this bond
@@ -341,11 +341,11 @@ func handleMsgSell(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgSell) (*s
 
 	bond, found := keeper.GetBond(ctx, msg.BondDid)
 	if !found {
-		return nil, x.ErrBondDoesNotExist(msg.BondDid)
+		return nil, types.ErrBondDoesNotExist(msg.BondDid)
 	}
 
 	if strings.ToLower(bond.AllowSells) == types.FALSE {
-		return nil, x.ErrBondDoesNotAllowSelling()
+		return nil, types.ErrBondDoesNotAllowSelling()
 	}
 
 	// Check that bond token used belongs to this bond
@@ -408,7 +408,7 @@ func handleMsgSwap(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgSwap) (*s
 
 	bond, found := keeper.GetBond(ctx, msg.BondDid)
 	if !found {
-		return nil, x.ErrBondDoesNotExist(msg.BondDid)
+		return nil, types.ErrBondDoesNotExist(msg.BondDid)
 	}
 
 	// Check that from and to use reserve token names

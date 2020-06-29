@@ -2,13 +2,13 @@ package treasury
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/types"
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {
-
-	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
+	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
 		case MsgSend:
@@ -20,7 +20,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		case MsgOracleBurn:
 			return handleMsgOracleBurn(ctx, k, msg)
 		default:
-			return sdk.ErrUnknownRequest("No match for message type.").Result()
+			return nil, x.UnknownRequest("No match for message type.")
 		}
 	}
 
@@ -28,10 +28,10 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 	// TODO: be able to blacklist addresses/DIDs
 }
 
-func handleMsgSend(ctx sdk.Context, k keeper.Keeper, msg types.MsgSend) sdk.Result {
+func handleMsgSend(ctx sdk.Context, k keeper.Keeper, msg types.MsgSend) (*sdk.Result, error) {
 
 	if err := k.Send(ctx, msg.FromDid, msg.ToDid, msg.Amount); err != nil {
-		return err.Result()
+		return nil, err
 	}
 
 	ctx.EventManager().EmitEvent(
@@ -41,13 +41,13 @@ func handleMsgSend(ctx sdk.Context, k keeper.Keeper, msg types.MsgSend) sdk.Resu
 		),
 	)
 
-	return sdk.Result{Events: ctx.EventManager().Events()}
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
-func handleMsgOracleTransfer(ctx sdk.Context, k keeper.Keeper, msg types.MsgOracleTransfer) sdk.Result {
+func handleMsgOracleTransfer(ctx sdk.Context, k keeper.Keeper, msg types.MsgOracleTransfer) (*sdk.Result, error) {
 
 	if err := k.OracleTransfer(ctx, msg.FromDid, msg.ToDid, msg.OracleDid, msg.Amount); err != nil {
-		return err.Result()
+		return nil, err
 	}
 
 	ctx.EventManager().EmitEvent(
@@ -57,13 +57,13 @@ func handleMsgOracleTransfer(ctx sdk.Context, k keeper.Keeper, msg types.MsgOrac
 		),
 	)
 
-	return sdk.Result{Events: ctx.EventManager().Events()}
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
-func handleMsgOracleMint(ctx sdk.Context, k keeper.Keeper, msg types.MsgOracleMint) sdk.Result {
+func handleMsgOracleMint(ctx sdk.Context, k keeper.Keeper, msg types.MsgOracleMint) (*sdk.Result, error) {
 
 	if err := k.OracleMint(ctx, msg.OracleDid, msg.ToDid, msg.Amount); err != nil {
-		return err.Result()
+		return nil, err
 	}
 
 	ctx.EventManager().EmitEvent(
@@ -73,13 +73,13 @@ func handleMsgOracleMint(ctx sdk.Context, k keeper.Keeper, msg types.MsgOracleMi
 		),
 	)
 
-	return sdk.Result{Events: ctx.EventManager().Events()}
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
-func handleMsgOracleBurn(ctx sdk.Context, k keeper.Keeper, msg types.MsgOracleBurn) sdk.Result {
+func handleMsgOracleBurn(ctx sdk.Context, k keeper.Keeper, msg types.MsgOracleBurn) (*sdk.Result, error) {
 
 	if err := k.OracleBurn(ctx, msg.OracleDid, msg.FromDid, msg.Amount); err != nil {
-		return err.Result()
+		return nil, err
 	}
 
 	ctx.EventManager().EmitEvent(
@@ -89,5 +89,5 @@ func handleMsgOracleBurn(ctx sdk.Context, k keeper.Keeper, msg types.MsgOracleBu
 		),
 	)
 
-	return sdk.Result{Events: ctx.EventManager().Events()}
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }

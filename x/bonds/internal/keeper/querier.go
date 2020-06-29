@@ -247,7 +247,7 @@ func querySellReturn(ctx sdk.Context, path []string, keeper Keeper) (res []byte,
 	}
 
 	if strings.ToLower(bond.AllowSells) == types.FALSE {
-		return nil, x.ErrBondDoesNotAllowSelling()
+		return nil, types.ErrBondDoesNotAllowSelling()
 	}
 
 	// Cannot burn more tokens than what exists
@@ -293,7 +293,7 @@ func querySwapReturn(ctx sdk.Context, path []string, keeper Keeper) (res []byte,
 
 	bond, found := keeper.GetBond(ctx, bondDid)
 	if !found {
-		return nil, x.ErrBondDoesNotExist(bondDid)
+		return nil, types.ErrBondDoesNotExist(bondDid)
 	}
 
 	reserveBalances := keeper.GetReserveBalances(ctx, bondDid)

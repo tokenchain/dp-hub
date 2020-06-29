@@ -81,7 +81,7 @@ func (msg MsgCreateProject) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !types.IsValidDid(msg.ProjectDid) {
-		return x.ErrInvalidDid( "project did is invalid")
+		return x.ErrInvalidDid("project did is invalid")
 	} else if !types.IsValidDid(msg.SenderDid) {
 		return x.ErrInvalidDid("sender did is invalid")
 	}
@@ -141,9 +141,9 @@ func (msg MsgUpdateProjectStatus) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !types.IsValidDid(msg.ProjectDid) {
-		return x.ErrInvalidDid( "project did is invalid")
+		return x.ErrInvalidDid("project did is invalid")
 	} else if !types.IsValidDid(msg.SenderDid) {
-		return x.ErrInvalidDid( "sender did is invalid")
+		return x.ErrInvalidDid("sender did is invalid")
 	}
 
 	// IsValidProgressionFrom checked by the handler
@@ -185,11 +185,11 @@ func (msg MsgCreateAgent) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !types.IsValidDid(msg.ProjectDid) {
-		return x.ErrInvalidDid( "project did is invalid")
+		return x.ErrInvalidDid("project did is invalid")
 	} else if !types.IsValidDid(msg.SenderDid) {
-		return x.ErrInvalidDid( "sender did is invalid")
+		return x.ErrInvalidDid("sender did is invalid")
 	} else if !types.IsValidDid(msg.Data.AgentDid) {
-		return x.ErrInvalidDid( "agent did is invalid")
+		return x.ErrInvalidDid("agent did is invalid")
 	}
 
 	return nil
@@ -237,11 +237,11 @@ func (msg MsgUpdateAgent) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !types.IsValidDid(msg.ProjectDid) {
-		return x.ErrInvalidDid( "project did is invalid")
+		return x.ErrInvalidDid("project did is invalid")
 	} else if !types.IsValidDid(msg.SenderDid) {
-		return x.ErrInvalidDid( "sender did is invalid")
+		return x.ErrInvalidDid("sender did is invalid")
 	} else if !types.IsValidDid(msg.Data.Did) {
-		return x.ErrInvalidDid( "agent did is invalid")
+		return x.ErrInvalidDid("agent did is invalid")
 	}
 
 	return nil
@@ -291,9 +291,9 @@ func (msg MsgCreateClaim) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !types.IsValidDid(msg.ProjectDid) {
-		return x.ErrInvalidDid( "project did is invalid")
+		return x.ErrInvalidDid("project did is invalid")
 	} else if !types.IsValidDid(msg.SenderDid) {
-		return x.ErrInvalidDid( "sender did is invalid")
+		return x.ErrInvalidDid("sender did is invalid")
 	}
 
 	return nil
@@ -345,7 +345,7 @@ func (msg MsgCreateEvaluation) ValidateBasic() error {
 	if !types.IsValidDid(msg.ProjectDid) {
 		return x.ErrInvalidDid("project did is invalid")
 	} else if !types.IsValidDid(msg.SenderDid) {
-		return x.ErrInvalidDid( "sender did is invalid")
+		return x.ErrInvalidDid("sender did is invalid")
 	}
 
 	return nil
@@ -395,9 +395,9 @@ func (msg MsgWithdrawFunds) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !types.IsValidDid(msg.SenderDid) {
-		return x.ErrInvalidDid( "sender did is invalid")
+		return x.ErrInvalidDid("sender did is invalid")
 	} else if !types.IsValidDid(msg.Data.ProjectDid) {
-		return x.ErrInvalidDid( "project did is invalid")
+		return x.ErrInvalidDid("project did is invalid")
 	} else if !types.IsValidDid(msg.Data.RecipientDid) {
 		return x.ErrInvalidDid("recipient did is invalid")
 	}

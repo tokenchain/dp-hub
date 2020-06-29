@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/spf13/cobra"
 	"github.com/tokenchain/ixo-blockchain/x/nameservice/types"
+	"bufio"
 )
 
 func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
@@ -37,9 +38,9 @@ func GetCmdBuyName(cdc *codec.Codec) *cobra.Command {
 		Short: "bid for existing name or claim new name",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			//inBuf := bufio.NewReader(cmd.InOrStdin())
+			reader := bufio.NewReader(cmd.InOrStdin())
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			txBldr := auth.NewTxBuilderFromCLI(reader).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			coins, err := sdk.ParseCoins(args[1])
 			if err != nil {
@@ -65,8 +66,8 @@ func GetCmdSetName(cdc *codec.Codec) *cobra.Command {
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-			//inBuf := bufio.NewReader(cmd.InOrStdin())
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			reader := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(reader).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			// if err := cliCtx.EnsureAccountExists(); err != nil {
 			// 	return err
@@ -92,8 +93,8 @@ func GetCmdDeleteName(cdc *codec.Codec) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-			//inBufx := bufio.NewReader(cmd.InOrStdin())
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			reader := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(reader).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			msg := types.NewMsgDeleteName(args[0], cliCtx.GetFromAddress())
 			err := msg.ValidateBasic()

@@ -293,7 +293,7 @@ func ApproximateFeeForTx(cliCtx context.CLIContext, tx types.IxoTx, chainId stri
 }
 
 func SignAndBroadcastTxCli(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid types.SovrinDid) error {
-	txBldr, err := utils.PrepareTxBuilder(auth.NewTxBuilderFromCLI(cliCtx.Input), cliCtx)
+	txBldr, err := utils.PrepareTxBuilder(auth.NewTxBuilderFromCLI(nil), cliCtx)
 	if err != nil {
 		return err
 	}

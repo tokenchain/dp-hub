@@ -10,11 +10,10 @@ import (
 )
 
 const (
-	PowerFunction    = "power_function"
-	SigmoidFunction  = "sigmoid_function"
-	SwapperFunction  = "swapper_function"
-	DoNotModifyField = "[do-not-modify]"
-
+	PowerFunction            = "power_function"
+	SigmoidFunction          = "sigmoid_function"
+	SwapperFunction          = "swapper_function"
+	DoNotModifyField         = "[do-not-modify]"
 	AnyNumberOfReserveTokens = -1
 )
 
@@ -186,7 +185,7 @@ func (bond Bond) GetPricesAtSupply(supply sdk.Int) (result sdk.DecCoins, err err
 		temp3 := SquareRootInt(temp2)
 		result = bond.GetNewReserveDecCoins(aDec.Mul(sdk.NewDecFromInt(temp1).Quo(temp3).Add(sdk.OneDec())))
 	case SwapperFunction:
-		return nil, errors.Wrap(x.ErrFunctionNotAvailableForFunctionType, "")
+		return nil, ErrFunctionNotAvailableForFunctionType()
 	default:
 		panic("unrecognized function type")
 	}

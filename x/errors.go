@@ -3,7 +3,6 @@ package x
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	typesixo "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"strings"
 )
 
@@ -29,14 +28,6 @@ const (
 	CodeArgumentMissingOrIncorrectType CodeType = 302
 	CodeIncorrectNumberOfValues        CodeType = 303
 
-	// Bonds
-	CodeBondDoesNotExist        CodeType = 304
-	CodeBondAlreadyExists       CodeType = 305
-	CodeBondDoesNotAllowSelling CodeType = 306
-	CodeDidNotEditAnything      CodeType = 307
-	CodeInvalidSwapper          CodeType = 308
-	CodeInvalidBond             CodeType = 309
-
 	// Function types and function parameters
 	CodeUnrecognizedFunctionType             CodeType = 310
 	CodeInvalidFunctionParameter             CodeType = 311
@@ -49,7 +40,13 @@ const (
 	CodeBondTokenInvalid        CodeType = 316
 	CodeReserveDenomsMismatch   CodeType = 317
 	CodeInvalidCoinDenomination CodeType = 318
-
+	// Bonds
+	CodeBondDoesNotExist        CodeType = 304
+	CodeBondAlreadyExists       CodeType = 305
+	CodeBondDoesNotAllowSelling CodeType = 306
+	CodeDidNotEditAnything      CodeType = 307
+	CodeInvalidSwapper          CodeType = 308
+	CodeInvalidBond             CodeType = 309
 	// Amounts and fees
 	CodeInvalidResultantSupply CodeType = 319
 	CodeMaxPriceExceeded       CodeType = 320
@@ -98,12 +95,6 @@ var (
 	ErrArgument                              = errors.Register(moduleNameBonds, CodeArgumentInvalid, "Cannot be empty")
 	ErrArgumentMissingOrIncorrectType        = errors.Register(moduleNameBonds, CodeArgumentMissingOrIncorrectType, "Missing or Incorrect Type")
 	ErrCodeIncorrectNumberOfValues           = errors.Register(moduleNameBonds, CodeIncorrectNumberOfValues, "Incorrect code number of value")
-	ErrCodeBondDoesNotExist                  = errors.Register(moduleNameBonds, CodeBondDoesNotExist, "Code bond does not exist")
-	ErrCodeBondAlreadyExists                 = errors.Register(moduleNameBonds, CodeBondAlreadyExists, "Code bond already exist")
-	ErrCodeBondDoesNotAllowSelling           = errors.Register(moduleNameBonds, CodeBondDoesNotAllowSelling, "Code bond does not allow selling")
-	ErrCodeDidNotEditAnything                = errors.Register(moduleNameBonds, CodeDidNotEditAnything, "Did not edit anything from the bond.")
-	ErrFromAndToCannotBeTheSameToken_E       = errors.Register(moduleNameBonds, CodeInvalidSwapper, "From and To tokens cannot be the same token.")
-	ErrDuplicateReserveToken                 = errors.Register(moduleNameBonds, CodeInvalidBond, "Cannot have duplicate tokens in reserve tokens.")
 	ErrUnrecognizedFunctionType              = errors.Register(moduleNameBonds, CodeUnrecognizedFunctionType, "Unrecognized function type")
 	ErrCodeInvalidFuncParam                  = errors.Register(moduleNameBonds, CodeInvalidFunctionParameter, "Invalid Function Parameter")
 	ErrFunctionNotAvailableForFunctionType   = errors.Register(moduleNameBonds, CodeFunctionNotAvailableForFunctionType, "Function is not available for the function type")
@@ -141,6 +132,12 @@ var (
 	EInvalidArgs                             = errors.Register(moduleNamePayment, CodeInvalidArgument, "payment invalid")
 	EAlreadyExists                           = errors.Register(moduleNamePayment, CodeAlreadyExists, "payment invalid")
 	EInvalidCoin                             = errors.Register(moduleNameProject, CodeInvalidCoin, "coin is invalid")
+	ErrCodeBondDoesNotExist                  = errors.Register(moduleNameBonds, CodeBondDoesNotExist, "Code bond does not exist")
+	ErrCodeBondAlreadyExists                 = errors.Register(moduleNameBonds, CodeBondAlreadyExists, "Code bond already exist")
+	ErrCodeBondDoesNotAllowSelling           = errors.Register(moduleNameBonds, CodeBondDoesNotAllowSelling, "Code bond does not allow selling")
+	ErrCodeDidNotEditAnything                = errors.Register(moduleNameBonds, CodeDidNotEditAnything, "Did not edit anything from the bond.")
+	ErrFromAndToCannotBeTheSameToken_E       = errors.Register(moduleNameBonds, CodeInvalidSwapper, "From and To tokens cannot be the same token.")
+	ErrDuplicateReserveToken                 = errors.Register(moduleNameBonds, CodeInvalidBond, "Cannot have duplicate tokens in reserve tokens.")
 )
 
 func ErrInvalidAddress(arg string) error {
@@ -154,9 +151,6 @@ func ErrArgumentCannotBeNegative(arg string) error {
 }
 func ErrArgumentMustBePositive(arg string) error {
 	return errors.Wrapf(ErrArgument, "%s argument must be a positive value", arg)
-}
-func ErrFromAndToCannotBeTheSameToken() error {
-	return errors.Wrap(ErrFromAndToCannotBeTheSameToken_E, "From and To tokens cannot be the same token.")
 }
 func ErrMaxSupplyDenomDoesNotMatchTokenDenom() error {
 	return errors.Wrap(ErrMaxSupplyDenomDoesNotMatchTokenDenomE, "Max supply denom does not match token denom")
@@ -190,21 +184,6 @@ func ErrInvalidCoins(args string) error {
 }
 func ErrIncorrectNumberOfFunctionParameters(expected int) error {
 	return errors.Wrapf(ErrCodeIncorrectNumberOfValues, "Incorrect number of function parameters; expected: %d", expected)
-}
-func ErrBondDoesNotExist(bondDid typesixo.Did) error {
-	return errors.Wrapf(ErrCodeBondDoesNotExist, "Bond '%s' does not exist", bondDid)
-}
-func ErrBondAlreadyExists(bonddid typesixo.Did) error {
-	return errors.Wrapf(ErrCodeBondAlreadyExists, "Bond '%s' already exists", bonddid)
-}
-func ErrBondTokenIsTaken(bondToken string) error {
-	return errors.Wrapf(ErrCodeBondAlreadyExists, "Bond token '%s' is taken", bondToken)
-}
-func ErrBondDoesNotAllowSelling() error {
-	return errors.Wrap(ErrCodeBondDoesNotAllowSelling, "Bond does not allow selling.")
-}
-func ErrDidNotEditAnything() error {
-	return errors.Wrap(ErrCodeDidNotEditAnything, "Did not edit anything from the bond.")
 }
 func ErrInvalidFunctionParameter(parameter string) error {
 	return errors.Wrapf(ErrCodeInvalidFuncParam, "Invalid function parameter '%s'", parameter)

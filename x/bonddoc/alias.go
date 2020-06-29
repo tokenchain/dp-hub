@@ -35,5 +35,6 @@ var (
 	ValidateGenesis     = types.ValidateGenesis
 
 	// variable aliases
-	ModuleCdc = types.ModuleCdc
+	ModuleCdc            = types.ModuleCdc
+
 )

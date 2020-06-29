@@ -5,12 +5,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 
+	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
 )
 
 func GetPubKeyGetter(didKeeper did.Keeper) ixo.PubKeyGetter {
-	return func(ctx sdk.Context, msg types.IxoMsg) ([32]byte, sdk.Result) {
+	return func(ctx sdk.Context, msg types.IxoMsg) ([32]byte, error) {
 
 		// Get signer PubKey
 		var pubKey [32]byte
@@ -24,15 +25,15 @@ func GetPubKeyGetter(didKeeper did.Keeper) ixo.PubKeyGetter {
 		case MsgOracleTransfer:
 			copy(pubKey[:], base58.Decode(msg.PubKey))
 		default:
-			return pubKey, sdk.ErrUnknownRequest("No match for message type.").Result()
+			return pubKey, x.UnknownRequest("No match for message type.")
 		}
 
 		// Check that sender's DID is ledgered
 		senderDidDoc, _ := didKeeper.GetDidDoc(ctx, msg.GetSignerDid())
 		if senderDidDoc == nil {
-			return pubKey, sdk.ErrUnauthorized("Sender did not found").Result()
+			return pubKey, x.Unauthorized("Sender did not found")
 		}
 
-		return pubKey, sdk.Result{}
+		return pubKey, nil
 	}
 }

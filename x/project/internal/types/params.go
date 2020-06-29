@@ -58,11 +58,31 @@ func (p Params) String() string {
 
 `, p.ProjectMinimumInitialFunding, p.IxoDid)
 }
+func ixoValidation(i interface{}) error {
+	params, ok := i.(Params)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if len(params.IxoDid) == 0 {
+		return fmt.Errorf("ixo did cannot be empty")
+	}
+	return nil
+}
+func projectminiValidation(i interface{}) error {
+	params, ok := i.(Params)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if params.ProjectMinimumInitialFunding.LT(sdk.ZeroInt()) {
+		return fmt.Errorf("project parameter ProjectMinimumInitialFunding should be positive, is %s ", params.ProjectMinimumInitialFunding.String())
+	}
+	return nil
+}
 
 // Implements params.ParamSet
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
-		{KeyIxoDid, &p.IxoDid},
-		{KeyProjectMinimumInitialFunding, &p.ProjectMinimumInitialFunding},
+		{KeyIxoDid, &p.IxoDid, ixoValidation},
+		{KeyProjectMinimumInitialFunding, &p.ProjectMinimumInitialFunding, projectminiValidation},
 	}
 }

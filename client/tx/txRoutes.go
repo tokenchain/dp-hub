@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	genutilrest "github.com/cosmos/cosmos-sdk/x/genutil/client/rest"
 	"github.com/gorilla/mux"
 	utils2 "github.com/tokenchain/ixo-blockchain/client/utils"
+	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
 	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"github.com/tokenchain/ixo-blockchain/x/project"
@@ -67,8 +69,7 @@ func QueryTxsRequestHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest,
-				sdk.AppendMsgToErr("could not parse query parameters", err.Error()))
+			rest.WriteErrorResponse(w, http.StatusBadRequest, fmt.Sprintf("could not parse query parameters %s", err.Error()))
 			return
 		}
 
@@ -199,7 +200,7 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 		// all messages must be of type ixo.IxoMsg
 		ixoMsg, ok := msg.(types.IxoMsg)
 		if !ok {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, sdk.ErrInternal("msg must be ixo.IxoMsg").Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, x.IntErr("msg must be ixo.IxoMsg").Error())
 			return
 		}
 		msgs := []sdk.Msg{ixoMsg}
@@ -215,7 +216,8 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 			signerAddress := types.DidToAddr(ixoMsg.GetSignerDid())
 			cliCtx = cliCtx.WithFromAddress(signerAddress)
 
-			txBldr, err := utils.PrepareTxBuilder(auth.NewTxBuilderFromCLI(), cliCtx)
+			//	reader := bufio.NewReader(cmd.InOrStdin())
+			txBldr, err := utils.PrepareTxBuilder(auth.NewTxBuilderFromCLI(nil), cliCtx)
 			if err != nil {
 				rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 				return
