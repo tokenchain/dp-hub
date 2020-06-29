@@ -3,14 +3,7 @@ package x
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/tokenchain/ixo-blockchain/x/bonddoc"
-	"github.com/tokenchain/ixo-blockchain/x/bonds"
-	"github.com/tokenchain/ixo-blockchain/x/did"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
 	typesixo "github.com/tokenchain/ixo-blockchain/x/ixo/types"
-	"github.com/tokenchain/ixo-blockchain/x/payments"
-	"github.com/tokenchain/ixo-blockchain/x/project"
-
 	"strings"
 )
 
@@ -19,6 +12,13 @@ type CodeType = uint32
 type CodespaceType = string
 
 const (
+	moduleNameDid     = "did"
+	moduleNameBonddoc = "bonddoc"
+	moduleNameBonds   = "bonds"
+	moduleNameIxo     = "dap"
+	moduleNamePayment = "payments"
+	moduleNameProject = "project"
+
 	CodeInvalidDid         CodeType = 201
 	CodeInvalidPubKey      CodeType = 202
 	CodeInvalidIssuer      CodeType = 203
@@ -57,10 +57,8 @@ const (
 	CodeOrderLimitExceeded     CodeType = 322
 	CodeSanityRateViolated     CodeType = 323
 	CodeFeeTooLarge            CodeType = 324
-
-	CodeNameDoesNotExist CodeType = 325
-	CodeInternalBondDic  CodeType = 326
-
+	CodeNameDoesNotExist       CodeType = 325
+	CodeInternalBondDic        CodeType = 326
 	CodeInvalidBasicMsg        CodeType = 150
 	CodeBadDataValue           CodeType = 151
 	CodeUnauthorizedPermission CodeType = 152
@@ -90,59 +88,59 @@ const (
 var (
 	// ErrUnauthorized is used whenever a request without sufficient
 	// authorization is handled.
-	ErrorInvalidDidE                         = errors.Register(did.ModuleName, CodeInvalidDid, "invalid did")
-	ErrorInvalidPubKey                       = errors.Register(did.ModuleName, CodeInvalidPubKey, "invalid pubkey")
-	ErrorInvalidIssuer                       = errors.Register(did.ModuleName, CodeInvalidIssuer, "invalid issuer")
-	ErrorInvalidCredentials                  = errors.Register(did.ModuleName, CodeInvalidCredentials, "Data already exist")
-	ErrNameDoesNotExist                      = errors.Register(bonddoc.ModuleName, CodeNameDoesNotExist, "name does not exist")
-	ErrInternalE                             = errors.Register(bonddoc.ModuleName, CodeInternalBondDic, "bond did not found")
-	ErrGasOverflow                           = errors.Register(bonddoc.ModuleName, CodeInvalidDid, "Gas invalid supply")
-	ErrArgument                              = errors.Register(bonds.ModuleName, CodeArgumentInvalid, "Cannot be empty")
-	ErrArgumentMissingOrIncorrectType        = errors.Register(bonds.ModuleName, CodeArgumentMissingOrIncorrectType, "Missing or Incorrect Type")
-	ErrCodeIncorrectNumberOfValues           = errors.Register(bonds.ModuleName, CodeIncorrectNumberOfValues, "Incorrect code number of value")
-	ErrCodeBondDoesNotExist                  = errors.Register(bonds.ModuleName, CodeBondDoesNotExist, "Code bond does not exist")
-	ErrCodeBondAlreadyExists                 = errors.Register(bonds.ModuleName, CodeBondAlreadyExists, "Code bond already exist")
-	ErrCodeBondDoesNotAllowSelling           = errors.Register(bonds.ModuleName, CodeBondDoesNotAllowSelling, "Code bond does not allow selling")
-	ErrCodeDidNotEditAnything                = errors.Register(bonds.ModuleName, CodeDidNotEditAnything, "Did not edit anything from the bond.")
-	ErrFromAndToCannotBeTheSameToken_E       = errors.Register(bonds.ModuleName, CodeInvalidSwapper, "From and To tokens cannot be the same token.")
-	ErrDuplicateReserveToken                 = errors.Register(bonds.ModuleName, CodeInvalidBond, "Cannot have duplicate tokens in reserve tokens.")
-	ErrUnrecognizedFunctionType              = errors.Register(bonds.ModuleName, CodeUnrecognizedFunctionType, "Unrecognized function type")
-	ErrCodeInvalidFuncParam                  = errors.Register(bonds.ModuleName, CodeInvalidFunctionParameter, "Invalid Function Parameter")
-	ErrFunctionNotAvailableForFunctionType   = errors.Register(bonds.ModuleName, CodeFunctionNotAvailableForFunctionType, "Function is not available for the function type")
-	ErrFunctionRequiresNonZeroCurrentSupply  = errors.Register(bonds.ModuleName, CodeFunctionRequiresNonZeroCurrentSupply, "Function requires the current supply to be non zero")
-	ErrTokenIsNotAValidReserveTokenCode      = errors.Register(bonds.ModuleName, CodeReserveTokenInvalid, "Function requires the current supply to be non zero")
-	ErrMaxSupplyDenomDoesNotMatchTokenDenomE = errors.Register(bonds.ModuleName, CodeMaxSupplyDenomInvalid, "Max supply denom does not match token denom")
-	ErrBondInvalidToken                      = errors.Register(bonds.ModuleName, CodeBondTokenInvalid, "bond token is invalid")
-	ErrReserveDenomsMismatchE                = errors.Register(bonds.ModuleName, CodeReserveDenomsMismatch, "reserve denom mismatch")
-	ErroInvalidCoinDenomination              = errors.Register(bonds.ModuleName, CodeInvalidCoinDenomination, "wrong coin denomination")
-	EInvalidResultantSupply                  = errors.Register(bonds.ModuleName, CodeInvalidResultantSupply, "Invalid resultant supply")
-	EPriceExceed                             = errors.Register(bonds.ModuleName, CodeMaxPriceExceeded, "price exceeded")
-	ESwapAmountInvalid                       = errors.Register(bonds.ModuleName, CodeSwapAmountInvalid, "invalid amount in swap")
-	ErrOrderQuantityLimitExceeded            = errors.Register(bonds.ModuleName, CodeOrderLimitExceeded, "Order quantity limits exceeded")
-	ErrValuesViolateSanityRate               = errors.Register(bonds.ModuleName, CodeSanityRateViolated, "Values violate sanity rate")
-	ErrFeesCannotBeOrExceed100Percent        = errors.Register(bonds.ModuleName, CodeFeeTooLarge, "Sum of fees is or exceeds 100 percent")
-	ErrInvalidBasicMsg                       = errors.Register(ixo.ModuleName, CodeInvalidBasicMsg, "Invalid Basic Message")
-	ErrBadDataValue                          = errors.Register(ixo.ModuleName, CodeBadDataValue, "Bad Data Value")
-	ErrUnauthorizedPermission                = errors.Register(ixo.ModuleName, CodeUnauthorizedPermission, "Unauthorized Permission")
-	ErrItemDuplication                       = errors.Register(ixo.ModuleName, CodeItemDuplication, "Item Duplication")
-	ErrItemNotFound                          = errors.Register(ixo.ModuleName, CodeItemNotFound, "Item Not Found")
-	ErrInvalidState                          = errors.Register(ixo.ModuleName, CodeInvalidState, "InvalidState")
-	ErrBadWasmExecution                      = errors.Register(ixo.ModuleName, CodeBadWasmExecution, "Bad Wasm Execution")
-	ErrOnlyOneDenomAllowed                   = errors.Register(ixo.ModuleName, CodeOnlyOneDenomAllowed, "Only One Denom Allowed")
-	ErrInvalidDenom                          = errors.Register(ixo.ModuleName, CodeInvalidDenom, "Invalid Denom")
-	ErrUnknownClientID                       = errors.Register(ixo.ModuleName, CodeUnknownClientID, "Unknown Client ID")
-	ErrInvalidDistribution                   = errors.Register(payments.ModuleName, CodeInvalidDistribution, "payment invalid")
-	EInvalidShare                            = errors.Register(payments.ModuleName, CodeInvalidShare, "payment invalid")
-	EInvalidPeriod                           = errors.Register(payments.ModuleName, CodeInvalidPeriod, "payment invalid")
-	EInvalidPaymentCA                        = errors.Register(payments.ModuleName, CodeInvalidPaymentContractAction, "payment invalid")
-	EInvalidDiscount                         = errors.Register(payments.ModuleName, CodeInvalidDiscount, "payment invalid")
-	EInvalidDiscountReq                      = errors.Register(payments.ModuleName, CodeInvalidDiscountRequest, "payment invalid")
-	EInvalidPaymentTemplate                  = errors.Register(payments.ModuleName, CodeInvalidPaymentTemplate, "payment invalid")
-	EInvalidSubAction                        = errors.Register(payments.ModuleName, CodeInvalidSubscriptionAction, "payment invalid")
-	EInvalidId                               = errors.Register(payments.ModuleName, CodeInvalidId, "payment invalid")
-	EInvalidArgs                             = errors.Register(payments.ModuleName, CodeInvalidArgument, "payment invalid")
-	EAlreadyExists                           = errors.Register(payments.ModuleName, CodeAlreadyExists, "payment invalid")
-	EInvalidCoin                             = errors.Register(project.ModuleName, CodeInvalidCoin, "coin is invalid")
+	ErrorInvalidDidE                         = errors.Register(moduleNameDid, CodeInvalidDid, "invalid did")
+	ErrorInvalidPubKey                       = errors.Register(moduleNameDid, CodeInvalidPubKey, "invalid pubkey")
+	ErrorInvalidIssuer                       = errors.Register(moduleNameDid, CodeInvalidIssuer, "invalid issuer")
+	ErrorInvalidCredentials                  = errors.Register(moduleNameDid, CodeInvalidCredentials, "Data already exist")
+	ErrNameDoesNotExist                      = errors.Register(moduleNameBonddoc, CodeNameDoesNotExist, "name does not exist")
+	ErrInternalE                             = errors.Register(moduleNameBonddoc, CodeInternalBondDic, "bond did not found")
+	ErrGasOverflow                           = errors.Register(moduleNameBonddoc, CodeInvalidDid, "Gas invalid supply")
+	ErrArgument                              = errors.Register(moduleNameBonds, CodeArgumentInvalid, "Cannot be empty")
+	ErrArgumentMissingOrIncorrectType        = errors.Register(moduleNameBonds, CodeArgumentMissingOrIncorrectType, "Missing or Incorrect Type")
+	ErrCodeIncorrectNumberOfValues           = errors.Register(moduleNameBonds, CodeIncorrectNumberOfValues, "Incorrect code number of value")
+	ErrCodeBondDoesNotExist                  = errors.Register(moduleNameBonds, CodeBondDoesNotExist, "Code bond does not exist")
+	ErrCodeBondAlreadyExists                 = errors.Register(moduleNameBonds, CodeBondAlreadyExists, "Code bond already exist")
+	ErrCodeBondDoesNotAllowSelling           = errors.Register(moduleNameBonds, CodeBondDoesNotAllowSelling, "Code bond does not allow selling")
+	ErrCodeDidNotEditAnything                = errors.Register(moduleNameBonds, CodeDidNotEditAnything, "Did not edit anything from the bond.")
+	ErrFromAndToCannotBeTheSameToken_E       = errors.Register(moduleNameBonds, CodeInvalidSwapper, "From and To tokens cannot be the same token.")
+	ErrDuplicateReserveToken                 = errors.Register(moduleNameBonds, CodeInvalidBond, "Cannot have duplicate tokens in reserve tokens.")
+	ErrUnrecognizedFunctionType              = errors.Register(moduleNameBonds, CodeUnrecognizedFunctionType, "Unrecognized function type")
+	ErrCodeInvalidFuncParam                  = errors.Register(moduleNameBonds, CodeInvalidFunctionParameter, "Invalid Function Parameter")
+	ErrFunctionNotAvailableForFunctionType   = errors.Register(moduleNameBonds, CodeFunctionNotAvailableForFunctionType, "Function is not available for the function type")
+	ErrFunctionRequiresNonZeroCurrentSupply  = errors.Register(moduleNameBonds, CodeFunctionRequiresNonZeroCurrentSupply, "Function requires the current supply to be non zero")
+	ErrTokenIsNotAValidReserveTokenCode      = errors.Register(moduleNameBonds, CodeReserveTokenInvalid, "Function requires the current supply to be non zero")
+	ErrMaxSupplyDenomDoesNotMatchTokenDenomE = errors.Register(moduleNameBonds, CodeMaxSupplyDenomInvalid, "Max supply denom does not match token denom")
+	ErrBondInvalidToken                      = errors.Register(moduleNameBonds, CodeBondTokenInvalid, "bond token is invalid")
+	ErrReserveDenomsMismatchE                = errors.Register(moduleNameBonds, CodeReserveDenomsMismatch, "reserve denom mismatch")
+	ErroInvalidCoinDenomination              = errors.Register(moduleNameBonds, CodeInvalidCoinDenomination, "wrong coin denomination")
+	EInvalidResultantSupply                  = errors.Register(moduleNameBonds, CodeInvalidResultantSupply, "Invalid resultant supply")
+	EPriceExceed                             = errors.Register(moduleNameBonds, CodeMaxPriceExceeded, "price exceeded")
+	ESwapAmountInvalid                       = errors.Register(moduleNameBonds, CodeSwapAmountInvalid, "invalid amount in swap")
+	ErrOrderQuantityLimitExceeded            = errors.Register(moduleNameBonds, CodeOrderLimitExceeded, "Order quantity limits exceeded")
+	ErrValuesViolateSanityRate               = errors.Register(moduleNameBonds, CodeSanityRateViolated, "Values violate sanity rate")
+	ErrFeesCannotBeOrExceed100Percent        = errors.Register(moduleNameBonds, CodeFeeTooLarge, "Sum of fees is or exceeds 100 percent")
+	ErrInvalidBasicMsg                       = errors.Register(moduleNameIxo, CodeInvalidBasicMsg, "Invalid Basic Message")
+	ErrBadDataValue                          = errors.Register(moduleNameIxo, CodeBadDataValue, "Bad Data Value")
+	ErrUnauthorizedPermission                = errors.Register(moduleNameIxo, CodeUnauthorizedPermission, "Unauthorized Permission")
+	ErrItemDuplication                       = errors.Register(moduleNameIxo, CodeItemDuplication, "Item Duplication")
+	ErrItemNotFound                          = errors.Register(moduleNameIxo, CodeItemNotFound, "Item Not Found")
+	ErrInvalidState                          = errors.Register(moduleNameIxo, CodeInvalidState, "InvalidState")
+	ErrBadWasmExecution                      = errors.Register(moduleNameIxo, CodeBadWasmExecution, "Bad Wasm Execution")
+	ErrOnlyOneDenomAllowed                   = errors.Register(moduleNameIxo, CodeOnlyOneDenomAllowed, "Only One Denom Allowed")
+	ErrInvalidDenom                          = errors.Register(moduleNameIxo, CodeInvalidDenom, "Invalid Denom")
+	ErrUnknownClientID                       = errors.Register(moduleNameIxo, CodeUnknownClientID, "Unknown Client ID")
+	ErrInvalidDistribution                   = errors.Register(moduleNamePayment, CodeInvalidDistribution, "payment invalid")
+	EInvalidShare                            = errors.Register(moduleNamePayment, CodeInvalidShare, "payment invalid")
+	EInvalidPeriod                           = errors.Register(moduleNamePayment, CodeInvalidPeriod, "payment invalid")
+	EInvalidPaymentCA                        = errors.Register(moduleNamePayment, CodeInvalidPaymentContractAction, "payment invalid")
+	EInvalidDiscount                         = errors.Register(moduleNamePayment, CodeInvalidDiscount, "payment invalid")
+	EInvalidDiscountReq                      = errors.Register(moduleNamePayment, CodeInvalidDiscountRequest, "payment invalid")
+	EInvalidPaymentTemplate                  = errors.Register(moduleNamePayment, CodeInvalidPaymentTemplate, "payment invalid")
+	EInvalidSubAction                        = errors.Register(moduleNamePayment, CodeInvalidSubscriptionAction, "payment invalid")
+	EInvalidId                               = errors.Register(moduleNamePayment, CodeInvalidId, "payment invalid")
+	EInvalidArgs                             = errors.Register(moduleNamePayment, CodeInvalidArgument, "payment invalid")
+	EAlreadyExists                           = errors.Register(moduleNamePayment, CodeAlreadyExists, "payment invalid")
+	EInvalidCoin                             = errors.Register(moduleNameProject, CodeInvalidCoin, "coin is invalid")
 )
 
 func ErrInvalidAddress(arg string) error {

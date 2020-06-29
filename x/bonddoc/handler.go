@@ -21,36 +21,27 @@ func NewHandler(k Keeper) sdk.Handler {
 		}
 	}
 }
-
 func handleMsgCreateBond(ctx sdk.Context, k Keeper, msg MsgCreateBond) (*sdk.Result, error) {
-
 	if k.BondDocExists(ctx, msg.GetBondDid()) {
 		return nil, x.ErrorBondDocAlreadyExist()
 	}
 	k.SetBondDoc(ctx, &msg)
-
 	return &sdk.Result{}, nil
 }
-
 func handleMsgUpdateBondStatus(ctx sdk.Context, k Keeper, msg MsgUpdateBondStatus) (*sdk.Result, error) {
-
 	ExistingBondDoc, err := getBondDoc(ctx, k, msg.BondDid)
 	if err != nil {
-		return nil, x.UnknownRequest( "Could not find Bond")
+		return nil, x.UnknownRequest("Could not find Bond")
 	}
-
 	newStatus := msg.Data.Status
 	if !newStatus.IsValidProgressionFrom(ExistingBondDoc.GetStatus()) {
 		return nil, x.UnknownRequest("Invalid Status Progression requested")
 	}
-
 	// TODO: actions depending on new status (refer to how projects module does this)
 	ExistingBondDoc.SetStatus(newStatus)
 	_, _ = k.UpdateBondDoc(ctx, ExistingBondDoc)
-
 	return &sdk.Result{}, nil
 }
-
 func getBondDoc(ctx sdk.Context, k Keeper, bondDid types.Did) (StoredBondDoc, error) {
 	ixoBondDoc, err := k.GetBondDoc(ctx, bondDid)
 	if err != nil {

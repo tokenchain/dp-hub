@@ -32,7 +32,6 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x/bonddoc"
 	"github.com/tokenchain/ixo-blockchain/x/bonds"
 	"github.com/tokenchain/ixo-blockchain/x/did"
-	"github.com/tokenchain/ixo-blockchain/x/fees"
 	dap "github.com/tokenchain/ixo-blockchain/x/ixo"
 	"github.com/tokenchain/ixo-blockchain/x/oracles"
 	"github.com/tokenchain/ixo-blockchain/x/project"
@@ -128,7 +127,7 @@ type ixoApp struct {
 
 	didKeeper      did.Keeper
 	paymentsKeeper payments.Keeper
-	feesKeeper     fees.Keeper
+	//feesKeeper     fees.Keeper
 	projectKeeper  project.Keeper
 	bonddocKeeper  bonddoc.Keeper
 	bondsKeeper    bonds.Keeper
@@ -152,7 +151,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
 		supply.StoreKey, mint.StoreKey, distribution.StoreKey, slashing.StoreKey,
-		gov.StoreKey, params.StoreKey, did.StoreKey, fees.StoreKey,
+		gov.StoreKey, params.StoreKey, did.StoreKey,
 		project.StoreKey, bonds.StoreKey, bonddoc.StoreKey, treasury.StoreKey,
 		oracles.StoreKey)
 
@@ -175,7 +174,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	//slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
 	//govSubspace := app.paramsKeeper.Subspace(gov.DefaultParamspace)
 	crisisSubspace := app.paramsKeeper.Subspace(crisis.DefaultParamspace)
-	feesSubspace := app.paramsKeeper.Subspace(fees.DefaultParamspace)
+	feesSubspace := app.paramsKeeper.Subspace(payments.DefaultParamspace)
 	projectSubspace := app.paramsKeeper.Subspace(project.DefaultParamspace)
 
 	app.accountKeeper = auth.NewAccountKeeper(app.cdc, keys[auth.StoreKey], authSubspace, auth.ProtoBaseAccount)
@@ -253,7 +252,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		genutil.ModuleName,
 		did.ModuleName,
 		project.ModuleName,
-		fees.ModuleName,
+		payments.ModuleName,
 		bonddoc.ModuleName,
 		bonds.ModuleName,
 		treasury.ModuleName,
@@ -342,7 +341,7 @@ func initAnteHandler(app *ixoApp) sdk.AnteHandler {
 	bonddocAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, bonddocPubKeyGetter)
 	bondsAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, bondsPubKeyGetter)
 	treasuryAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, treasuryPubKeyGetter)
-	feesAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, paymentsPubKeyGetter)
+	//feesAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, paymentsPubKeyGetter)
 	paymentsAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, paymentsPubKeyGetter)
 
 	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (_ sdk.Context, _ error) {
@@ -360,8 +359,9 @@ func initAnteHandler(app *ixoApp) sdk.AnteHandler {
 			return treasuryAnteHandler(ctx, tx, simulate)
 		case payments.RouterKey:
 			return paymentsAnteHandler(ctx, tx, simulate)
-		case fees.RouterKey:
+			/*case fees.RouterKey:
 			return feesAnteHandler(ctx, tx, simulate)
+			*/
 		default:
 			return cosmosAnteHandler(ctx, tx, simulate)
 		}
