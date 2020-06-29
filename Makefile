@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 
-VERSION := v1.0.0 # $(shell echo $(shell git describe --tags) | sed 's/^v//')
+VERSION := v$(shell cat version.txt)              # $(shell echo $(shell git describe --tags) | sed 's/^v//')
 COMMIT := $(shell git log -1 --format='%H')
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 
@@ -24,7 +24,7 @@ build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 # process linker flags
 
 ldflags = \
-    -X github.com/cosmos/cosmos-sdk/version.Name=ixo \
+    -X github.com/cosmos/cosmos-sdk/version.Name=dap \
 	-X github.com/cosmos/cosmos-sdk/version.ServerName=ixod \
 	-X github.com/cosmos/cosmos-sdk/version.ClientName=ixocli \
 	-X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
