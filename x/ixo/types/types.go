@@ -16,12 +16,10 @@ import (
 )
 
 var (
-	IxoDecimals = sdk.NewDec(100000000)
-
+	IxoDecimals  = sdk.NewDec(1000)
 	maxGasWanted = uint64((1 << 63) - 1)
-
-	ValidDid   = regexp.MustCompile(`^did:(dxp:|sov:)([a-zA-Z0-9]){21,22}([/][a-zA-Z0-9:]+|)$`)
-	IsValidDid = ValidDid.MatchString
+	ValidDid     = regexp.MustCompile(`^did:(dxp:|sov:)([a-zA-Z0-9]){21,22}([/][a-zA-Z0-9:]+|)$`)
+	IsValidDid   = ValidDid.MatchString
 	// https://sovrin-foundation.github.io/sovrin/spec/did-method-spec-template.html
 	// IsValidDid adapted from the above link but assumes no sub-namespaces
 	// TODO: ValidDid needs to be updated once we no longer want to be able
@@ -29,7 +27,7 @@ var (
 	//   possibly should just be `^did:(dxp:|sov:)([a-zA-Z0-9]){21,22}$`.
 )
 
-const IxoNativeToken = "udap"
+const IxoNativeToken = "dap"
 
 func StringToAddr(str string) sdk.AccAddress {
 	return sdk.AccAddress(crypto.AddressHash([]byte(str)))

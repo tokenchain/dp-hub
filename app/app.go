@@ -65,9 +65,7 @@ var (
 		crisis.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		supply.AppModuleBasic{},
-
 		did.AppModuleBasic{},
-
 		payments.AppModuleBasic{},
 		project.AppModuleBasic{},
 		bonddoc.AppModuleBasic{},
@@ -105,15 +103,11 @@ func MakeCodec() *codec.Codec {
 
 type ixoApp struct {
 	*bam.BaseApp
-	cdc            *codec.Codec
-	invCheckPeriod uint
-
-	keys  map[string]*sdk.KVStoreKey
-	tKeys map[string]*sdk.TransientStoreKey
-
-	// subspaces
-	subspaces map[string]params.Subspace
-
+	cdc                *codec.Codec
+	invCheckPeriod     uint
+	keys               map[string]*sdk.KVStoreKey
+	tKeys              map[string]*sdk.TransientStoreKey
+	subspaces          map[string]params.Subspace // subspaces
 	accountKeeper      auth.AccountKeeper
 	bankKeeper         bank.Keeper
 	supplyKeeper       supply.Keeper
@@ -124,28 +118,22 @@ type ixoApp struct {
 	mintKeeper         mint.Keeper
 	crisisKeeper       crisis.Keeper
 	paramsKeeper       params.Keeper
-
-	didKeeper      did.Keeper
-	paymentsKeeper payments.Keeper
-	//feesKeeper     fees.Keeper
-	projectKeeper  project.Keeper
-	bonddocKeeper  bonddoc.Keeper
-	bondsKeeper    bonds.Keeper
-	oraclesKeeper  oracles.Keeper
-	treasuryKeeper treasury.Keeper
-
-	nsKeeper nameservice.Keeper
-	mm       *module.Manager
-
-	// simulation manager
-	sm *module.SimulationManager
+	didKeeper          did.Keeper
+	paymentsKeeper     payments.Keeper
+	projectKeeper      project.Keeper
+	bonddocKeeper      bonddoc.Keeper
+	bondsKeeper        bonds.Keeper
+	oraclesKeeper      oracles.Keeper
+	treasuryKeeper     treasury.Keeper
+	nsKeeper           nameservice.Keeper
+	mm                 *module.Manager
+	sm                 *module.SimulationManager // simulation manager
 }
 
 func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp)) *ixoApp {
 
 	cdc := MakeCodec()
-
 	bApp := bam.NewBaseApp(appName, logger, db, types.DefaultTxDecoder(cdc), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 
@@ -334,7 +322,6 @@ func initAnteHandler(app *ixoApp) sdk.AnteHandler {
 	bondsPubKeyGetter := bonds.GetPubKeyGetter(app.bondsKeeper, app.didKeeper)
 	treasuryPubKeyGetter := treasury.GetPubKeyGetter(app.didKeeper)
 	paymentsPubKeyGetter := payments.GetPubKeyGetter(app.didKeeper)
-
 	cosmosAnteHandler := auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer)
 	didAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, didPubKeyGetter)
 	projectAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, projectPubKeyGetter)
@@ -359,11 +346,12 @@ func initAnteHandler(app *ixoApp) sdk.AnteHandler {
 			return treasuryAnteHandler(ctx, tx, simulate)
 		case payments.RouterKey:
 			return paymentsAnteHandler(ctx, tx, simulate)
-			/*case fees.RouterKey:
-			return feesAnteHandler(ctx, tx, simulate)
-			*/
 		default:
 			return cosmosAnteHandler(ctx, tx, simulate)
 		}
 	}
 }
+
+/*case fees.RouterKey:
+return feesAnteHandler(ctx, tx, simulate)
+*/

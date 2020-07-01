@@ -1,10 +1,9 @@
 package client
 
 import (
-	"net/http"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/rest"
+	"net/http"
 )
 
 func PostProcessResponse(w http.ResponseWriter, cdc *codec.Codec, response interface{}, indent bool) {

@@ -1,21 +1,25 @@
 package main
 
 import (
+	"bufio"
+	"errors"
 	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/cli"
 
-	"github.com/cosmos/cosmos-sdk/client/keys"
-	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	//"github.com/cosmos/cosmos-sdk/x/genaccounts"
-	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
+	"github.com/cosmos/cosmos-sdk/x/genutil"
 
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/codec"
+	keyring "github.com/cosmos/cosmos-sdk/crypto/keys"
+	autht "github.com/cosmos/cosmos-sdk/x/auth/types"
+	authvesting "github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	"github.com/cosmos/cosmos-sdk/x/bank"
 )
 
 const (
@@ -26,26 +30,41 @@ const (
 )
 
 // AddGenesisAccountCmd returns add-genesis-account cobra Command.
-func AddGenesisAccountCmd(ctx *server.Context, cdc *codec.Codec,
-	defaultNodeHome, defaultClientHome string) *cobra.Command {
+
+func AddGenesisAccountCmd(
+	ctx *server.Context, cdc *codec.Codec, defaultNodeHome, defaultClientHome string,
+) *cobra.Command {
+
 	cmd := &cobra.Command{
 		Use:   "add-genesis-account [address_or_key_name] [coin][,[coin]]",
-		Short: "Add genesis account to genesis.json",
-		Args:  cobra.ExactArgs(2),
-		RunE: func(_ *cobra.Command, args []string) error {
+		Short: "Add a genesis account to genesis.json",
+		Long: `Add a genesis account to genesis.json. The provided account must specify
+the account address or key name and a list of initial coins. If a key name is given,
+the address will be looked up in the local Keybase. The list of initial tokens must
+contain valid denominations. Accounts may optionally be supplied with vesting parameters.
+`,
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
 			config := ctx.Config
 			config.SetRoot(viper.GetString(cli.HomeFlag))
 
 			addr, err := sdk.AccAddressFromBech32(args[0])
+			inBuf := bufio.NewReader(cmd.InOrStdin())
 			if err != nil {
-				kb, err := keys.NewKeyBaseFromDir(viper.GetString(flagClientHome))
+				// attempt to lookup address from Keybase if no address was provided
+				kb, err := keyring.NewKeyring(
+					sdk.KeyringServiceName(),
+					viper.GetString(flags.FlagKeyringBackend),
+					viper.GetString(flagClientHome),
+					inBuf,
+				)
 				if err != nil {
 					return err
 				}
 
 				info, err := kb.Get(args[0])
 				if err != nil {
-					return err
+					return fmt.Errorf("failed to get address from Keybase: %w", err)
 				}
 
 				addr = info.GetAddress()
@@ -53,25 +72,50 @@ func AddGenesisAccountCmd(ctx *server.Context, cdc *codec.Codec,
 
 			coins, err := sdk.ParseCoins(args[1])
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to parse coins: %w", err)
 			}
 
-		/*	vestingStart := viper.GetInt64(fla`gVestingStart)
+			vestingStart := viper.GetInt64(flagVestingStart)
 			vestingEnd := viper.GetInt64(flagVestingEnd)
-			vestingAmt, err := sdk.ParseCoins(viper.GetString(flagVestingAmt))*/
-
-/*
+			vestingAmt, err := sdk.ParseCoins(viper.GetString(flagVestingAmt))
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to parse vesting amount: %w", err)
 			}
-*/
+
 			// create concrete account type based on input parameters
 			var genAccount authexported.GenesisAccount
+			//balances := bank.Balance{Address: addr, Coins: coins.Sort()}
+			//coins := bank.NewQueryBalanceParams(addr)
+			//coins := bankt.NewQueryBalanceParams(addr)
+			//coins.IsZero()
+			//balances := bank.NewQueryBalanceParams(addr)
+			balances := autht.NewBaseAccount(addr, coins.Sort(), nil, 0, 0)
+			//balances := bankt.Balance{Address: addr, Coins: coins.Sort()}
+			//baseAccount := autht.NewBaseAccountWithAddress(addr)
+			if !vestingAmt.IsZero() {
+				baseVestingAccount, err := authvesting.NewBaseVestingAccount(balances, vestingAmt.Sort(), vestingEnd)
 
-			baseAccount := auth.NewBaseAccount(addr, coins.Sort(), nil, 0, 0)
+				if err != nil {
+					return fmt.Errorf("failed to parse vesting amount: %w", err)
+				}
+				if (balances.Coins.IsZero() && !baseVestingAccount.OriginalVesting.IsZero()) ||
+					baseVestingAccount.OriginalVesting.IsAnyGT(coins) {
+					return errors.New("vesting amount cannot be greater than total amount")
+				}
 
-			genAccount = baseAccount
+				switch {
+				case vestingStart != 0 && vestingEnd != 0:
+					genAccount = authvesting.NewContinuousVestingAccountRaw(baseVestingAccount, vestingStart)
 
+				case vestingEnd != 0:
+					genAccount = authvesting.NewDelayedVestingAccountRaw(baseVestingAccount)
+
+				default:
+					return errors.New("invalid vesting parameters; must supply start and end time or end time")
+				}
+			} else {
+				genAccount = balances
+			}
 
 			if err := genAccount.Validate(); err != nil {
 				return fmt.Errorf("failed to validate new genesis account: %w", err)
@@ -84,12 +128,11 @@ func AddGenesisAccountCmd(ctx *server.Context, cdc *codec.Codec,
 			}
 
 			authGenState := auth.GetGenesisStateFromAppState(cdc, appState)
-
+			//bankGenState := bankt.GetGenesisStateFromAppState(depCdc, appState)
+			//bankGenState := bankt.NewGenesisState(true)
 			if authGenState.Accounts.Contains(addr) {
 				return fmt.Errorf("cannot add account at existing address %s", addr)
 			}
-
-
 
 			// Add the new account to the set of genesis accounts and sanitize the
 			// accounts afterwards.
@@ -102,23 +145,24 @@ func AddGenesisAccountCmd(ctx *server.Context, cdc *codec.Codec,
 			}
 
 			appState[auth.ModuleName] = authGenStateBz
+			appState[bank.ModuleName] = authGenStateBz
 
 			appStateJSON, err := cdc.MarshalJSON(appState)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to marshal application genesis state: %w", err)
 			}
 
-			// export app state
 			genDoc.AppState = appStateJSON
-
 			return genutil.ExportGenesisFile(genDoc, genFile)
 		},
 	}
 
 	cmd.Flags().String(cli.HomeFlag, defaultNodeHome, "node's home directory")
+	cmd.Flags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend, "Select keyring's backend (os|file|test)")
 	cmd.Flags().String(flagClientHome, defaultClientHome, "client's home directory")
 	cmd.Flags().String(flagVestingAmt, "", "amount of coins for vesting accounts")
 	cmd.Flags().Uint64(flagVestingStart, 0, "schedule start time (unix epoch) for vesting accounts")
 	cmd.Flags().Uint64(flagVestingEnd, 0, "schedule end time (unix epoch) for vesting accounts")
+
 	return cmd
 }

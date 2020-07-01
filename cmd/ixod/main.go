@@ -75,6 +75,7 @@ func main() {
 func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application {
 	return app.NewIxoApp(logger, db, traceStore, true, invCheckPeriod,
 		baseapp.SetPruning(stk.NewPruningOptionsFromString(viper.GetString("pruning"))),
+		baseapp.SetPruning(stk.NewPruningOptionsFromString(viper.GetString("--pruning-keep-every=100"))),
 		baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
 	)
 }
