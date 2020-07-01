@@ -3,16 +3,16 @@ package rest
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/types/rest"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	types2 "github.com/tokenchain/dp-hub/x/ixo/types"
 	"net/http"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/gorilla/mux"
 
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/dp-hub/x/did/internal/keeper"
+	"github.com/tokenchain/dp-hub/x/did/internal/types"
+	"github.com/tokenchain/dp-hub/x/ixo"
 )
 
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {

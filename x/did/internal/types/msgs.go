@@ -3,8 +3,8 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/dp-hub/x"
+	"github.com/tokenchain/dp-hub/x/ixo/types"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"

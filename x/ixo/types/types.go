@@ -5,7 +5,7 @@ import (
 	"fmt"
 	err "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/dp-hub/x"
 	"gopkg.in/yaml.v2"
 	"regexp"
 	"time"

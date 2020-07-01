@@ -17,8 +17,8 @@ import (
 	std "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/spf13/viper"
-	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/dp-hub/x"
+	"github.com/tokenchain/dp-hub/x/ixo/types"
 	"os"
 )
 

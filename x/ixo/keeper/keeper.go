@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/dp-hub/x/ixo/types"
 )
 
 type Keeper struct {

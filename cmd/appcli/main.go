@@ -17,6 +17,7 @@ import (
 	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
+	dop "github.com/tokenchain/dp-hub/app"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -24,7 +25,7 @@ import (
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/cli"
 
-	"github.com/github.com/tokenchain/bsd/app"
+
 
 )
 
@@ -37,9 +38,9 @@ func main() {
 
 	// Read in the configuration file for the sdk
 	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount(sdk.Bech32PrefixAccAddr, sdk.Bech32PrefixAccPub)
-	config.SetBech32PrefixForValidator(sdk.Bech32PrefixValAddr, sdk.Bech32PrefixValPub)
-	config.SetBech32PrefixForConsensusNode(sdk.Bech32PrefixConsAddr, sdk.Bech32PrefixConsPub)
+	config.SetBech32PrefixForAccount(dop.Bech32PrefixAccAddr, dop.Bech32PrefixAccPub)
+	config.SetBech32PrefixForValidator(dop.Bech32PrefixValAddr, dop.Bech32PrefixValPub)
+	config.SetBech32PrefixForConsensusNode(dop.Bech32PrefixConsAddr, dop.Bech32PrefixConsPub)
 	config.Seal()
 
 	// TODO: setup keybase, viper object, etc. to be passed into

@@ -2,7 +2,7 @@ package ixo
 
 import (
 	"fmt"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/dp-hub/x/ixo/types"
 	"os"
 	"time"
 
