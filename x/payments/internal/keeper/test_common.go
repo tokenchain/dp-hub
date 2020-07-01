@@ -21,7 +21,7 @@ var (
 	templateCreatorAddr = sdk.AccAddress(crypto.AddressHash([]byte("templateCreatorAddr")))
 	payerAddr           = sdk.AccAddress(crypto.AddressHash([]byte("payerAddr")))
 
-	validPaymentAmount, _  = sdk.ParseCoins("1udap,2res")
+	validPaymentAmount, _  = sdk.ParseCoins("1dap,2res")
 	validPaymentMinimum, _ = sdk.ParseCoins("3res")
 	validPaymentMaximum    = sdk.NewCoins()
 
@@ -32,7 +32,7 @@ var (
 	validSubscriptionId1    = types.SubscriptionIdPrefix + "s1"
 	validSubscriptionId2    = types.SubscriptionIdPrefix + "s2"
 
-	validDoubledPaymentAmount, _ = sdk.ParseCoins("2udap,4res")
+	validDoubledPaymentAmount, _ = sdk.ParseCoins("2dap,4res")
 
 	validDiscounts = types.NewDiscounts(
 		types.NewDiscount(sdk.NewUint(1), sdk.MustNewDecFromStr("10")),
