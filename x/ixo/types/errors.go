@@ -3,7 +3,7 @@ package types
 import (
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/tokenchain/dp-hub/x"
+	"github.com/tokenchain/ixo-blockchain/x"
 )
 
 func ErrInvalidBasicMsg(msg string) error {

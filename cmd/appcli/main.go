@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/github.com/tokenchain/bsd/app"
 	"os"
 	"path"
 
@@ -17,7 +18,7 @@ import (
 	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
-	dop "github.com/tokenchain/dp-hub/app"
+	dop "github.com/tokenchain/ixo-blockchain/app"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -34,7 +35,7 @@ func main() {
 	cobra.EnableCommandSorting = false
 
 	// Instantiate the codec for the command line application
-	cdc := app.MakeCodec()
+	cdc := dop.MakeCodec()
 
 	// Read in the configuration file for the sdk
 	config := sdk.GetConfig()

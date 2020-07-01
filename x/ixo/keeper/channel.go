@@ -2,7 +2,7 @@ package keeper
 /*
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/dp-hub/app"
+	"github.com/tokenchain/ixo-blockchain/app"
 )
 
 func (k Keeper) SetChannel(ctx sdk.Context, chainName string, port string, channel string) {

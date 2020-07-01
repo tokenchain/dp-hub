@@ -2,15 +2,15 @@ package rest
 
 import (
 	"fmt"
-	types2 "github.com/tokenchain/dp-hub/x/ixo/types"
+	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/gorilla/mux"
 
-	rest "github.com/tokenchain/dp-hub/client"
-	"github.com/tokenchain/dp-hub/x/did/internal/keeper"
-	"github.com/tokenchain/dp-hub/x/did/internal/types"
+	rest "github.com/tokenchain/ixo-blockchain/client"
+	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
+	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 )
 
 func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {

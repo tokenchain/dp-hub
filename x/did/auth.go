@@ -3,10 +3,10 @@ package did
 import (
 	"github.com/btcsuite/btcutil/base58"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/dp-hub/x"
-	"github.com/tokenchain/dp-hub/x/did/internal/types"
-	"github.com/tokenchain/dp-hub/x/ixo"
-	types2 "github.com/tokenchain/dp-hub/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 )
 
 func GetPubKeyGetter(keeper Keeper) ixo.PubKeyGetter {

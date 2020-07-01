@@ -4,10 +4,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	er "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/tokenchain/dp-hub/x"
-	types2 "github.com/tokenchain/dp-hub/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x"
+	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 
-	"github.com/tokenchain/dp-hub/x/did/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 )
 
 type Keeper struct {

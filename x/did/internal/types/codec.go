@@ -2,14 +2,14 @@ package types
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/tokenchain/dp-hub/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 )
 
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgAddDid{}, "did/AddDid", nil)
 	cdc.RegisterConcrete(MsgAddCredential{}, "did/AddCredential", nil)
 	cdc.RegisterInterface((*types.DidDoc)(nil), nil)
-	// TODO: https://github.com/tokenchain/dp-hub/issues/76
+	// TODO: https://github.com/tokenchain/ixo-blockchain/issues/76
 	cdc.RegisterConcrete(BaseDidDoc{}, "did/BaseDidDoc", nil)
 	//cdc.RegisterConcrete(DidCredential{}, "did/DidCredential", nil)
 	//cdc.RegisterConcrete(Claim{}, "did/Claim", nil)
