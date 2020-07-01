@@ -68,4 +68,4 @@ echo $VERSION
 git add .
 git commit -m "compile success modification v$VERSION"
 #git remote add origin https://gitee.com/jjhoc/b-explorer-settings.git
-git push
+#git push
