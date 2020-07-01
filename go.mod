@@ -1,32 +1,23 @@
-module github.com/tokenchain/ixo-blockchain
+module github.com/github.com/tokenchain/bsd
 
-go 1.12
+go 1.13
 
 require (
-	github.com/btcsuite/btcutil v1.0.2
-	github.com/confio/ics23/go v0.0.0-20200610201322-18c7bd6b2dd3 // indirect
+	github.com/btcsuite/btcd v0.0.0-20190807005414-4063feeff79a // indirect
 	github.com/coreos/go-etcd v2.0.0+incompatible // indirect
-	github.com/cosmos/cosmos-sdk v0.38.5-rc1 // --- latest
-	github.com/cosmos/go-bip39 v0.0.0-20180819234021-555e2067c45d
-	github.com/cpuguy83/go-md2man v1.0.10 // indirect; indirect;
-	github.com/dpapathanasiou/go-recaptcha v0.0.0-20190121160230-be5090b17804
-	github.com/gogo/protobuf v1.3.1 // indirect
-	github.com/gorilla/mux v1.7.3
-	github.com/joho/godotenv v1.3.0
-	github.com/onsi/ginkgo v1.9.0 // indirect
-	github.com/onsi/gomega v1.6.0 // indirect
-	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v1.0.0
-	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.6.3
-	github.com/stretchr/testify v1.6.1
-	github.com/tendermint/ed25519 v0.0.0-20171027050219-d8387025d2b9
+	github.com/cosmos/cosmos-sdk v0.38.2
+	github.com/cpuguy83/go-md2man v1.0.10 // indirect
+	github.com/golang/mock v1.3.1 // indirect
+	github.com/onsi/ginkgo v1.8.0 // indirect
+	github.com/onsi/gomega v1.5.0 // indirect
+	github.com/rcrowley/go-metrics v0.0.0-20190706150252-9beb055b7962 // indirect
+	github.com/spf13/afero v1.2.2 // indirect
+	github.com/spf13/cobra v0.0.6
+	github.com/spf13/viper v1.6.2
 	github.com/tendermint/go-amino v0.15.1
-	github.com/tendermint/tendermint v0.33.5 // latest
-	github.com/tendermint/tm-db v0.5.1
-	github.com/tendermint/tmlibs v0.8.1
-	github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce
-	github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8 // indirect; --- indirect
-	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79 // ---
-	gopkg.in/yaml.v2 v2.3.0 // ---
+	github.com/tendermint/tendermint v0.33.2
+	github.com/tendermint/tm-db v0.5.0
+	github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8 // indirect
+	golang.org/x/net v0.0.0-20190827160401-ba9fcec4b297 // indirect
+	golang.org/x/text v0.3.2 // indirect
 )
