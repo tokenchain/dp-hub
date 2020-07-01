@@ -48,7 +48,7 @@ build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 # process linker flags
 
 ldflags = \
-    -X github.com/cosmos/cosmos-sdk/version.Name=DarkpoolBlockchain \
+    -X github.com/cosmos/cosmos-sdk/version.Name=Darkpool \
 	-X github.com/cosmos/cosmos-sdk/version.ServerName=ixod \
 	-X github.com/cosmos/cosmos-sdk/version.ClientName=ixocli \
 	-X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
