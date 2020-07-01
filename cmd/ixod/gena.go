@@ -4,28 +4,30 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/tendermint/tendermint/libs/cli"
 
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
-	"github.com/cosmos/cosmos-sdk/x/genutil"
-
-	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/codec"
-	keyring "github.com/cosmos/cosmos-sdk/crypto/keys"
-	autht "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authvesting "github.com/cosmos/cosmos-sdk/x/auth/vesting"
-	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/genutil"
+	"github.com/tendermint/tendermint/libs/cli"
 )
 
-
+const (
+	flagClientHome   = "home-client"
+	flagVestingStart = "vesting-start-time"
+	flagVestingEnd   = "vesting-end-time"
+	flagVestingAmt   = "vesting-amount"
+)
 // AddGenesisAccountCmd returns add-genesis-account cobra Command.
-
-func FAddGenesisAccountCmd(
+func AddGenesisAccountCmd(
 	ctx *server.Context, cdc *codec.Codec, defaultNodeHome, defaultClientHome string,
 ) *cobra.Command {
 
@@ -46,7 +48,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			if err != nil {
 				// attempt to lookup address from Keybase if no address was provided
-				kb, err := keyring.NewKeyring(
+				kb, err := keys.NewKeyring(
 					sdk.KeyringServiceName(),
 					viper.GetString(flags.FlagKeyringBackend),
 					viper.GetString(flagClientHome),
@@ -78,23 +80,12 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 
 			// create concrete account type based on input parameters
 			var genAccount authexported.GenesisAccount
-			//balances := bank.Balance{Address: addr, Coins: coins.Sort()}
-			//coins := bank.NewQueryBalanceParams(addr)
-			//coins := bankt.NewQueryBalanceParams(addr)
-			//coins.IsZero()
-			//balances := bank.NewQueryBalanceParams(addr)
-			balances := autht.NewBaseAccount(addr, coins.Sort(), nil, 0, 0)
-			//balances := bankt.Balance{Address: addr, Coins: coins.Sort()}
-			//baseAccount := autht.NewBaseAccountWithAddress(addr)
-			if !vestingAmt.IsZero() {
-				baseVestingAccount, err := authvesting.NewBaseVestingAccount(balances, vestingAmt.Sort(), vestingEnd)
 
+			baseAccount := auth.NewBaseAccount(addr, coins.Sort(), nil, 0, 0)
+			if !vestingAmt.IsZero() {
+				baseVestingAccount, err := authvesting.NewBaseVestingAccount(baseAccount, vestingAmt.Sort(), vestingEnd)
 				if err != nil {
-					return fmt.Errorf("failed to parse vesting amount: %w", err)
-				}
-				if (balances.Coins.IsZero() && !baseVestingAccount.OriginalVesting.IsZero()) ||
-					baseVestingAccount.OriginalVesting.IsAnyGT(coins) {
-					return errors.New("vesting amount cannot be greater than total amount")
+					return fmt.Errorf("failed to create base vesting account: %w", err)
 				}
 
 				switch {
@@ -108,7 +99,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 					return errors.New("invalid vesting parameters; must supply start and end time or end time")
 				}
 			} else {
-				genAccount = balances
+				genAccount = baseAccount
 			}
 
 			if err := genAccount.Validate(); err != nil {
@@ -122,8 +113,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			}
 
 			authGenState := auth.GetGenesisStateFromAppState(cdc, appState)
-			//bankGenState := bankt.GetGenesisStateFromAppState(depCdc, appState)
-			//bankGenState := bankt.NewGenesisState(true)
+
 			if authGenState.Accounts.Contains(addr) {
 				return fmt.Errorf("cannot add account at existing address %s", addr)
 			}
@@ -139,7 +129,6 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			}
 
 			appState[auth.ModuleName] = authGenStateBz
-			appState[bank.ModuleName] = authGenStateBz
 
 			appStateJSON, err := cdc.MarshalJSON(appState)
 			if err != nil {
