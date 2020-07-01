@@ -25,7 +25,7 @@ require (
 	github.com/tendermint/tendermint v0.33.2
 	github.com/tendermint/tm-db v0.5.0
 	github.com/tendermint/tmlibs v0.9.0 // indirect
-	github.com/tokenchain/ixo-blockchain v1.3.1
+	github.com/tokenchain/ixo-blockchain v1.3.2
 	github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce // indirect
 	github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8 // indirect
 	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
