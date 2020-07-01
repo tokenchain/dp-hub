@@ -17,30 +17,25 @@ import (
 	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
-	dop "github.com/tokenchain/ixo-blockchain/app"
+	"github.com/tokenchain/ixo-blockchain/app"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/cli"
-
-
-
 )
 
 func main() {
 	// Configure cobra to sort commands
 	cobra.EnableCommandSorting = false
-
 	// Instantiate the codec for the command line application
-	cdc := dop.MakeCodec()
-
+	cdc := app.MakeCodec()
 	// Read in the configuration file for the sdk
 	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount(dop.Bech32PrefixAccAddr, dop.Bech32PrefixAccPub)
-	config.SetBech32PrefixForValidator(dop.Bech32PrefixValAddr, dop.Bech32PrefixValPub)
-	config.SetBech32PrefixForConsensusNode(dop.Bech32PrefixConsAddr, dop.Bech32PrefixConsPub)
+	config.SetBech32PrefixForAccount(app.Bech32PrefixAccAddr, app.Bech32PrefixAccPub)
+	config.SetBech32PrefixForValidator(app.Bech32PrefixValAddr, app.Bech32PrefixValPub)
+	config.SetBech32PrefixForConsensusNode(app.Bech32PrefixConsAddr, app.Bech32PrefixConsPub)
 	config.Seal()
 
 	// TODO: setup keybase, viper object, etc. to be passed into

@@ -48,8 +48,8 @@ const (
 var (
 
 	// TODO: rename your cli
-	DefaultCLIHome  = os.ExpandEnv("$HOME/.dxocli")
-	DefaultNodeHome = os.ExpandEnv("$HOME/.dxod")
+	DefaultCLIHome  = os.ExpandEnv("$HOME/.dmcli")
+	DefaultNodeHome = os.ExpandEnv("$HOME/.dmd")
 
 	// ModuleBasics The module BasicManager is in charge of setting up basic,
 	// non-dependant module elements, such as codec registration
@@ -86,12 +86,10 @@ var (
 // returned.
 func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
-
 	ModuleBasics.RegisterCodec(cdc)
 	vesting.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
-
 	return cdc.Seal()
 }
 
@@ -99,16 +97,13 @@ func MakeCodec() *codec.Codec {
 type NewApp struct {
 	*bam.BaseApp
 	cdc *codec.Codec
-
+	// inv check period
 	invCheckPeriod uint
-
 	// keys to access the substores
 	keys  map[string]*sdk.KVStoreKey
 	tKeys map[string]*sdk.TransientStoreKey
-
 	// subspaces
 	subspaces map[string]params.Subspace
-
 	// keepers
 	accountKeeper  auth.AccountKeeper
 	bankKeeper     bank.Keeper
@@ -123,10 +118,8 @@ type NewApp struct {
 	upgradeKeeper  upgrade.Keeper
 	evidenceKeeper evidence.Keeper
 	// TODO: Add your module(s)
-
 	// Module Manager
 	mm *module.Manager
-
 	// simulation manager
 	sm *module.SimulationManager
 }

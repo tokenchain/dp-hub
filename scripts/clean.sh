@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-
-rm -rf "$HOME"/.dxod
-rm -rf "$HOME"/.dxocli
+. ./_auth.sh
+rm -rf $ENVDFOLDER
+rm -rf $ENVCLIFOLDER
