@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/github.com/tokenchain/bsd/app"
 	"os"
 	"path"
 
