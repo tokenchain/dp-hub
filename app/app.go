@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -11,6 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
+	"github.com/cosmos/cosmos-sdk/x/evidence"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	"github.com/cosmos/cosmos-sdk/x/mint"
@@ -19,6 +21,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/cosmos/cosmos-sdk/x/upgrade"
+	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
@@ -60,11 +64,13 @@ var (
 		staking.AppModuleBasic{},
 		mint.AppModuleBasic{},
 		distribution.AppModuleBasic{},
-		gov.NewAppModuleBasic(paramsClient.ProposalHandler, distribution.ProposalHandler),
+		gov.NewAppModuleBasic(paramsClient.ProposalHandler, distribution.ProposalHandler, upgradeclient.ProposalHandler),
 		params.AppModuleBasic{},
 		crisis.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		supply.AppModuleBasic{},
+		upgrade.AppModuleBasic{},
+		evidence.AppModuleBasic{},
 		did.AppModuleBasic{},
 		payments.AppModuleBasic{},
 		project.AppModuleBasic{},
@@ -76,12 +82,13 @@ var (
 	)
 
 	maccPerms = map[string][]string{
-		auth.FeeCollectorName:            nil,
-		distribution.ModuleName:          nil,
-		mint.ModuleName:                  {supply.Minter},
-		staking.BondedPoolName:           {supply.Burner, supply.Staking},
-		staking.NotBondedPoolName:        {supply.Burner, supply.Staking},
-		gov.ModuleName:                   {supply.Burner},
+		auth.FeeCollectorName:     nil,
+		distribution.ModuleName:   nil,
+		mint.ModuleName:           {supply.Minter},
+		staking.BondedPoolName:    {supply.Burner, supply.Staking},
+		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
+		gov.ModuleName:            {supply.Burner},
+		//=================================
 		bonds.BondsMintBurnAccount:       {supply.Minter, supply.Burner},
 		bonds.BatchesIntermediaryAccount: nil,
 		treasury.ModuleName:              {supply.Minter, supply.Burner},
@@ -117,18 +124,19 @@ type DpApp struct {
 	distributionKeeper distribution.Keeper
 	supplyKeeper       supply.Keeper
 	paramsKeeper       params.Keeper
-
-	govKeeper      gov.Keeper
-	mintKeeper     mint.Keeper
-	crisisKeeper   crisis.Keeper
-	didKeeper      did.Keeper
-	paymentsKeeper payments.Keeper
-	projectKeeper  project.Keeper
-	bonddocKeeper  bonddoc.Keeper
-	bondsKeeper    bonds.Keeper
-	oraclesKeeper  oracles.Keeper
-	treasuryKeeper treasury.Keeper
-	nsKeeper       nameservice.Keeper
+	govKeeper          gov.Keeper
+	upgradeKeeper      upgrade.Keeper
+	evidenceKeeper     evidence.Keeper
+	mintKeeper         mint.Keeper
+	crisisKeeper       crisis.Keeper
+	didKeeper          did.Keeper
+	paymentsKeeper     payments.Keeper
+	projectKeeper      project.Keeper
+	bonddocKeeper      bonddoc.Keeper
+	bondsKeeper        bonds.Keeper
+	oraclesKeeper      oracles.Keeper
+	treasuryKeeper     treasury.Keeper
+	nsKeeper           nameservice.Keeper
 
 	mm *module.Manager
 	sm *module.SimulationManager // simulation manager
@@ -138,7 +146,7 @@ type DpApp struct {
 //var _ simapp.App = (*DpApp)(nil)
 
 func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
-	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp)) *DpApp {
+	invCheckPeriod uint, skipUpgradeHeights map[int64]bool, baseAppOptions ...func(*bam.BaseApp)) *DpApp {
 
 	cdc := MakeCodec()
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
@@ -148,8 +156,9 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
 		supply.StoreKey, distribution.StoreKey, slashing.StoreKey,
-		params.StoreKey, gov.StoreKey, did.StoreKey, mint.StoreKey,
-		project.StoreKey, bonds.StoreKey, bonddoc.StoreKey, treasury.StoreKey,
+		params.StoreKey, gov.StoreKey, evidence.StoreKey, upgrade.StoreKey,
+
+		did.StoreKey, mint.StoreKey, project.StoreKey, bonds.StoreKey, bonddoc.StoreKey, treasury.StoreKey,
 		oracles.StoreKey)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -171,6 +180,8 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	app.subspaces[mint.ModuleName] = app.paramsKeeper.Subspace(mint.DefaultParamspace)
 	app.subspaces[slashing.ModuleName] = app.paramsKeeper.Subspace(slashing.DefaultParamspace)
 	app.subspaces[gov.ModuleName] = app.paramsKeeper.Subspace(gov.DefaultParamspace)
+	app.subspaces[evidence.ModuleName] = app.paramsKeeper.Subspace(evidence.DefaultParamspace)
+
 	app.subspaces[crisis.ModuleName] = app.paramsKeeper.Subspace(crisis.DefaultParamspace)
 	app.subspaces[payments.ModuleName] = app.paramsKeeper.Subspace(payments.DefaultParamspace)
 	app.subspaces[project.ModuleName] = app.paramsKeeper.Subspace(project.DefaultParamspace)
@@ -189,20 +200,42 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	//app.slashingKeeper = slashing.NewKeeper(app.cdc, keys[slashing.StoreKey], &stakingKeeper, app.subspaces[slashing.ModuleName])
 	app.slashingKeeper = slashing.NewKeeper(app.cdc, keys[slashing.StoreKey], &stakingKeeper, app.subspaces[slashing.ModuleName])
 	app.crisisKeeper = crisis.NewKeeper(app.subspaces[crisis.ModuleName], invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
+	app.upgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
+
+	// create evidence keeper with evidence router
+	evidenceKeeper := evidence.NewKeeper(
+		app.cdc, keys[evidence.StoreKey], app.subspaces[evidence.ModuleName], &stakingKeeper, app.slashingKeeper,
+	)
+	evidenceRouter := evidence.NewRouter()
+
+	// TODO: register evidence routes
+	evidenceKeeper.SetRouter(evidenceRouter)
+	app.evidenceKeeper = *evidenceKeeper
 
 	govRouter := gov.NewRouter()
-	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(app.paramsKeeper)).
-		AddRoute(distribution.RouterKey, distribution.NewCommunityPoolSpendProposalHandler(app.distributionKeeper))
+	govRouter.
+		AddRoute(gov.RouterKey, gov.ProposalHandler).
+		AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(app.paramsKeeper)).
+		AddRoute(distribution.RouterKey, distribution.NewCommunityPoolSpendProposalHandler(app.distributionKeeper)).
+		AddRoute(upgrade.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.upgradeKeeper))
 
 	//	app.govKeeper = gov.NewKeeper(app.cdc, keys[gov.StoreKey], app.subspaces[gov.ModuleName], app.supplyKeeper, &stakingKeeper, govRouter)
-	app.govKeeper = gov.NewKeeper(app.cdc, keys[gov.StoreKey], app.subspaces[gov.ModuleName], app.supplyKeeper, &stakingKeeper, govRouter)
+	app.govKeeper = gov.NewKeeper(
+		app.cdc,
+		keys[gov.StoreKey], app.subspaces[gov.ModuleName],
+		app.supplyKeeper, &stakingKeeper, govRouter,
+	)
 
-	app.stakingKeeper = *stakingKeeper.SetHooks(staking.NewMultiStakingHooks(app.distributionKeeper.Hooks(),
-		app.slashingKeeper.Hooks()))
+	app.stakingKeeper = *stakingKeeper.SetHooks(
+		staking.NewMultiStakingHooks(
+			app.distributionKeeper.Hooks(),
+			app.slashingKeeper.Hooks(),
+		),
+	)
 
 	app.didKeeper = did.NewKeeper(app.cdc, keys[did.StoreKey])
-	app.paymentsKeeper = payments.NewKeeper(app.cdc, keys[payments.StoreKey], app.subspaces[payments.ModuleName] , app.bankKeeper, paymentsReservedIdPrefixes)
-	app.projectKeeper = project.NewKeeper(app.cdc, keys[project.StoreKey], app.subspaces[project.ModuleName] , app.accountKeeper, app.paymentsKeeper)
+	app.paymentsKeeper = payments.NewKeeper(app.cdc, keys[payments.StoreKey], app.subspaces[payments.ModuleName], app.bankKeeper, paymentsReservedIdPrefixes)
+	app.projectKeeper = project.NewKeeper(app.cdc, keys[project.StoreKey], app.subspaces[project.ModuleName], app.accountKeeper, app.paymentsKeeper)
 	app.bonddocKeeper = bonddoc.NewKeeper(app.cdc, keys[bonddoc.StoreKey])
 	app.bondsKeeper = bonds.NewKeeper(app.bankKeeper, app.supplyKeeper, app.accountKeeper, app.stakingKeeper, keys[bonds.StoreKey], app.cdc)
 	app.oraclesKeeper = oracles.NewKeeper(app.cdc, keys[oracles.StoreKey])
@@ -220,6 +253,9 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		mint.NewAppModule(app.mintKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.accountKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
+		upgrade.NewAppModule(app.upgradeKeeper),
+		evidence.NewAppModule(app.evidenceKeeper),
+
 
 		did.NewAppModule(app.didKeeper),
 		payments.NewAppModule(app.paymentsKeeper, app.bankKeeper),
@@ -230,8 +266,18 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		oracles.NewAppModule(app.oraclesKeeper),
 	)
 
-	app.mm.SetOrderBeginBlockers(mint.ModuleName, distribution.ModuleName, slashing.ModuleName, bonds.ModuleName)
-	app.mm.SetOrderEndBlockers(gov.ModuleName, staking.ModuleName, bonds.ModuleName)
+	app.mm.SetOrderBeginBlockers(
+		upgrade.ModuleName,
+		mint.ModuleName,
+		distribution.ModuleName,
+		slashing.ModuleName,
+		bonds.ModuleName)
+
+	app.mm.SetOrderEndBlockers(
+		crisis.ModuleName,
+		gov.ModuleName,
+		staking.ModuleName,
+		bonds.ModuleName)
 
 	app.mm.SetOrderInitGenesis(
 		distribution.ModuleName,
@@ -244,6 +290,8 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		supply.ModuleName,
 		crisis.ModuleName,
 		genutil.ModuleName,
+		evidence.ModuleName,
+		// TODO: Add your module(s)
 		did.ModuleName,
 		project.ModuleName,
 		payments.ModuleName,
@@ -253,12 +301,26 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		oracles.ModuleName,
 		nameservice.ModuleName)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
-	app.mm.RegisterInvariants(&app.crisisKeeper)
+	//app.mm.RegisterInvariants(&app.crisisKeeper)
 
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 	app.SetAnteHandler(initAnteHandler(app))
+
+	app.sm = module.NewSimulationManager(
+		auth.NewAppModule(app.accountKeeper),
+		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
+		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
+		gov.NewAppModule(app.govKeeper, app.accountKeeper, app.supplyKeeper),
+		mint.NewAppModule(app.mintKeeper),
+		distribution.NewAppModule(app.distributionKeeper, app.accountKeeper, app.supplyKeeper, app.stakingKeeper),
+		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
+		slashing.NewAppModule(app.slashingKeeper, app.accountKeeper, app.stakingKeeper),
+		// TODO: Add your module(s)
+	)
+
+	app.sm.RegisterStoreDecoders()
 
 	app.MountKVStores(keys)
 	app.MountTransientStores(tKeys)
@@ -280,19 +342,19 @@ func NewDefaultGenesisState() GenesisState {
 	return ModuleBasics.DefaultGenesis()
 }
 
+func (app *DpApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+	//var genesisState map[string]json.RawMessage
+	var genesisState simapp.GenesisState
+	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
+	return app.mm.InitGenesis(ctx, genesisState)
+}
+
 func (app *DpApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
 }
 
 func (app *DpApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.mm.EndBlock(ctx, req)
-}
-
-func (app *DpApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	var genesisState map[string]json.RawMessage
-	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
-
-	return app.mm.InitGenesis(ctx, genesisState)
 }
 
 func (app *DpApp) LoadHeight(height int64) error {
@@ -312,15 +374,23 @@ func (app *DpApp) ModuleAccountAddrs() map[string]bool {
 func (app *DpApp) Codec() *codec.Codec {
 	return app.cdc
 }
+
 // SimulationManager implements the SimulationApp interface
 func (app *DpApp) SimulationManager() *module.SimulationManager {
 	return app.sm
 }
 
+// GetMaccPerms returns a mapping of the application's module account permissions.
+func GetMaccPerms() map[string][]string {
+	modAccPerms := make(map[string][]string)
+	for k, v := range maccPerms {
+		modAccPerms[k] = v
+	}
+	return modAccPerms
+}
+
 func (app *DpApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error) {
-
 	ctx := app.NewContext(true, abci.Header{Height: app.LastBlockHeight()})
-
 	if forZeroHeight {
 		app.prepForZeroHeightGenesis(ctx, jailWhiteList)
 	}
@@ -502,15 +572,6 @@ func initAnteHandler(app *DpApp) sdk.AnteHandler {
 			return cosmosAnteHandler(ctx, tx, simulate)
 		}
 	}
-}
-
-// GetMaccPerms returns a mapping of the application's module account permissions.
-func GetMaccPerms() map[string][]string {
-	modAccPerms := make(map[string][]string)
-	for k, v := range maccPerms {
-		modAccPerms[k] = v
-	}
-	return modAccPerms
 }
 
 /*case fees.RouterKey:

@@ -10,6 +10,7 @@ import (
 	stk "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/cosmos/cosmos-sdk/store"
 	genUtilCli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/spf13/cobra"
@@ -46,7 +47,7 @@ func main() {
 	ctx := server.NewDefaultContext()
 
 	rootCmd := &cobra.Command{
-		Use:               "dxod",
+		Use:               "ixod",
 		Short:             "dxo Daemon (server)",
 		PersistentPreRunE: server.PersistentPreRunEFn(ctx),
 	}
@@ -73,10 +74,24 @@ func main() {
 }
 
 func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application {
-	return app.NewIxoApp(logger, db, traceStore, true, invCheckPeriod,
+	var cache sdk.MultiStorePersistentCache
+
+	if viper.GetBool(server.FlagInterBlockCache) {
+		cache = store.NewCommitKVStoreCacheManager()
+	}
+
+	skipUpgradeHeights := make(map[int64]bool)
+	for _, h := range viper.GetIntSlice(server.FlagUnsafeSkipUpgrades) {
+		skipUpgradeHeights[int64(h)] = true
+	}
+
+	return app.NewIxoApp(
+		logger, db, traceStore, true, invCheckPeriod, skipUpgradeHeights,
 		baseapp.SetPruning(stk.NewPruningOptionsFromString(viper.GetString("pruning"))),
-		baseapp.SetPruning(stk.NewPruningOptionsFromString(viper.GetString("--pruning-keep-every=100"))),
 		baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
+		baseapp.SetHaltHeight(viper.GetUint64(server.FlagHaltHeight)),
+		baseapp.SetHaltTime(viper.GetUint64(server.FlagHaltTime)),
+		baseapp.SetInterBlockCache(cache),
 	)
 }
 
@@ -84,7 +99,7 @@ func exportAppStateAndTMValidators(logger log.Logger, db dbm.DB, traceStore io.W
 	forZeroHeight bool, jailWhiteList []string) (json.RawMessage, []tmtypes.GenesisValidator, error) {
 
 	if height != -1 {
-		nsApp := app.NewIxoApp(logger, db, traceStore, false, uint(2))
+		nsApp := app.NewIxoApp(logger, db, traceStore, false, uint(1), map[int64]bool{})
 		err := nsApp.LoadHeight(height)
 		if err != nil {
 			return nil, nil, err
@@ -92,7 +107,7 @@ func exportAppStateAndTMValidators(logger log.Logger, db dbm.DB, traceStore io.W
 		return nsApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 	}
 
-	nsApp := app.NewIxoApp(logger, db, traceStore, true, uint(2))
+	nsApp := app.NewIxoApp(logger, db, traceStore, true, uint(1), map[int64]bool{})
 
 	return nsApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 }

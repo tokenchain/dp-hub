@@ -14,15 +14,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	authCli "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
+	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	bankCli "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tmlibs/cli"
-	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	"github.com/tokenchain/ixo-blockchain/app"
 	cli2 "github.com/tokenchain/ixo-blockchain/client/cli"
-	tx2 "github.com/tokenchain/ixo-blockchain/client/tx"
 	/*	distRest "github.com/cosmos/cosmos-sdk/x/distribution/client/rest"
 		distcmd "github.com/cosmos/cosmos-sdk/x/distribution"
 		distClient "github.com/cosmos/cosmos-sdk/x/distribution/client"*/
@@ -100,9 +99,9 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 
 func txCmd(cdc *amino.Codec) *cobra.Command {
 	txCmd := &cobra.Command{
-		Use:   "tx",
+		Use:     "tx",
 		Aliases: []string{"tx"},
-		Short: "Transactions subcommands",
+		Short:   "Transactions subcommands",
 	}
 
 	txCmd.AddCommand(
@@ -117,6 +116,15 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 	)
 	app.ModuleBasics.AddTxCommands(txCmd, cdc)
 	return txCmd
+}
+
+// registerRoutes registers the routes from the different modules for the LCD.
+// NOTE: details on the routes added for each module are in the module documentation
+// NOTE: If making updates here you also need to update the test helper in client/lcd/test_helper.go
+func registerRoutes(rs *lcd.RestServer) {
+	client.RegisterRoutes(rs.CliCtx, rs.Mux)
+	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
+	app.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }
 
 func initConfig(cmd *cobra.Command) error {
@@ -140,12 +148,4 @@ func initConfig(cmd *cobra.Command) error {
 		return err
 	}
 	return viper.BindPFlag(cli.OutputFlag, cmd.PersistentFlags().Lookup(cli.OutputFlag))
-}
-
-func registerRoutes(rs *lcd.RestServer) {
-	client.RegisterRoutes(rs.CliCtx, rs.Mux)
-	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
-	tx2.RegisterTxRoutes(rs.CliCtx, rs.Mux)
-	//distRest.RegisterRoutes(rs.CliCtx, rs.Mux, rs., distcmd.StoreKey)
-	app.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }
