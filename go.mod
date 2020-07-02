@@ -3,6 +3,7 @@ module github.com/tokenchain/ixo-blockchain
 go 1.12
 
 require (
+	github.com/agl/ed25519 v0.0.0-20200225211852-fd4d107ace12 // indirect
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/confio/ics23/go v0.0.0-20200610201322-18c7bd6b2dd3 // indirect
 	github.com/coreos/go-etcd v2.0.0+incompatible // indirect

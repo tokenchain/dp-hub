@@ -48,9 +48,9 @@ build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 # process linker flags
 
 ldflags = \
-    -X github.com/cosmos/cosmos-sdk/version.Name=DarkpoolBlockchain \
-	-X github.com/cosmos/cosmos-sdk/version.ServerName=ixod \
-	-X github.com/cosmos/cosmos-sdk/version.ClientName=ixocli \
+    -X github.com/cosmos/cosmos-sdk/version.Name=dpChain \
+	-X github.com/cosmos/cosmos-sdk/version.ServerName=dpd \
+	-X github.com/cosmos/cosmos-sdk/version.ClientName=dcli \
 	-X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 	-X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 	-X "github.com/tokenchain/ixo-blockchain/version.BuildTags=$(build_tags_comma_sep)"
@@ -68,20 +68,20 @@ OS=linux
 
 build: go.sum
 ifeq ($(OS),Windows_NT)
-	go build -mod=readonly $(BUILD_FLAGS) -o build/ixod.exe ./cmd/ixod
-	go build -mod=readonly $(BUILD_FLAGS) -o build/ixocli.exe ./cmd/ixocli
+	go build -mod=readonly $(BUILD_FLAGS) -o build/dpd.exe ./cmd/dpd
+	go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli.exe ./cmd/dpcli
 else
-	go build -mod=readonly $(BUILD_FLAGS) -o build/ixod ./cmd/ixod
-	go build -mod=readonly $(BUILD_FLAGS) -o build/ixocli ./cmd/ixocli
+	go build -mod=readonly $(BUILD_FLAGS) -o build/dpd ./cmd/dpd
+	go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli ./cmd/dpcli
 endif
 
 buildlinux: go.sum
-	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/ixod ./cmd/ixod
-	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/ixocli ./cmd/ixocli
+	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/dpd ./cmd/dpd
+	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli ./cmd/dpcli
 
 install: go.sum
-	go install -mod=readonly $(BUILD_FLAGS) ./cmd/ixod
-	go install -mod=readonly $(BUILD_FLAGS) ./cmd/ixocli
+	go install -mod=readonly $(BUILD_FLAGS) ./cmd/dpd
+	go install -mod=readonly $(BUILD_FLAGS) ./cmd/dpcli
 
 sign-release:
 	if test -n "$(GPG_SIGNING_KEY)"; then \
