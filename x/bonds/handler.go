@@ -8,7 +8,7 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"strings"
 )
 
@@ -209,7 +209,7 @@ func handleMsgEditBond(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgEditB
 }
 
 func handleMsgBuy(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgBuy) (*sdk.Result, error) {
-	buyerAddr := types2.DidToAddr(msg.BuyerDid)
+	buyerAddr := did.DidToAddr(msg.BuyerDid)
 
 	bond, found := keeper.GetBond(ctx, msg.BondDid)
 	if !found {
@@ -278,7 +278,7 @@ func handleMsgBuy(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgBuy) (*sdk
 }
 
 func performFirstSwapperFunctionBuy(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgBuy) (*sdk.Result, error) {
-	buyerAddr := types2.DidToAddr(msg.BuyerDid)
+	buyerAddr := did.DidToAddr(msg.BuyerDid)
 
 	// TODO: investigate effect that a high amount has on future buyers' ability to buy.
 
@@ -337,7 +337,7 @@ func performFirstSwapperFunctionBuy(ctx sdk.Context, keeper keeper.Keeper, msg t
 }
 
 func handleMsgSell(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgSell) (*sdk.Result, error) {
-	sellerAddr := types2.DidToAddr(msg.SellerDid)
+	sellerAddr := did.DidToAddr(msg.SellerDid)
 
 	bond, found := keeper.GetBond(ctx, msg.BondDid)
 	if !found {
@@ -404,7 +404,7 @@ func handleMsgSell(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgSell) (*s
 }
 
 func handleMsgSwap(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgSwap) (*sdk.Result, error) {
-	swapperAddr := types2.DidToAddr(msg.SwapperDid)
+	swapperAddr := did.DidToAddr(msg.SwapperDid)
 
 	bond, found := keeper.GetBond(ctx, msg.BondDid)
 	if !found {

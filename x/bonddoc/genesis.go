@@ -1,14 +1,20 @@
 package bonddoc
 
 import (
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
+	println(fmt.Sprintf("===BondDocs=== %v", data))
 	// Initialise bond docs
-	for _, b := range data.BondDocs {
-		keeper.SetBondDoc(ctx, &b)
+	if data.BondDocs != nil {
+		for _, b := range data.BondDocs {
+			println(fmt.Sprintf("===BondDocs=== %v", b))
+			keeper.SetBondDoc(ctx, &b)
+		}
 	}
+	println(fmt.Sprintf("===BondDocs done=== %v", data))
 }
 
 func ExportGenesis(ctx sdk.Context, k Keeper) GenesisState {

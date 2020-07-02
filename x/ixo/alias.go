@@ -1,7 +1,10 @@
 package ixo
 
+import "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+
 const (
 	ModuleName        = "dapx"
+	NativeToken       = types.IxoNativeToken
 	DefaultParamspace = ModuleName
 	StoreKey          = ModuleName
 	RouterKey         = ModuleName

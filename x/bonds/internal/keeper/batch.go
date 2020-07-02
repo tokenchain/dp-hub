@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 )
 
@@ -186,7 +187,7 @@ func (k Keeper) GetUpdatedBatchPricesAfterSell(ctx sdk.Context, bondDid types2.D
 
 func (k Keeper) PerformBuyAtPrice(ctx sdk.Context, bondDid types2.Did, bo types.BuyOrder, prices sdk.DecCoins) (err error) {
 	bond := k.MustGetBond(ctx, bondDid)
-	buyerAddr := types2.DidToAddr(bo.AccountDid)
+	buyerAddr := did.DidToAddr(bo.AccountDid)
 
 	// Mint bond tokens
 	err = k.SupplyKeeper.MintCoins(ctx, types.BondsMintBurnAccount,
@@ -262,7 +263,7 @@ func (k Keeper) PerformBuyAtPrice(ctx sdk.Context, bondDid types2.Did, bo types.
 
 func (k Keeper) PerformSellAtPrice(ctx sdk.Context, bondDid types2.Did, so types.SellOrder, prices sdk.DecCoins) (err error) {
 	bond := k.MustGetBond(ctx, bondDid)
-	sellerAddr := types2.DidToAddr(so.AccountDid)
+	sellerAddr := did.DidToAddr(so.AccountDid)
 
 	reserveReturns := types.MultiplyDecCoinsByInt(prices, so.Amount.Amount)
 	reserveReturnsRounded := types.RoundReserveReturns(reserveReturns)
@@ -330,7 +331,7 @@ func (k Keeper) PerformSwap(ctx sdk.Context, bondDid types2.Did, so types.SwapOr
 	}
 
 	// Give resultant tokens to swapper (reserveReturns should never be zero)
-	swapperAddr := types2.DidToAddr(so.AccountDid)
+	swapperAddr := did.DidToAddr(so.AccountDid)
 	err = k.BankKeeper.SendCoins(ctx, bond.ReserveAddress, swapperAddr, reserveReturns)
 	if err != nil {
 		return err, false
@@ -425,7 +426,7 @@ func (k Keeper) PerformSwapOrders(ctx sdk.Context, bondDid types2.Did) {
 					logger.Debug(fmt.Sprintf("cancellation reason: %s", err.Error()))
 
 					// Return from amount to swapper
-					swapperAddr := types2.DidToAddr(so.AccountDid)
+					swapperAddr := did.DidToAddr(so.AccountDid)
 					err := k.SupplyKeeper.SendCoinsFromModuleToAccount(ctx,
 						types.BatchesIntermediaryAccount, swapperAddr, sdk.Coins{so.Amount})
 					if err != nil {
@@ -493,7 +494,7 @@ func (k Keeper) CancelUnfulfillableBuys(ctx sdk.Context, bondDid types2.Did) (ca
 				))
 
 				// Return reserve to buyer
-				buyerAddr := types2.DidToAddr(bo.AccountDid)
+				buyerAddr := did.DidToAddr(bo.AccountDid)
 				err := k.SupplyKeeper.SendCoinsFromModuleToAccount(ctx,
 					types.BatchesIntermediaryAccount, buyerAddr, bo.MaxPrices)
 				if err != nil {

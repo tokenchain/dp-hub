@@ -2,8 +2,8 @@ package cli
 
 import (
 	"fmt"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -39,7 +39,7 @@ func GetCmdCreatePaymentTemplate(cdc *codec.Codec) *cobra.Command {
 			templateJsonStr := args[0]
 			sovrinDidStr := args[1]
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := did.UnmarshalDxpDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
@@ -51,7 +51,7 @@ func GetCmdCreatePaymentTemplate(cdc *codec.Codec) *cobra.Command {
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgCreatePaymentTemplate(template, sovrinDid)
 
@@ -89,13 +89,13 @@ func GetCmdCreatePaymentContract(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := did.UnmarshalDxpDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgCreatePaymentContract(
 				templateIdStr, contractIdStr, payerAddr,
@@ -124,7 +124,7 @@ func GetCmdCreateSubscription(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := did.UnmarshalDxpDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
@@ -136,7 +136,7 @@ func GetCmdCreateSubscription(cdc *codec.Codec) *cobra.Command {
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgCreateSubscription(subIdStr,
 				contractIdStr, maxPeriods, period, sovrinDid)
@@ -162,13 +162,13 @@ func GetCmdSetPaymentContractAuthorisation(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err2 := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err2 := did.UnmarshalDxpDid(sovrinDidStr)
 			if err2 != nil {
 				return err2
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgSetPaymentContractAuthorisation(
 				contractIdStr, authorised, sovrinDid)
@@ -200,13 +200,13 @@ func GetCmdGrantPaymentDiscount(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := did.UnmarshalDxpDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgGrantDiscount(
 				contractIdStr, discountId, recipientAddr, sovrinDid)
@@ -231,13 +231,13 @@ func GetCmdRevokePaymentDiscount(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := did.UnmarshalDxpDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgRevokeDiscount(
 				contractIdStr, holderAddr, sovrinDid)
@@ -256,13 +256,13 @@ func GetCmdEffectPayment(cdc *codec.Codec) *cobra.Command {
 			contractIdStr := args[0]
 			sovrinDidStr := args[1]
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := did.UnmarshalDxpDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgEffectPayment(contractIdStr, sovrinDid)
 

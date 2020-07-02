@@ -2,11 +2,12 @@ package types
 
 import (
 	er "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"strings"
 )
 
-func NewMsgCreateBond(senderDid types.Did, bondDoc BondDoc, bondDid types.SovrinDid) MsgCreateBond {
+func NewMsgCreateBond(senderDid types.Did, bondDoc BondDoc, bondDid did.DxpDid) MsgCreateBond {
 	return MsgCreateBond{
 		TxHash:    "",
 		SenderDid: senderDid,
@@ -16,7 +17,7 @@ func NewMsgCreateBond(senderDid types.Did, bondDoc BondDoc, bondDid types.Sovrin
 	}
 }
 
-func NewMsgUpdateBondStatus(senderDid types.Did, updateBondStatusDoc UpdateBondStatusDoc, bondDid types.SovrinDid) MsgUpdateBondStatus {
+func NewMsgUpdateBondStatus(senderDid types.Did, updateBondStatusDoc UpdateBondStatusDoc, bondDid did.DxpDid) MsgUpdateBondStatus {
 	return MsgUpdateBondStatus{
 		SenderDid: senderDid,
 		BondDid:   bondDid.Did,

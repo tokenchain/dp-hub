@@ -32,5 +32,6 @@ var (
 	// variable aliases
 	ModuleCdc = types.ModuleCdc
 
+
 	ErrorInvalidDid = x.ErrorInvalidDidE
 )

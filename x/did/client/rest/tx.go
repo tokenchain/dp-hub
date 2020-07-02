@@ -3,7 +3,7 @@ package rest
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/types/rest"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"net/http"
 	"time"
 
@@ -28,7 +28,7 @@ func createDidRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		mode := r.URL.Query().Get("mode")
 		cliCtx = cliCtx.WithBroadcastMode(mode)
 
-		sovrinDid, err := types2.UnmarshalSovrinDid(didDocParam)
+		sovrinDid, err := did.UnmarshalDxpDid(didDocParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -65,7 +65,7 @@ func addCredentialRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		sovrinDid, err := types2.UnmarshalSovrinDid(didDocParam)
+		sovrinDid, err := did.UnmarshalDxpDid(didDocParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))

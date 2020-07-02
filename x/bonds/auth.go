@@ -11,7 +11,7 @@ import (
 )
 
 func GetPubKeyGetter(keeper Keeper, didKeeper did.Keeper) ixo.PubKeyGetter {
-	return func(ctx sdk.Context, msg types2.IxoMsg) ([32]byte, error) {
+	return func(ctx sdk.Context, msg types2.DpMsg) ([32]byte, error) {
 
 		// Get signer PubKey and sender DID
 		var pubKey [32]byte

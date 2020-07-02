@@ -16,7 +16,7 @@ import (
 )
 
 func GetPubKeyGetter(keeper Keeper, didKeeper did.Keeper) ixo.PubKeyGetter {
-	return func(ctx sdk.Context, msg types.IxoMsg) ([32]byte, error) {
+	return func(ctx sdk.Context, msg types.DpMsg) ([32]byte, error) {
 
 		// Get signer PubKey
 		var pubKey [32]byte
@@ -88,7 +88,7 @@ func deductProjectFundingFees(bankKeeper bank.Keeper, ctx sdk.Context, acc expor
 		return er.Wrapf(er.ErrInsufficientFunds, "insufficient funds to pay for fees; %s < %s", spendableCoins, fees)
 	}
 
-	projectAddr := types.DidToAddr(projectDid)
+	projectAddr := did.DidToAddr(projectDid)
 	err := bankKeeper.SendCoins(ctx, acc.GetAddress(), projectAddr, fees)
 	if err != nil {
 		return err
@@ -97,7 +97,7 @@ func deductProjectFundingFees(bankKeeper bank.Keeper, ctx sdk.Context, acc expor
 	return nil
 }
 
-func getProjectCreationSignBytes(chainID string, ixoTx types.IxoTx, acc exported.Account, genesis bool) []byte {
+func getProjectCreationSignBytes(chainID string, ixoTx types.DpTx, acc exported.Account, genesis bool) []byte {
 	var accNum uint64
 	if !genesis {
 		// Fixed account number used so that sign bytes do not depend on it
@@ -117,13 +117,13 @@ func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
 			panic(fmt.Sprintf("%s module account has not been set", auth.FeeCollectorName))
 		}
 
-		// all transactions must be of type ixo.IxoTx
-		ixoTx, ok := tx.(types.IxoTx)
+		// all transactions must be of type ixo.DpTx
+		ixoTx, ok := tx.(types.DpTx)
 		if !ok {
 			// Set a gas meter with limit 0 as to prevent an infinite gas meter attack
 			// during runTx.
 			newCtx = auth.SetGasMeter(simulate, ctx, 0)
-			return newCtx, x.IntErr("tx must be ixo.IxoTx")
+			return newCtx, x.IntErr("tx must be ixo.DpTx")
 		}
 
 		params := ak.GetParams(ctx)
@@ -137,7 +137,7 @@ func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
 
 		newCtx.GasMeter().ConsumeGas(params.TxSizeCostPerByte*sdk.Gas(len(newCtx.TxBytes())), "txSize")
 
-		if res := ixo.ValidateMemo(types.IxoTx{Memo: ixoTx.Memo}, params); res != nil {
+		if res := ixo.ValidateMemo(types.DpTx{Memo: ixoTx.Memo}, params); res != nil {
 			return newCtx, res
 		}
 
@@ -167,7 +167,7 @@ func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
 		// deduct the fees
 		if !ixoTx.Fee.Amount.IsZero() {
 			// fetch fee payer
-			feePayerAddr := types.DidToAddr(msg.SenderDid)
+			feePayerAddr := did.DidToAddr(msg.SenderDid)
 			feePayerAcc, res := auth.GetSignerAcc(ctx, ak, feePayerAddr)
 			if res != nil {
 				return newCtx, res

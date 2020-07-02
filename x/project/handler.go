@@ -19,7 +19,6 @@ const (
 )
 
 func NewHandler(k Keeper, fk payments.Keeper, bk bank.Keeper) sdk.Handler {
-
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
@@ -44,9 +43,7 @@ func NewHandler(k Keeper, fk payments.Keeper, bk bank.Keeper) sdk.Handler {
 }
 
 func handleMsgCreateProject(ctx sdk.Context, k Keeper, msg MsgCreateProject) (*sdk.Result, error) {
-
 	projectDid := msg.GetProjectDid()
-
 	if _, err := createAccountInProjectAccounts(ctx, k, projectDid, IxoAccountFeesId); err != nil {
 		return nil, err
 	}
@@ -62,108 +59,89 @@ func handleMsgCreateProject(ctx sdk.Context, k Keeper, msg MsgCreateProject) (*s
 	if _, err := createAccountInProjectAccounts(ctx, k, projectDid, InternalAccountID(msg.GetProjectDid())); err != nil {
 		return nil, err
 	}
-
 	if k.ProjectDocExists(ctx, msg.GetProjectDid()) {
 		return nil, x.ErrInvalidDid("Project already exists")
 	}
 	k.SetProjectDoc(ctx, &msg)
 	k.SetProjectWithdrawalTransactions(ctx, msg.GetProjectDid(), nil)
-
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
 func handleMsgUpdateProjectStatus(ctx sdk.Context, k Keeper, bk bank.Keeper,
 	msg MsgUpdateProjectStatus) (result *sdk.Result, res error) {
-
 	existingProjectDoc, err := getProjectDoc(ctx, k, msg.ProjectDid)
 	if err != nil {
 		return nil, x.UnknownRequest("Could not find Project")
 	}
-
 	newStatus := msg.Data.Status
 	if !newStatus.IsValidProgressionFrom(existingProjectDoc.GetStatus()) {
 		return nil, x.UnknownRequest("Invalid Status Progression requested")
 	}
-
 	if newStatus == FundedStatus {
 		projectAddr, err := getProjectAccount(ctx, k, existingProjectDoc.GetProjectDid())
 		if err != nil {
 			return nil, err
 		}
-
 		projectAcc := k.AccountKeeper.GetAccount(ctx, projectAddr)
 		if projectAcc == nil {
 			return nil, x.UnknownRequest("Could not find project account")
 		}
-
 		minimumFunding := k.GetParams(ctx).ProjectMinimumInitialFunding
-		if projectAcc.GetCoins().AmountOf(types2.IxoNativeToken).LT(minimumFunding) {
+		if projectAcc.GetCoins().AmountOf(types2.IxoNativeToken).LT(minimumFunding.RoundInt()) {
 			return nil, er.Wrapf(er.ErrInsufficientFunds, "Project has not reached minimum funding %s", minimumFunding)
 		}
 	}
-
 	if newStatus == PaidoutStatus {
 		result, err = payoutFees(ctx, k, bk, existingProjectDoc.GetProjectDid())
 	}
-
 	existingProjectDoc.SetStatus(newStatus)
 	_, _ = k.UpdateProjectDoc(ctx, existingProjectDoc)
-
 	return result, err
 }
 
 func payoutFees(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid types2.Did) (*sdk.Result, error) {
 	var allevents []sdk.Event
-
 	event, err := payAllFeesToAddress(ctx, k, bk, projectDid, IxoAccountPayFeesId, IxoAccountFeesId)
 	if err != nil {
 		return nil, x.ErrInvalidDid("Failed to send coins")
 	} else {
 		allevents = append(allevents, event...)
 	}
-
 	event, err = payAllFeesToAddress(ctx, k, bk, projectDid, InitiatingNodeAccountPayFeesId, IxoAccountFeesId)
 	if err != nil {
 		return nil, x.ErrInvalidDid("Failed to send coins")
 	} else {
 		allevents = append(allevents, event...)
 	}
-
 	event, err = payAllFeesToAddress(ctx, k, bk, projectDid, ValidatingNodeSetAccountFeesId, IxoAccountFeesId)
 	if err != nil {
 		return nil, x.ErrInvalidDid("Failed to send coins")
 	} else {
 		allevents = append(allevents, event...)
 	}
-
 	ixoDid := k.GetParams(ctx).IxoDid
 	amount := getIxoAmount(ctx, k, bk, projectDid, IxoAccountFeesId)
 	err = payoutAndRecon(ctx, k, bk, projectDid, IxoAccountFeesId, ixoDid, amount)
 	if err != nil {
 		return nil, err
 	}
-
 	return &sdk.Result{Events: allevents}, err
 }
 
 func payAllFeesToAddress(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid types2.Did,
 	sendingAddress InternalAccountID, receivingAddress InternalAccountID) (sdk.Events, error) {
 	feesToPay := getIxoAmount(ctx, k, bk, projectDid, sendingAddress)
-
 	if feesToPay.Amount.LT(sdk.ZeroInt()) {
 		return nil, x.ErrInvalidDid("Negative fee to pay")
 	}
 	if feesToPay.Amount.IsZero() {
 		return nil, nil
 	}
-
 	receivingAccount, err := getAccountInProjectAccounts(ctx, k, projectDid, receivingAddress)
 	if err != nil {
 		return sdk.Events{}, err
 	}
-
 	sendingAccount, _ := getAccountInProjectAccounts(ctx, k, projectDid, sendingAddress)
-
 	return sdk.Events{}, bk.SendCoins(ctx, sendingAccount, receivingAccount, sdk.Coins{feesToPay})
 }
 
@@ -216,91 +194,74 @@ func handleMsgCreateClaim(ctx sdk.Context, k Keeper, fk payments.Keeper, bk bank
 }
 
 func handleMsgCreateEvaluation(ctx sdk.Context, k Keeper, fk payments.Keeper, bk bank.Keeper, msg MsgCreateEvaluation) (*sdk.Result, error) {
-
 	// Check if project exists
 	projectDoc, err := getProjectDoc(ctx, k, msg.ProjectDid)
 	if err != nil {
 		return nil, x.UnknownRequest("Could not find Project")
 	}
-
 	// Process evaluation fees
 	err = processFees(
 		ctx, k, fk, bk, payments.FeeEvaluationTransaction, msg.ProjectDid)
 	if err != nil {
 		return nil, err
 	}
-
 	// Process evaluator pay
 	err = processEvaluatorPay(ctx, k, fk, bk, msg.ProjectDid,
 		msg.SenderDid, projectDoc.GetEvaluatorPay())
 	if err != nil {
 		return nil, err
 	}
-
 	return &sdk.Result{}, nil
 }
 
-func handleMsgWithdrawFunds(ctx sdk.Context, k Keeper, bk bank.Keeper,
-	msg MsgWithdrawFunds) (*sdk.Result, error) {
-
+func handleMsgWithdrawFunds(ctx sdk.Context, k Keeper, bk bank.Keeper, msg MsgWithdrawFunds) (*sdk.Result, error) {
 	withdrawFundsDoc := msg.Data
 	projectDoc, err := getProjectDoc(ctx, k, withdrawFundsDoc.ProjectDid)
 	if err != nil {
 		return nil, x.UnknownRequest("Could not find Project")
 	}
-
 	if projectDoc.GetStatus() != PaidoutStatus {
 		return nil, x.UnknownRequest("Project not in PAIDOUT Status")
 	}
-
 	projectDid := withdrawFundsDoc.ProjectDid
 	recipientDid := withdrawFundsDoc.RecipientDid
 	amount := withdrawFundsDoc.Amount
-
 	// If this is a refund, recipient has to be the project creator
 	if withdrawFundsDoc.IsRefund && (recipientDid != projectDoc.GetSenderDid()) {
 		return nil, x.UnknownRequest("Only project creator can get a refund")
 	}
-
 	var fromAccountId InternalAccountID
 	if withdrawFundsDoc.IsRefund {
 		fromAccountId = InternalAccountID(projectDid)
 	} else {
 		fromAccountId = InternalAccountID(recipientDid)
 	}
-
 	amountCoin := sdk.NewCoin(types2.IxoNativeToken, amount)
 	err = payoutAndRecon(ctx, k, bk, projectDid, fromAccountId, recipientDid, amountCoin)
 	if err != nil {
 		return nil, err
 	}
-
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
 func payoutAndRecon(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid types2.Did,
 	fromAccountId InternalAccountID, recipientDid types2.Did, amount sdk.Coin) error {
-
 	ixoBalance := getIxoAmount(ctx, k, bk, projectDid, fromAccountId)
 	if ixoBalance.IsLT(amount) {
 		return x.ErrInvalidDid("insufficient funds in specified account")
 	}
-
 	fromAccount, err := getAccountInProjectAccounts(ctx, k, projectDid, fromAccountId)
 	if err != nil {
 		return err
 	}
-
 	recipientAddr := types2.StringToAddr(recipientDid)
 	err = bk.SendCoins(ctx, fromAccount, recipientAddr, sdk.Coins{amount})
 	if err != nil {
 		return err
 	}
-
 	var actionId [32]byte
 	dec := sdk.OneDec() // TODO: should increment with each withdrawal (ref: #113)
 	copy(actionId[:], dec.Bytes())
-
 	addProjectWithdrawalTransaction(ctx, k, projectDid, actionId, recipientDid, amount)
 	return nil
 }
@@ -310,26 +271,21 @@ func getProjectDoc(ctx sdk.Context, k Keeper, projectDid types2.Did) (StoredProj
 	if err != nil {
 		return nil, err
 	}
-
 	return ixoProjectDoc.(StoredProjectDoc), nil
 }
 
 func processFees(ctx sdk.Context, k Keeper, fk payments.Keeper, bk bank.Keeper, feeType payments.FeeType, projectDid types2.Did) error {
 	projectAddr, _ := getProjectAccount(ctx, k, projectDid)
-
 	validatingNodeSetAddr, err := getAccountInProjectAccounts(ctx, k, projectDid, ValidatingNodeSetAccountFeesId)
 	if err != nil {
 		return err
 	}
-
 	ixoAddr, err := getAccountInProjectAccounts(ctx, k, projectDid, IxoAccountFeesId)
 	if err != nil {
 		return err
 	}
-
 	ixoFactor := fk.GetParams(ctx).IxoFactor
 	nodePercentage := fk.GetParams(ctx).NodeFeePercentage
-
 	var adjustedFeeAmount sdk.Dec
 	switch feeType {
 	case payments.FeeClaimTransaction:
@@ -339,67 +295,53 @@ func processFees(ctx sdk.Context, k Keeper, fk payments.Keeper, bk bank.Keeper, 
 	default:
 		return x.UnknownRequest("Invalid Fee type.")
 	}
-
 	nodeAmount := adjustedFeeAmount.Mul(nodePercentage).RoundInt64()
 	ixoAmount := adjustedFeeAmount.RoundInt64() - nodeAmount
-
 	err = bk.SendCoins(ctx, projectAddr, validatingNodeSetAddr, sdk.Coins{sdk.NewInt64Coin(types2.IxoNativeToken, nodeAmount)})
 	if err != nil {
 		return err
 	}
-
 	err = bk.SendCoins(ctx, projectAddr, ixoAddr, sdk.Coins{sdk.NewInt64Coin(types2.IxoNativeToken, ixoAmount)})
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
 func processEvaluatorPay(ctx sdk.Context, k Keeper, fk payments.Keeper,
 	bk bank.Keeper, projectDid, senderDid types2.Did, evaluatorPay int64) error {
-
 	if evaluatorPay == 0 {
 		return nil
 	}
-
 	projectAddr, _ := getAccountInProjectAccounts(ctx, k, projectDid, InternalAccountID(projectDid))
 	evaluatorAccAddr, _ := getAccountInProjectAccounts(ctx, k, projectDid, InternalAccountID(senderDid))
-
 	nodeAddr, err := getAccountInProjectAccounts(ctx, k, projectDid, InitiatingNodeAccountPayFeesId)
 	if err != nil {
 		return err
 	}
-
 	ixoAddr, err := getAccountInProjectAccounts(ctx, k, projectDid, IxoAccountPayFeesId)
 	if err != nil {
 		return err
 	}
-
 	feePercentage := fk.GetParams(ctx).EvaluationPayFeePercentage
 	nodeFeePercentage := fk.GetParams(ctx).EvaluationPayNodeFeePercentage
-
 	totalEvaluatorPayAmount := sdk.NewDec(evaluatorPay).Mul(types2.IxoDecimals) // This is in IXO * 10^8
 	evaluatorPayFeeAmount := totalEvaluatorPayAmount.Mul(feePercentage)
 	evaluatorPayLessFees := totalEvaluatorPayAmount.Sub(evaluatorPayFeeAmount)
 	nodePayFees := evaluatorPayFeeAmount.Mul(nodeFeePercentage)
 	ixoPayFees := evaluatorPayFeeAmount.Sub(nodePayFees)
-
 	err = bk.SendCoins(ctx, projectAddr, evaluatorAccAddr, sdk.Coins{sdk.NewInt64Coin(types2.IxoNativeToken, evaluatorPayLessFees.RoundInt64())})
 	if err != nil {
 		return err
 	}
-
 	err = bk.SendCoins(ctx, projectAddr, nodeAddr, sdk.Coins{sdk.NewInt64Coin(types2.IxoNativeToken, nodePayFees.RoundInt64())})
 	if err != nil {
 		return err
 	}
-
 	err = bk.SendCoins(ctx, projectAddr, ixoAddr, sdk.Coins{sdk.NewInt64Coin(types2.IxoNativeToken, ixoPayFees.RoundInt64())})
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -407,21 +349,18 @@ func checkAccountInProjectAccounts(ctx sdk.Context, k Keeper, projectDid types2.
 	accountId InternalAccountID) bool {
 	accMap := k.GetAccountMap(ctx, projectDid)
 	_, found := accMap[accountId]
-
 	return found
 }
 
 func addProjectWithdrawalTransaction(ctx sdk.Context, k Keeper, projectDid types2.Did,
 	actionID [32]byte, recipientDid types2.Did, amount sdk.Coin) {
 	actionIDStr := "0x" + hex.EncodeToString(actionID[:])
-
 	withdrawalInfo := WithdrawalInfo{
 		ActionID:     actionIDStr,
 		ProjectDid:   projectDid,
 		RecipientDid: recipientDid,
 		Amount:       amount,
 	}
-
 	k.AddProjectWithdrawalTransaction(ctx, projectDid, withdrawalInfo)
 }
 
@@ -430,16 +369,13 @@ func createAccountInProjectAccounts(ctx sdk.Context, k Keeper, projectDid types2
 	if err != nil {
 		return nil, err
 	}
-
 	k.AddAccountToProjectAccounts(ctx, projectDid, accountId, acc)
-
 	return acc.GetAddress(), nil
 }
 
 func getAccountInProjectAccounts(ctx sdk.Context, k Keeper, projectDid types2.Did,
 	accountId InternalAccountID) (sdk.AccAddress, error) {
 	accMap := k.GetAccountMap(ctx, projectDid)
-
 	addr, found := accMap[accountId]
 	if found {
 		return addr, nil

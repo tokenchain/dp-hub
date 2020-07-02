@@ -55,11 +55,9 @@ func (k Keeper) MustGetProjectDocByKey(ctx sdk.Context, key []byte) types.Stored
 	if !store.Has(key) {
 		panic("project doc not found")
 	}
-
 	bz := store.Get(key)
 	var projectDoc types.MsgCreateProject
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &projectDoc)
-
 	return &projectDoc
 }
 
@@ -71,15 +69,12 @@ func (k Keeper) ProjectDocExists(ctx sdk.Context, projectDid types2.Did) bool {
 func (k Keeper) GetProjectDoc(ctx sdk.Context, projectDid types2.Did) (types.StoredProjectDoc, error) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetProjectPrefixKey(projectDid)
-
 	bz := store.Get(key)
 	if bz == nil {
 		return nil, x.ErrInvalidDid("Invalid ProjectDid Address")
 	}
-
 	var projectDoc types.MsgCreateProject
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &projectDoc)
-
 	return &projectDoc, nil
 }
 
@@ -92,13 +87,10 @@ func (k Keeper) SetProjectDoc(ctx sdk.Context, projectDoc types.StoredProjectDoc
 func (k Keeper) UpdateProjectDoc(ctx sdk.Context, newProjectDoc types.StoredProjectDoc) (types.StoredProjectDoc, error) {
 	existedDoc, _ := k.GetProjectDoc(ctx, newProjectDoc.GetProjectDid())
 	if existedDoc == nil {
-
 		return nil, x.ErrInvalidDid("ProjectDoc details are not exist")
 	} else {
-
 		existedDoc.SetStatus(newProjectDoc.GetStatus())
 		k.SetProjectDoc(ctx, newProjectDoc)
-
 		return newProjectDoc, nil
 	}
 }
@@ -115,7 +107,6 @@ func (k Keeper) SetAccountMap(ctx sdk.Context, projectDid types2.Did, accountMap
 func (k Keeper) GetAccountMap(ctx sdk.Context, projectDid types2.Did) types.AccountMap {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetAccountPrefixKey(projectDid)
-
 	bz := store.Get(key)
 	if bz == nil {
 		return make(types.AccountMap)
@@ -124,7 +115,6 @@ func (k Keeper) GetAccountMap(ctx sdk.Context, projectDid types2.Did) types.Acco
 		if err := json.Unmarshal(bz, &accountMap); err != nil {
 			panic(err)
 		}
-
 		return accountMap
 	}
 }
@@ -136,30 +126,24 @@ func (k Keeper) AddAccountToProjectAccounts(ctx sdk.Context, projectDid types2.D
 	if found {
 		return
 	}
-
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetAccountPrefixKey(projectDid)
 	accountMap[accountId] = account.GetAddress()
-
 	bz, err := json.Marshal(accountMap)
 	if err != nil {
 		panic(err)
 	}
-
 	store.Set(key, bz)
 }
 
 func (k Keeper) CreateNewAccount(ctx sdk.Context, projectDid types2.Did,
 	accountId types.InternalAccountID) (exported.Account, error) {
 	address := types2.StringToAddr(accountId.ToAddressKey(projectDid))
-
 	if k.AccountKeeper.GetAccount(ctx, address) != nil {
 		return nil, er.Wrap(er.ErrInvalidAddress, "Generate account already exists")
 	}
-
 	account := k.AccountKeeper.NewAccountWithAddress(ctx, address)
 	k.AccountKeeper.SetAccount(ctx, account)
-
 	return account, nil
 }
 
@@ -172,14 +156,12 @@ func (k Keeper) SetProjectWithdrawalTransactions(ctx sdk.Context, projectDid typ
 func (k Keeper) GetProjectWithdrawalTransactions(ctx sdk.Context, projectDid types2.Did) ([]types.WithdrawalInfo, error) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetWithdrawalPrefixKey(projectDid)
-
 	bz := store.Get(key)
 	if bz == nil {
 		return []types.WithdrawalInfo{}, x.ErrInvalidDid("ProjectDoc doesn't exist")
 	} else {
 		var txs []types.WithdrawalInfo
 		k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &txs)
-
 		return txs, nil
 	}
 }
@@ -187,9 +169,7 @@ func (k Keeper) GetProjectWithdrawalTransactions(ctx sdk.Context, projectDid typ
 func (k Keeper) AddProjectWithdrawalTransaction(ctx sdk.Context, projectDid types2.Did, info types.WithdrawalInfo) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetWithdrawalPrefixKey(projectDid)
-
 	txs, _ := k.GetProjectWithdrawalTransactions(ctx, projectDid)
 	txs = append(txs, info)
-
 	store.Set(key, k.cdc.MustMarshalBinaryLengthPrefixed(txs))
 }

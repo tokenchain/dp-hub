@@ -6,30 +6,29 @@ import (
 
 // InitGenesis new payments genesis
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
-	// Init params
-	keeper.SetParams(ctx, data.Params)
 
 	// Init payment templates
 	for _, pt := range data.PaymentTemplates {
 		keeper.SetPaymentTemplate(ctx, pt)
 	}
-
+	//print("===3===")
 	// Init payment contracts
 	for _, pc := range data.PaymentContracts {
 		keeper.SetPaymentContract(ctx, pc)
 	}
-
+	//print("===2===")
 	// Init subscriptions
 	for _, s := range data.Subscriptions {
 		keeper.SetSubscription(ctx, s)
 	}
+	// Init params
+	keeper.SetParams(ctx, data.Params)
 }
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
 func ExportGenesis(ctx sdk.Context, keeper Keeper) GenesisState {
 	// Export params
 	params := keeper.GetParams(ctx)
-
 	// Export payment templates
 	var templates []PaymentTemplate
 	iterator := keeper.GetPaymentTemplateIterator(ctx)
@@ -37,7 +36,6 @@ func ExportGenesis(ctx sdk.Context, keeper Keeper) GenesisState {
 		template := keeper.MustGetPaymentTemplateByKey(ctx, iterator.Key())
 		templates = append(templates, template)
 	}
-
 	// Export payment contracts
 	var contracts []PaymentContract
 	iterator = keeper.GetPaymentContractIterator(ctx)
@@ -45,7 +43,6 @@ func ExportGenesis(ctx sdk.Context, keeper Keeper) GenesisState {
 		contract := keeper.MustGetPaymentContractByKey(ctx, iterator.Key())
 		contracts = append(contracts, contract)
 	}
-
 	// Export subscriptions
 	var subscriptions []Subscription
 	iterator = keeper.GetSubscriptionIterator(ctx)
@@ -53,6 +50,5 @@ func ExportGenesis(ctx sdk.Context, keeper Keeper) GenesisState {
 		subscription := keeper.MustGetSubscriptionByKey(ctx, iterator.Key())
 		subscriptions = append(subscriptions, subscription)
 	}
-
 	return NewGenesisState(params, templates, contracts, subscriptions)
 }

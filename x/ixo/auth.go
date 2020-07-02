@@ -18,6 +18,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/spf13/viper"
 	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"os"
 )
@@ -28,7 +29,7 @@ var (
 	// TODO: parameterise (or remove) hard-coded gas prices and adjustments
 )
 
-type PubKeyGetter func(ctx sdk.Context, msg types.IxoMsg) ([32]byte, error)
+type PubKeyGetter func(ctx sdk.Context, msg types.DpMsg) ([32]byte, error)
 
 // EnsureSufficientMempoolFees verifies that the given transaction has supplied
 // enough fees to cover a proposer's minimum fees. A result object is returned
@@ -57,15 +58,15 @@ func EnsureSufficientMempoolFees(ctx sdk.Context, stdFee std.StdFee) error {
 	return nil
 }
 func ProcessSig(ctx sdk.Context, acc exported.Account, signBytes []byte, pubKey [32]byte,
-	sig types.IxoSignature, simulate bool, params auth.Params) (updatedAcc exported.Account, res error) {
+	sig types.DpSignature, simulate bool, params auth.Params) (updatedAcc exported.Account, res error) {
 
 	if simulate {
 		// Simulated txs should not contain a signature and are not required to
 		// contain a pubkey, so we must account for tx size of including an
-		// IxoSignature and simulate gas consumption (assuming ED25519 key).
+		// DpSignature and simulate gas consumption (assuming ED25519 key).
 		//consumeSimSigGas(ctx.GasMeter(), sig, params)
 
-		// NOTE: this is not the case in the ixo blockchain. The IxoSignature
+		// NOTE: this is not the case in the ixo blockchain. The DpSignature
 		// will be blank but still count towards the transaction size given
 		// that it uses a fixed length byte array [64]byte as the sig value.
 	}
@@ -86,7 +87,7 @@ func ProcessSig(ctx sdk.Context, acc exported.Account, signBytes []byte, pubKey 
 	return acc, res
 }
 
-func getSignBytes(chainID string, ixoTx types.IxoTx, acc exported.Account, genesis bool) []byte {
+func getSignBytes(chainID string, ixoTx types.DpTx, acc exported.Account, genesis bool) []byte {
 	var accNum uint64
 	if !genesis {
 		accNum = acc.GetAccountNumber()
@@ -104,8 +105,8 @@ func NewAnteHandler(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGetter PubKey
 			panic(fmt.Sprintf("%s module account has not been set", auth.FeeCollectorName))
 		}
 
-		// all transactions must be of type ixo.IxoTx
-		ixoTx, ok := tx.(types.IxoTx)
+		// all transactions must be of type ixo.DpTx
+		ixoTx, ok := tx.(types.DpTx)
 		if !ok {
 			// Set a gas meter with limit 0 as to prevent an infinite gas meter attack
 			// during runTx.
@@ -160,7 +161,7 @@ func NewAnteHandler(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGetter PubKey
 
 		newCtx.GasMeter().ConsumeGas(params.TxSizeCostPerByte*sdk.Gas(len(newCtx.TxBytes())), "txSize")
 
-		if res := ValidateMemo(types.IxoTx{Memo: ixoTx.Memo}, params); res != nil {
+		if res := ValidateMemo(types.DpTx{Memo: ixoTx.Memo}, params); res != nil {
 			return newCtx, res
 		}
 
@@ -182,10 +183,10 @@ func NewAnteHandler(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGetter PubKey
 			signerAcc = ak.GetAccount(newCtx, signerAcc.GetAddress())
 		}
 
-		// all messages must be of type IxoMsg
-		msg, ok := ixoTx.GetMsgs()[0].(types.IxoMsg)
+		// all messages must be of type DpMsg
+		msg, ok := ixoTx.GetMsgs()[0].(types.DpMsg)
 		if !ok {
-			return newCtx, x.IntErr("msg must be ixo.IxoMsg")
+			return newCtx, x.IntErr("msg must be ixo.DpMsg")
 		}
 
 		// Get pubKey
@@ -210,7 +211,7 @@ func NewAnteHandler(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGetter PubKey
 }
 
 func signAndBroadcast(ctx context.CLIContext, msg auth.StdSignMsg,
-	sovrinDid types.SovrinDid) (sdk.TxResponse, error) {
+	sovrinDid did.DxpDid) (sdk.TxResponse, error) {
 	if len(msg.Msgs) != 1 {
 		panic("expected one message")
 	}
@@ -243,7 +244,7 @@ func simulateMsgs(txBldr auth.TxBuilder, cliCtx context.CLIContext, msgs []sdk.M
 	}
 
 	// Signature set to a blank signature
-	signature := types.IxoSignature{}
+	signature := types.DpSignature{}
 	signature.Created = signature.Created.Add(1) // maximizes signature length
 	tx := types.NewIxoTxSingleMsg(
 		stdSignMsg.Msgs[0], stdSignMsg.Fee, signature, stdSignMsg.Memo)
@@ -268,7 +269,7 @@ func enrichWithGas(txBldr auth.TxBuilder, cliCtx context.CLIContext, msgs []sdk.
 	return txBldr.WithGas(adjusted), nil
 }
 
-func ApproximateFeeForTx(cliCtx context.CLIContext, tx types.IxoTx, chainId string) (auth.StdFee, error) {
+func ApproximateFeeForTx(cliCtx context.CLIContext, tx types.DpTx, chainId string) (auth.StdFee, error) {
 
 	// Set up a transaction builder
 	cdc := cliCtx.Codec
@@ -292,7 +293,7 @@ func ApproximateFeeForTx(cliCtx context.CLIContext, tx types.IxoTx, chainId stri
 	return signMsg.Fee, nil
 }
 
-func SignAndBroadcastTxCli(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid types.SovrinDid) error {
+func SignAndBroadcastTxCli(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid did.DxpDid) error {
 	txBldr, err := utils.PrepareTxBuilder(auth.NewTxBuilderFromCLI(nil), cliCtx)
 	if err != nil {
 		return err
@@ -358,12 +359,12 @@ func SignAndBroadcastTxCli(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid typ
 	return nil
 }
 
-func SignAndBroadcastTxRest(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid types.SovrinDid) ([]byte, error) {
+func SignAndBroadcastTxRest(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid did.DxpDid) ([]byte, error) {
 
 	// TODO: implement using txBldr or just remove function completely (ref: #123)
 
 	// Construct dummy tx and approximate and set fee
-	tx := types.NewIxoTxSingleMsg(msg, auth.StdFee{}, types.IxoSignature{}, "")
+	tx := types.NewIxoTxSingleMsg(msg, auth.StdFee{}, types.DpSignature{}, "")
 	chainId := viper.GetString(flags.FlagChainID)
 	fee, err := ApproximateFeeForTx(cliCtx, tx, chainId)
 	if err != nil {
@@ -390,12 +391,12 @@ func SignAndBroadcastTxRest(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid ty
 	return output, nil
 }
 
-func SignAndBroadcastTxFromStdSignMsg(cliCtx context.CLIContext, msg auth.StdSignMsg, sovrinDid types.SovrinDid) (sdk.TxResponse, error) {
+func SignAndBroadcastTxFromStdSignMsg(cliCtx context.CLIContext, msg auth.StdSignMsg, sovrinDid did.DxpDid) (sdk.TxResponse, error) {
 	return signAndBroadcast(cliCtx, msg, sovrinDid)
 }
 
 // ValidateMemo validates the memo size.
-func ValidateMemo(stdTx types.IxoTx, params params.Params) error {
+func ValidateMemo(stdTx types.DpTx, params params.Params) error {
 	memoLength := len(stdTx.GetMemo())
 	if uint64(memoLength) > params.MaxMemoCharacters {
 		return erro.Wrapf(erro.ErrMemoTooLarge,

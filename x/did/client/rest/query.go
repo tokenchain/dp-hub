@@ -2,6 +2,7 @@ package rest
 
 import (
 	"fmt"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"net/http"
 
@@ -33,7 +34,7 @@ func queryAddressFromDidRequestHandler(cliCtx context.CLIContext) http.HandlerFu
 			return
 		}
 
-		accAddress := types2.DidToAddr(vars["did"])
+		accAddress := did.DidToAddr(vars["did"])
 
 		rest.PostProcessResponse(w, cliCtx.Codec, accAddress, true)
 	}

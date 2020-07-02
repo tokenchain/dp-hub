@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/spf13/viper"
 	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -25,13 +26,13 @@ const (
 )
 
 var (
-	_ types.IxoMsg = MsgCreateProject{}
-	_ types.IxoMsg = MsgUpdateProjectStatus{}
-	_ types.IxoMsg = MsgCreateAgent{}
-	_ types.IxoMsg = MsgUpdateAgent{}
-	_ types.IxoMsg = MsgCreateClaim{}
-	_ types.IxoMsg = MsgCreateEvaluation{}
-	_ types.IxoMsg = MsgWithdrawFunds{}
+	_ types.DpMsg = MsgCreateProject{}
+	_ types.DpMsg = MsgUpdateProjectStatus{}
+	_ types.DpMsg = MsgCreateAgent{}
+	_ types.DpMsg = MsgUpdateAgent{}
+	_ types.DpMsg = MsgCreateClaim{}
+	_ types.DpMsg = MsgCreateEvaluation{}
+	_ types.DpMsg = MsgWithdrawFunds{}
 
 	_ StoredProjectDoc = (*MsgCreateProject)(nil)
 )
@@ -93,7 +94,7 @@ func (msg MsgCreateProject) GetProjectDid() types.Did { return msg.ProjectDid }
 func (msg MsgCreateProject) GetSenderDid() types.Did  { return msg.SenderDid }
 func (msg MsgCreateProject) GetSignerDid() types.Did  { return msg.ProjectDid }
 func (msg MsgCreateProject) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateProject) String() string {
@@ -161,7 +162,7 @@ func (msg MsgUpdateProjectStatus) GetSignBytes() []byte {
 
 func (msg MsgUpdateProjectStatus) GetSignerDid() types.Did { return msg.ProjectDid }
 func (msg MsgUpdateProjectStatus) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 type MsgCreateAgent struct {
@@ -197,7 +198,7 @@ func (msg MsgCreateAgent) ValidateBasic() error {
 
 func (msg MsgCreateAgent) GetSignerDid() types.Did { return msg.ProjectDid }
 func (msg MsgCreateAgent) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateAgent) GetSignBytes() []byte {
@@ -249,7 +250,7 @@ func (msg MsgUpdateAgent) ValidateBasic() error {
 
 func (msg MsgUpdateAgent) GetSignerDid() types.Did { return msg.ProjectDid }
 func (msg MsgUpdateAgent) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgUpdateAgent) GetSignBytes() []byte {
@@ -301,7 +302,7 @@ func (msg MsgCreateClaim) ValidateBasic() error {
 
 func (msg MsgCreateClaim) GetSignerDid() types.Did { return msg.ProjectDid }
 func (msg MsgCreateClaim) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateClaim) GetSignBytes() []byte {
@@ -353,7 +354,7 @@ func (msg MsgCreateEvaluation) ValidateBasic() error {
 
 func (msg MsgCreateEvaluation) GetSignerDid() types.Did { return msg.ProjectDid }
 func (msg MsgCreateEvaluation) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateEvaluation) GetSignBytes() []byte {
@@ -417,7 +418,7 @@ func (msg MsgWithdrawFunds) ValidateBasic() error {
 
 func (msg MsgWithdrawFunds) GetSignerDid() types.Did { return msg.Data.RecipientDid }
 func (msg MsgWithdrawFunds) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgWithdrawFunds) GetSignBytes() []byte {

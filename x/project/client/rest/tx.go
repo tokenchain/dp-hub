@@ -3,7 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -39,7 +39,7 @@ func createProjectRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		didDoc, err := types2.UnmarshalSovrinDid(didDocParam)
+		didDoc, err := did.UnmarshalDxpDid(didDocParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -68,7 +68,7 @@ func updateProjectStatusRequestHandler(cliCtx context.CLIContext) http.HandlerFu
 		sovrinDidParam := r.URL.Query().Get("sovrinDid")
 		mode := r.URL.Query().Get("mode")
 
-		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := did.UnmarshalDxpDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -116,7 +116,7 @@ func createAgentRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		projectDidParam := r.URL.Query().Get("projectDid")
 		mode := r.URL.Query().Get("mode")
 
-		projectDid, err := types2.UnmarshalSovrinDid(projectDidParam)
+		projectDid, err := did.UnmarshalDxpDid(projectDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -157,7 +157,7 @@ func createClaimRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		sovrinDidParam := r.URL.Query().Get("sovrinDid")
 		mode := r.URL.Query().Get("mode")
 
-		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := did.UnmarshalDxpDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -193,7 +193,7 @@ func createEvaluationRequestHandler(cliCtx context.CLIContext) http.HandlerFunc 
 		sovrinDidParam := r.URL.Query().Get("sovrinDid")
 		mode := r.URL.Query().Get("mode")
 
-		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := did.UnmarshalDxpDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -233,7 +233,7 @@ func withdrawFundsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		dataParam := r.URL.Query().Get("data")
 		mode := r.URL.Query().Get("mode")
 
-		senderDid, err := types2.UnmarshalSovrinDid(senderDidParam)
+		senderDid, err := did.UnmarshalDxpDid(senderDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))

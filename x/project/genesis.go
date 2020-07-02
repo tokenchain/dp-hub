@@ -21,20 +21,16 @@ func ExportGenesis(ctx sdk.Context, k Keeper) GenesisState {
 	var projectDocs []MsgCreateProject
 	var accountMaps []AccountMap
 	var withdrawalInfos [][]WithdrawalInfo
-
 	iterator := k.GetProjectDocIterator(ctx)
 	for ; iterator.Valid(); iterator.Next() {
 		projectDoc := k.MustGetProjectDocByKey(ctx, iterator.Key())
 		accountMap := k.GetAccountMap(ctx, projectDoc.GetProjectDid())
 		withdrawalInfo, _ := k.GetProjectWithdrawalTransactions(ctx, projectDoc.GetProjectDid())
-
 		projectDocs = append(projectDocs, *projectDoc.(*MsgCreateProject))
 		accountMaps = append(accountMaps, accountMap)
 		withdrawalInfos = append(withdrawalInfos, withdrawalInfo)
 	}
-
 	params := k.GetParams(ctx)
-
 	return GenesisState{
 		ProjectDocs:      projectDocs,
 		AccountMaps:      accountMaps,

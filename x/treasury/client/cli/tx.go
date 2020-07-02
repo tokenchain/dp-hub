@@ -5,8 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
-
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
 	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/types"
 )
@@ -26,13 +25,13 @@ func GetCmdSend(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := did.UnmarshalDxpDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgSend(toDid, coins, sovrinDid)
 
@@ -58,13 +57,13 @@ func GetCmdOracleTransfer(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := did.UnmarshalDxpDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgOracleTransfer(fromDid, toDid, coins, sovrinDid, proof)
 
@@ -89,13 +88,13 @@ func GetCmdOracleMint(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := did.UnmarshalDxpDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgOracleMint(toDid, coins, sovrinDid, proof)
 
@@ -120,13 +119,13 @@ func GetCmdOracleBurn(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := did.UnmarshalDxpDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgOracleBurn(fromDid, coins, sovrinDid, proof)
 

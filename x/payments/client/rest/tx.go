@@ -6,8 +6,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"net/http"
 	"strings"
 
@@ -58,7 +58,7 @@ func createPaymentTemplateHandler(ctx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := did.UnmarshalDxpDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -113,7 +113,7 @@ func createPaymentContractHandler(ctx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := did.UnmarshalDxpDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -162,7 +162,7 @@ func createSubscriptionHandler(ctx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := did.UnmarshalDxpDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -201,7 +201,7 @@ func setPaymentContractAuthorisationHandler(ctx context.CLIContext) http.Handler
 			return
 		}
 
-		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := did.UnmarshalDxpDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -248,7 +248,7 @@ func grantDiscountHandler(ctx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := did.UnmarshalDxpDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -287,7 +287,7 @@ func revokeDiscountHandler(ctx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := did.UnmarshalDxpDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -318,7 +318,7 @@ func effectPaymentHandler(ctx context.CLIContext) http.HandlerFunc {
 		mode := r.URL.Query().Get("mode")
 		ctx = ctx.WithBroadcastMode(mode)
 
-		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := did.UnmarshalDxpDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))

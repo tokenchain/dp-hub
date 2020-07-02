@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,10 +17,10 @@ const (
 )
 
 var (
-	_ types.IxoMsg = MsgSend{}
-	_ types.IxoMsg = MsgOracleTransfer{}
-	_ types.IxoMsg = MsgOracleMint{}
-	_ types.IxoMsg = MsgOracleBurn{}
+	_ types.DpMsg = MsgSend{}
+	_ types.DpMsg = MsgOracleTransfer{}
+	_ types.DpMsg = MsgOracleMint{}
+	_ types.DpMsg = MsgOracleBurn{}
 )
 
 type MsgSend struct {
@@ -58,7 +59,7 @@ func (msg MsgSend) ValidateBasic() error {
 
 func (msg MsgSend) GetSignerDid() types.Did { return msg.FromDid }
 func (msg MsgSend) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgSend) String() string {
@@ -121,7 +122,7 @@ func (msg MsgOracleTransfer) ValidateBasic() error {
 
 func (msg MsgOracleTransfer) GetSignerDid() types.Did { return msg.OracleDid }
 func (msg MsgOracleTransfer) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgOracleTransfer) String() string {
@@ -179,7 +180,7 @@ func (msg MsgOracleMint) ValidateBasic() error {
 
 func (msg MsgOracleMint) GetSignerDid() types.Did { return msg.OracleDid }
 func (msg MsgOracleMint) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgOracleMint) String() string {
@@ -235,7 +236,7 @@ func (msg MsgOracleBurn) ValidateBasic() error {
 
 func (msg MsgOracleBurn) GetSignerDid() types.Did { return msg.OracleDid }
 func (msg MsgOracleBurn) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgOracleBurn) String() string {

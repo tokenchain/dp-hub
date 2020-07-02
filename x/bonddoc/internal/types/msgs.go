@@ -5,6 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	er "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 )
 
@@ -14,8 +15,8 @@ const (
 )
 
 var (
-	_ types.IxoMsg = MsgCreateBond{}
-	_ types.IxoMsg = MsgUpdateBondStatus{}
+	_ types.DpMsg = MsgCreateBond{}
+	_ types.DpMsg = MsgUpdateBondStatus{}
 
 	_ StoredBondDoc = (*MsgCreateBond)(nil)
 )
@@ -57,7 +58,7 @@ func (msg MsgCreateBond) ValidateBasic() error {
 func (msg MsgCreateBond) GetBondDid() types.Did   { return msg.BondDid }
 func (msg MsgCreateBond) GetSignerDid() types.Did { return msg.GetBondDid() }
 func (msg MsgCreateBond) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateBond) String() string {
@@ -124,5 +125,5 @@ func (msg MsgUpdateBondStatus) GetSignBytes() []byte {
 
 func (msg MsgUpdateBondStatus) GetSignerDid() types.Did { return msg.BondDid }
 func (msg MsgUpdateBondStatus) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }

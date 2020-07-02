@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -137,7 +138,7 @@ func BroadcastTxRequest(cliCtx context.CLIContext) http.HandlerFunc {
 
 		// The only line in this function different from that in Cosmos SDK
 		// is the one below. Instead of codec (JSON) marshalling, hex is used
-		// so that the DefaultTxDecoder can successfully recognize the IxoTx
+		// so that the DefaultTxDecoder can successfully recognize the DpTx
 		//
 		// txBytes, err := cliCtx.Codec.MarshalBinaryLengthPrefixed(req.Tx)
 
@@ -197,10 +198,10 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		// all messages must be of type ixo.IxoMsg
-		ixoMsg, ok := msg.(types.IxoMsg)
+		// all messages must be of type ixo.DpMsg
+		ixoMsg, ok := msg.(types.DpMsg)
 		if !ok {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, x.IntErr("msg must be ixo.IxoMsg").Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, x.IntErr("msg must be ixo.DpMsg").Error())
 			return
 		}
 		msgs := []sdk.Msg{ixoMsg}
@@ -213,7 +214,7 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 				project.MsgCreateProjectFee)
 		default:
 			// Deduce and set signer address
-			signerAddress := types.DidToAddr(ixoMsg.GetSignerDid())
+			signerAddress := did.DidToAddr(ixoMsg.GetSignerDid())
 			cliCtx = cliCtx.WithFromAddress(signerAddress)
 
 			//	reader := bufio.NewReader(cmd.InOrStdin())
@@ -231,7 +232,7 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 			}
 
 			// Create dummy tx with blank signature for fee approximation
-			signature := types.IxoSignature{}
+			signature := types.DpSignature{}
 			signature.Created = signature.Created.Add(1) // maximizes signature length
 			tx := types.NewIxoTxSingleMsg(
 				stdSignMsg.Msgs[0], stdSignMsg.Fee, signature, stdSignMsg.Memo)
