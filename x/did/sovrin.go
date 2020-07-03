@@ -3,8 +3,6 @@ package did
 import (
 	"bytes"
 	cryptoRand "crypto/rand"
-	"encoding/json"
-	"fmt"
 	"io"
 
 	"github.com/btcsuite/btcutil/base58"
@@ -13,20 +11,6 @@ import (
 	naclBox "golang.org/x/crypto/nacl/box"
 )
 
-type SovrinSecret struct {
-	Seed                 string `json:"seed" yaml:"seed"`
-	SignKey              string `json:"signKey" yaml:"signKey"`
-	EncryptionPrivateKey string `json:"encryptionPrivateKey" yaml:"encryptionPrivateKey"`
-}
-
-func (ss SovrinSecret) String() string {
-	output, err := json.MarshalIndent(ss, "", "  ")
-	if err != nil {
-		panic(err)
-	}
-
-	return fmt.Sprintf("%v", string(output))
-}
 
 func GenerateMnemonic() string {
 	entropy, _ := bip39.NewEntropy(12)

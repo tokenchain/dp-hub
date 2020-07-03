@@ -15,14 +15,7 @@ import (
 	"io"
 )
 
-type DxpDid struct {
-	Did                 string       `json:"did" yaml:"did"`
-	VerifyKey           string       `json:"verifyKey" yaml:"verifyKey"`
-	EncryptionPublicKey string       `json:"encryptionPublicKey" yaml:"encryptionPublicKey"`
-	Secret              SovrinSecret `json:"secret" yaml:"secret"`
-}
-
-func DidToAddr(did types.Did) sdk.AccAddress {
+func DidToAddr(did Did) sdk.AccAddress {
 	return types.StringToAddr(did)
 }
 
@@ -41,6 +34,14 @@ func fromJsonString(jsonSovrinDid string) (DxpDid, error) {
 	return did, nil
 }
 
+func Gen() DxpDid {
+	var seed [32]byte
+	if _, err := io.ReadFull(cryptoRand.Reader, seed[:]); err != nil {
+		panic(err)
+	}
+	return FromSeed(seed)
+}
+
 func FromMnemonic(mnemonic string) DxpDid {
 	seed := sha256.New()
 	seed.Write([]byte(mnemonic))
@@ -49,14 +50,6 @@ func FromMnemonic(mnemonic string) DxpDid {
 	copy(seed32[:], seed.Sum(nil)[:32])
 
 	return FromSeed(seed32)
-}
-func (sd DxpDid) String() string {
-	output, err := json.MarshalIndent(sd, "", "  ")
-	if err != nil {
-		panic(err)
-	}
-
-	return fmt.Sprintf("%v", string(output))
 }
 func FromSeed(seed [32]byte) DxpDid {
 
@@ -83,12 +76,4 @@ func FromSeed(seed [32]byte) DxpDid {
 	}
 
 	return sovDid
-}
-
-func Gen() DxpDid {
-	var seed [32]byte
-	if _, err := io.ReadFull(cryptoRand.Reader, seed[:]); err != nil {
-		panic(err)
-	}
-	return FromSeed(seed)
 }

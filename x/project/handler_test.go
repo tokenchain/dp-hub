@@ -1,7 +1,7 @@
 package project
 
 import (
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	did "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -23,7 +23,7 @@ func TestHandler_CreateClaim(t *testing.T) {
 	params := paymentsKeeper.GetParams(ctx)
 	params.IxoFactor = sdk.OneDec()
 	params.NodeFeePercentage = sdk.ZeroDec()
-	params.ClaimFeeAmount = sdk.NewDec(6).Quo(sdk.NewDec(10)).Mul(types2.IxoDecimals)
+	params.ClaimFeeAmount = sdk.NewDec(6).Quo(sdk.NewDec(10)).Mul(did.IxoDecimals)
 	paymentsKeeper.SetParams(ctx, params)
 	projectMsg := types.MsgCreateClaim{
 		ProjectDid: "6iftm1hHdaU6LJGKayRMev",
@@ -59,8 +59,8 @@ func Test_CreateEvaluation(t *testing.T) {
 	params := fk.GetParams(ctx)
 	params.IxoFactor = sdk.OneDec()
 	params.NodeFeePercentage = sdk.NewDec(5).Quo(sdk.NewDec(10))
-	params.ClaimFeeAmount = sdk.NewDec(6).Quo(sdk.NewDec(10)).Mul(types2.IxoDecimals)
-	params.EvaluationFeeAmount = sdk.NewDec(4).Quo(sdk.NewDec(10)).Mul(types2.IxoDecimals) // 0.4
+	params.ClaimFeeAmount = sdk.NewDec(6).Quo(sdk.NewDec(10)).Mul(did.IxoDecimals)
+	params.EvaluationFeeAmount = sdk.NewDec(4).Quo(sdk.NewDec(10)).Mul(did.IxoDecimals) // 0.4
 	params.EvaluationPayFeePercentage = sdk.ZeroDec()
 	params.EvaluationPayNodeFeePercentage = sdk.NewDec(5).Quo(sdk.NewDec(10))
 	fk.SetParams(ctx, params)

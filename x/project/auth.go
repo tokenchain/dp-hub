@@ -67,7 +67,7 @@ func GetPubKeyGetter(keeper Keeper, didKeeper did.Keeper) ixo.PubKeyGetter {
 }
 
 // Identical to Cosmos DeductFees function, but tokens sent to project account
-func deductProjectFundingFees(bankKeeper bank.Keeper, ctx sdk.Context, acc exported.Account, projectDid types.Did, fees sdk.Coins) error {
+func deductProjectFundingFees(bankKeeper bank.Keeper, ctx sdk.Context, acc exported.Account, projectDid did.Did, fees sdk.Coins) error {
 	blockTime := ctx.BlockHeader().Time
 	coins := acc.GetCoins()
 

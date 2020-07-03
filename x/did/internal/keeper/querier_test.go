@@ -1,19 +1,18 @@
 package keeper
 
 import (
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	types "github.com/tokenchain/ixo-blockchain/x/did"
+	common "github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 )
 
 func TestQueryDidDocs(t *testing.T) {
 	ctx, k, cdc := CreateTestInput()
-	cdc.RegisterInterface((*types2.DidDoc)(nil), nil)
-	err := k.SetDidDoc(ctx, &types.ValidDidDoc)
+	cdc.RegisterInterface((*types.DidDoc)(nil), nil)
+	err := k.SetDidDoc(ctx, &common.ValidDidDoc)
 	require.Nil(t, err)
 
 	query := abci.RequestQuery{
@@ -22,7 +21,7 @@ func TestQueryDidDocs(t *testing.T) {
 	}
 
 	querier := NewQuerier(k)
-	res, err := querier(ctx, []string{"queryDidDoc", types.ValidDidDoc.Did}, query)
+	res, err := querier(ctx, []string{"queryDidDoc", common.ValidDidDoc.Did}, query)
 	require.Nil(t, err)
 
 	var a types.BaseDidDoc

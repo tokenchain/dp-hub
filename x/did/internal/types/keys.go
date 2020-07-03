@@ -1,8 +1,6 @@
 package types
 
-import (
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
-)
+import "regexp"
 
 const (
 	ModuleName   = "did"
@@ -11,8 +9,12 @@ const (
 	QuerierRoute = ModuleName
 )
 
-var DidKey = []byte{0x01}
+var (
+	ValidDid   = regexp.MustCompile(`^did:(dxp:|sov:)([a-zA-Z0-9]){21,22}([/][a-zA-Z0-9:]+|)$`)
+	IsValidDid = ValidDid.MatchString
+	DidKey     = []byte{0x01}
+)
 
-func GetDidPrefixKey(did types.Did) []byte {
+func GetDidPrefixKey(did Did) []byte {
 	return append(DidKey, []byte(did)...)
 }

@@ -54,27 +54,29 @@ type (
 
 var (
 	// function aliases
-	NewKeeper     = keeper.NewKeeper
-	NewQuerier    = keeper.NewQuerier
-	RegisterCodec = types.RegisterCodec
-	DefaultParams = types.DefaultParams
-
-	NewGenesisState     = types.NewGenesisState
-	DefaultGenesisState = types.DefaultGenesisState
-	ValidateGenesis     = types.ValidateGenesis
-
+	NewKeeper                    = keeper.NewKeeper
+	NewQuerier                   = keeper.NewQuerier
+	RegisterCodec                = types.RegisterCodec
+	DefaultParams                = types.DefaultParams
+	NewGenesisState              = types.NewGenesisState
+	DefaultGenesisState          = types.DefaultGenesisState
+	ValidateGenesis              = types.ValidateGenesis
 	NewPaymentTemplate           = types.NewPaymentTemplate
 	NewPaymentContract           = types.NewPaymentContract
 	NewPaymentContractNoDiscount = types.NewPaymentContractNoDiscount
 	NewDistribution              = types.NewDistribution
 	NewDistributionShare         = types.NewDistributionShare
-
-	NewDiscount  = types.NewDiscount
-	NewDiscounts = types.NewDiscounts
-
-	NewSubscription = types.NewSubscription
-	NewBlockPeriod  = types.NewBlockPeriod
-	NewTimePeriod   = types.NewTimePeriod
+	NewDiscount                  = types.NewDiscount
+	NewDiscounts                 = types.NewDiscounts
+	NewSubscription              = types.NewSubscription
+	NewBlockPeriod               = types.NewBlockPeriod
+	NewTimePeriod                = types.NewTimePeriod
+	ValidPaymentTemplateId       = types.ValidPaymentTemplateId
+	ValidPaymentContractId       = types.ValidPaymentContractId
+	ValidSubscriptionId          = types.ValidSubscriptionId
+	IsValidPaymentTemplateId     = types.IsValidPaymentTemplateId
+	IsValidPaymentContractId     = types.IsValidPaymentContractId
+	IsValidSubscriptionId        = types.IsValidSubscriptionId
 
 	// variable aliases
 	ModuleCdc = types.ModuleCdc

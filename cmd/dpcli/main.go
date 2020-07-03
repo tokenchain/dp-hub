@@ -2,8 +2,6 @@ package main
 
 import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
-
-	//	"github.com/cosmos/cosmos-sdk/x/mint"
 	"os"
 	"path"
 
@@ -22,10 +20,6 @@ import (
 	"github.com/tendermint/tmlibs/cli"
 	"github.com/tokenchain/ixo-blockchain/app"
 	cli2 "github.com/tokenchain/ixo-blockchain/client/cli"
-	/*	distRest "github.com/cosmos/cosmos-sdk/x/distribution/client/rest"
-		distcmd "github.com/cosmos/cosmos-sdk/x/distribution"
-		distClient "github.com/cosmos/cosmos-sdk/x/distribution/client"*/
-
 )
 
 func main() {
@@ -38,8 +32,8 @@ func main() {
 	config.Seal()
 
 	rootCmd := &cobra.Command{
-		Use:   "dxocli",
-		Short: "dxo Light-Client",
+		Use:   "dpcli",
+		Short: "Darkpool Light-Client",
 	}
 
 	rootCmd.PersistentFlags().String(flags.FlagChainID, "", "Chain ID of tendermint node")

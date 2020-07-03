@@ -4,11 +4,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"strings"
 )
 
-func NewMsgSend(toDid types.Did, amount sdk.Coins, senderDid did.DxpDid) MsgSend {
+func NewMsgSend(toDid did.Did, amount sdk.Coins, senderDid did.DxpDid) MsgSend {
 	return MsgSend{
 		PubKey:  senderDid.VerifyKey,
 		FromDid: senderDid.Did,
@@ -17,7 +16,7 @@ func NewMsgSend(toDid types.Did, amount sdk.Coins, senderDid did.DxpDid) MsgSend
 	}
 }
 
-func NewMsgOracleTransfer(fromDid, toDid types.Did, amount sdk.Coins,
+func NewMsgOracleTransfer(fromDid, toDid did.Did, amount sdk.Coins,
 	oracleDid did.DxpDid, proof string) MsgOracleTransfer {
 	return MsgOracleTransfer{
 		PubKey:    oracleDid.VerifyKey,
@@ -29,7 +28,7 @@ func NewMsgOracleTransfer(fromDid, toDid types.Did, amount sdk.Coins,
 	}
 }
 
-func NewMsgOracleMint(toDid types.Did, amount sdk.Coins,
+func NewMsgOracleMint(toDid did.Did, amount sdk.Coins,
 	oracleDid did.DxpDid, proof string) MsgOracleMint {
 	return MsgOracleMint{
 		PubKey:    oracleDid.VerifyKey,
@@ -40,7 +39,7 @@ func NewMsgOracleMint(toDid types.Did, amount sdk.Coins,
 	}
 }
 
-func NewMsgOracleBurn(fromDid types.Did, amount sdk.Coins,
+func NewMsgOracleBurn(fromDid did.Did, amount sdk.Coins,
 	oracleDid did.DxpDid, proof string) MsgOracleBurn {
 	return MsgOracleBurn{
 		PubKey:    oracleDid.VerifyKey,

@@ -6,8 +6,8 @@ import (
 	err "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"gopkg.in/yaml.v2"
-	"regexp"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -18,8 +18,6 @@ import (
 var (
 	IxoDecimals  = sdk.NewDec(1000)
 	maxGasWanted = uint64((1 << 63) - 1)
-	ValidDid     = regexp.MustCompile(`^did:(dxp:|sov:)([a-zA-Z0-9]){21,22}([/][a-zA-Z0-9:]+|)$`)
-	IsValidDid   = ValidDid.MatchString
 	// https://sovrin-foundation.github.io/sovrin/spec/did-method-spec-template.html
 	// IsValidDid adapted from the above link but assumes no sub-namespaces
 	// TODO: ValidDid needs to be updated once we no longer want to be able
@@ -31,12 +29,6 @@ var (
 const IxoNativeToken = "dap"
 
 type (
-	DidDoc interface {
-		SetDid(did Did) error
-		GetDid() Did
-		SetPubKey(pubkey string) error
-		GetPubKey() string
-	}
 	DpTx struct {
 		Msgs       []sdk.Msg     `json:"payload" yaml:"payload"`
 		Fee        auth.StdFee   `json:"fee" yaml:"fee"`
@@ -49,9 +41,8 @@ type (
 	}
 	DpMsg interface {
 		sdk.Msg
-		GetSignerDid() Did
+		GetSignerDid() did.Did
 	}
-	Did = string
 )
 
 func StringToAddr(str string) sdk.AccAddress {

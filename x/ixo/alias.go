@@ -16,3 +16,13 @@ const (
 	FeeContractIdPrefix  = FeeIdPrefix + "contract:"
 	SubscriptionIdPrefix = FeeIdPrefix + "subscription:"
 )
+
+type (
+	DpMsg       = types.DpMsg
+	DpTx        = types.DpTx
+	DpSignature = types.DpSignature
+)
+
+var (
+	IxoDecimals = types.IxoDecimals
+)
