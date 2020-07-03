@@ -7,8 +7,12 @@ import (
 // InitGenesis new oracles genesis
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
 	// Initialise oracles
-	for _, o := range data.Oracles {
-		keeper.SetOracle(ctx, o)
+	println("Oracles")
+	if data.Oracles != nil {
+		println("Oracles ok!")
+		for _, o := range data.Oracles {
+			keeper.SetOracle(ctx, o)
+		}
 	}
 }
 

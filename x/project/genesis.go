@@ -6,13 +6,18 @@ import (
 
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
 	// Initialise project docs, account maps, project withdrawals, params
-	for i := range data.ProjectDocs {
-		keeper.SetProjectDoc(ctx, &data.ProjectDocs[i])
-		keeper.SetAccountMap(ctx,
-			data.ProjectDocs[i].GetProjectDid(), data.AccountMaps[i])
-		keeper.SetProjectWithdrawalTransactions(ctx,
-			data.ProjectDocs[i].GetProjectDid(), data.WithdrawalsInfos[i])
+	println("project ProjectDocs")
+	if data.ProjectDocs != nil {
+		println("project ProjectDocs ok")
+		for i := range data.ProjectDocs {
+			keeper.SetProjectDoc(ctx, &data.ProjectDocs[i])
+			keeper.SetAccountMap(ctx,
+				data.ProjectDocs[i].GetProjectDid(), data.AccountMaps[i])
+			keeper.SetProjectWithdrawalTransactions(ctx,
+				data.ProjectDocs[i].GetProjectDid(), data.WithdrawalsInfos[i])
+		}
 	}
+	println("project params")
 	keeper.SetParams(ctx, data.Params)
 }
 

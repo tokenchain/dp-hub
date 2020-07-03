@@ -265,6 +265,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		bonds.NewAppModule(app.bondsKeeper, app.accountKeeper),
 		treasury.NewAppModule(app.treasuryKeeper),
 		oracles.NewAppModule(app.oraclesKeeper),
+		nameservice.NewAppModule(app.nsKeeper, app.bankKeeper),
 	)
 
 	app.mm.SetOrderBeginBlockers(
@@ -299,8 +300,9 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		bonddoc.ModuleName,
 		bonds.ModuleName,
 		treasury.ModuleName,
+		nameservice.ModuleName,
 		oracles.ModuleName,
-		nameservice.ModuleName)
+	)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
 	//app.mm.RegisterInvariants(&app.crisisKeeper)
 

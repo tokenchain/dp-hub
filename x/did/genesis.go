@@ -7,10 +7,11 @@ import (
 
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) []abci.ValidatorUpdate {
 	// Initialise did docs
-	for _, d := range data.DidDocs {
-		keeper.AddDidDoc(ctx, d)
+	if data.DidDocs != nil {
+		for _, d := range data.DidDocs {
+			keeper.AddDidDoc(ctx, d)
+		}
 	}
-
 	return []abci.ValidatorUpdate{}
 }
 

@@ -6,8 +6,12 @@ import (
 
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
 	// Initialise bond docs
-	for _, b := range data.BondDocs {
-		keeper.SetBondDoc(ctx, &b)
+	println("BondDocs ===")
+	if data.BondDocs != nil {
+		println("BondDocs ok!")
+		for _, b := range data.BondDocs {
+			keeper.SetBondDoc(ctx, &b)
+		}
 	}
 }
 
