@@ -171,7 +171,6 @@ func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 			if len(payloadArray) != 1 {
 				return nil, err.Wrap(err.ErrTxDecode, "Multiple messages not supported")
 			}
-
 			var tx IxoTx
 			er = cdc.UnmarshalJSON(txBytes, &tx)
 			if er != nil {

@@ -6,12 +6,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	core "github.com/tendermint/tendermint/rpc/core/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	coin "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"time"
 )
 
+/*custom coin transaction layer*/
 func parseTx(cdc *codec.Codec, txBytes []byte) (sdk.Tx, error) {
-	return types.DefaultTxDecoder(cdc)(txBytes)
+	return coin.DefaultTxDecoder(cdc)(txBytes)
 }
 
 func formatTxResult(cdc *codec.Codec, resTx *core.ResultTx, resBlock *core.ResultBlock) (sdk.TxResponse, error) {
