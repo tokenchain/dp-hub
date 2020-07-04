@@ -391,6 +391,7 @@ func GetMaccPerms() map[string][]string {
 }
 
 func (app *DpApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error) {
+	println("write staking info..1")
 	ctx := app.NewContext(true, abci.Header{Height: app.LastBlockHeight()})
 	if forZeroHeight {
 		app.prepForZeroHeightGenesis(ctx, jailWhiteList)
@@ -400,7 +401,7 @@ func (app *DpApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList 
 	if err != nil {
 		return nil, nil, err
 	}
-	println("write staking info..")
+	println("write staking info..2")
 	validators = staking.WriteValidators(ctx, app.stakingKeeper)
 	return appState, validators, nil
 }

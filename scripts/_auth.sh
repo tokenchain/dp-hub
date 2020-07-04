@@ -23,6 +23,18 @@ ENVDFOLDER="$HOME/.dpd"
 #ENVDFOLDER="$HOME/.dmd"
 JSONFile=$ENVDFOLDER/config/genesis.json
 
+dclis(){
+  echo "====================================="
+  yes $PASSWORD | $DCLI $1
+  echo "====================================<."
+}
+
+dcli_show_key(){
+  echo "====================================="
+  yes $PASSWORD | $DCLI keys show $1
+  echo "====================================<."
+}
+
 user_oper() {
 	echo "====================================="
 	echo "user account operation"
@@ -36,5 +48,4 @@ tx() {
   shift
   $DCLI tx bonds "$cmd" --broadcast-mode block "$@"
 }
-#tendermint node --rpc.laddr=tcp://0.0.0.0:26657
-#When I try to do `tx staking edit-validator` because the demon cannot start with out a validator in the genesis file for the first start privat full node. It gots me this error from creation of validator ABCIQuery: Post failed: Post "http://localhost:26657": dial tcp [::1]:26657: connect: connection refused. What is the correct way to set the configuration?
+

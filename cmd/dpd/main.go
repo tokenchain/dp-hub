@@ -46,8 +46,8 @@ func main() {
 	ctx := server.NewDefaultContext()
 
 	rootCmd := &cobra.Command{
-		Use:               "ixod",
-		Short:             "dxo Daemon (server)",
+		Use:               "dpd",
+		Short:             "dpd Blockchain Daemon (server)",
 		PersistentPreRunE: server.PersistentPreRunEFn(ctx),
 	}
 
@@ -58,6 +58,7 @@ func main() {
 		genUtilCli.ValidateGenesisCmd(ctx, cdc, app.ModuleBasics),
 		AddGenesisAccountCmd(ctx, cdc, app.DefaultNodeHome, app.DefaultCLIHome),
 		oraclesCli.AddGenesisOracleCmd(ctx, cdc, app.DefaultNodeHome, app.DefaultCLIHome),
+		genUtilCli.MigrateGenesisCmd(ctx, cdc),
 	)
 
 	rootCmd.PersistentFlags().UintVar(&invCheckPeriod, flagInvCheckPeriod,
@@ -103,6 +104,7 @@ func exportAppStateAndTMValidators(logger log.Logger, db dbm.DB, traceStore io.W
 		if err != nil {
 			return nil, nil, err
 		}
+		println("height =-1, write staking info.")
 		return nsApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 	}
 

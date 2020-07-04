@@ -13,6 +13,8 @@ require (
 	github.com/dpapathanasiou/go-recaptcha v0.0.0-20190121160230-be5090b17804
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/gorilla/mux v1.7.3
+	github.com/hmgle/socks5_go v0.0.0-20200531025750-85d815c008b8 // indirect
+	github.com/hmgle/tcfs-go v0.0.0-20200229151502-e6821ff02f22 // indirect
 	github.com/joho/godotenv v1.3.0
 	github.com/onsi/ginkgo v1.9.0 // indirect
 	github.com/onsi/gomega v1.6.0 // indirect
