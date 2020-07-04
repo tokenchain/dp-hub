@@ -108,6 +108,6 @@ func exportAppStateAndTMValidators(logger log.Logger, db dbm.DB, traceStore io.W
 	}
 
 	nsApp := app.NewIxoApp(logger, db, traceStore, true, uint(1), map[int64]bool{})
-
+	println("export validators now..")
 	return nsApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 }

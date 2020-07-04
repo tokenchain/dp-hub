@@ -137,14 +137,14 @@ type DpApp struct {
 	bondsKeeper        bonds.Keeper
 	oraclesKeeper      oracles.Keeper
 	treasuryKeeper     treasury.Keeper
-	nsKeeper           nameservice.Keeper
+	//nsKeeper           nameservice.Keeper
 
 	mm *module.Manager
 	sm *module.SimulationManager // simulation manager
 }
 
 // verify app interface at compile time
-//var _ simapp.App = (*DpApp)(nil)
+var _ simapp.App = (*DpApp)(nil)
 
 func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, skipUpgradeHeights map[int64]bool, baseAppOptions ...func(*bam.BaseApp)) *DpApp {
@@ -182,7 +182,6 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	app.subspaces[slashing.ModuleName] = app.paramsKeeper.Subspace(slashing.DefaultParamspace)
 	app.subspaces[gov.ModuleName] = app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(govtype.ParamKeyTable())
 	app.subspaces[evidence.ModuleName] = app.paramsKeeper.Subspace(evidence.DefaultParamspace)
-
 	app.subspaces[crisis.ModuleName] = app.paramsKeeper.Subspace(crisis.DefaultParamspace)
 	app.subspaces[payments.ModuleName] = app.paramsKeeper.Subspace(payments.DefaultParamspace)
 	app.subspaces[project.ModuleName] = app.paramsKeeper.Subspace(project.DefaultParamspace)
@@ -220,7 +219,6 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		AddRoute(distribution.RouterKey, distribution.NewCommunityPoolSpendProposalHandler(app.distributionKeeper)).
 		AddRoute(upgrade.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.upgradeKeeper))
 
-	//	app.govKeeper = gov.NewKeeper(app.cdc, keys[gov.StoreKey], app.subspaces[gov.ModuleName], app.supplyKeeper, &stakingKeeper, govRouter)
 	app.govKeeper = gov.NewKeeper(
 		app.cdc,
 		keys[gov.StoreKey], app.subspaces[gov.ModuleName],
@@ -241,7 +239,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	app.bondsKeeper = bonds.NewKeeper(app.bankKeeper, app.supplyKeeper, app.accountKeeper, app.stakingKeeper, keys[bonds.StoreKey], app.cdc)
 	app.oraclesKeeper = oracles.NewKeeper(app.cdc, keys[oracles.StoreKey])
 	app.treasuryKeeper = treasury.NewKeeper(app.cdc, keys[treasury.StoreKey], app.bankKeeper, app.oraclesKeeper, app.supplyKeeper)
-	app.nsKeeper = nameservice.NewKeeper(app.cdc, keys[nameservice.StoreKey], app.bankKeeper)
+	//app.nsKeeper = nameservice.NewKeeper(app.cdc, keys[nameservice.StoreKey], app.bankKeeper)
 
 	app.mm = module.NewManager(
 		genutil.NewAppModule(app.accountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
@@ -265,7 +263,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		bonds.NewAppModule(app.bondsKeeper, app.accountKeeper),
 		treasury.NewAppModule(app.treasuryKeeper),
 		oracles.NewAppModule(app.oraclesKeeper),
-		nameservice.NewAppModule(app.nsKeeper, app.bankKeeper),
+		//nameservice.NewAppModule(app.nsKeeper, app.bankKeeper),
 	)
 
 	app.mm.SetOrderBeginBlockers(
@@ -300,7 +298,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		bonddoc.ModuleName,
 		bonds.ModuleName,
 		treasury.ModuleName,
-		nameservice.ModuleName,
+		// nameservice.ModuleName,
 		oracles.ModuleName,
 	)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
@@ -402,9 +400,8 @@ func (app *DpApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList 
 	if err != nil {
 		return nil, nil, err
 	}
-
+	println("write staking info..")
 	validators = staking.WriteValidators(ctx, app.stakingKeeper)
-
 	return appState, validators, nil
 }
 

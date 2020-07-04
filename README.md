@@ -98,4 +98,4 @@ server {
 ```
 
 - [Whitepaper](https://github.com/tokenchain/ixo-blockchain/blob/master/whitepaper.md)
-
+- [Chinese Developer Guide](https://github.com/twjang/gaia/blob/d26d6eddcf8dbb87ed101f69419e3b79cdb568c6/docs/translations/cn/gaiacli.md)
