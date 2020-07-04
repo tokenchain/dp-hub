@@ -5,14 +5,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
-
 	"github.com/tokenchain/ixo-blockchain/x/bonddoc/internal/types"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
 )
 
 func GetPubKeyGetter(keeper Keeper) ixo.PubKeyGetter {
-	return func(ctx sdk.Context, msg types2.IxoMsg) ([32]byte, error) {
+	return func(ctx sdk.Context, msg ixo.DpMsg) ([32]byte, error) {
 
 		// Get signer PubKey
 		var pubKey [32]byte
@@ -23,11 +21,11 @@ func GetPubKeyGetter(keeper Keeper) ixo.PubKeyGetter {
 			bondDid := msg.GetSignerDid()
 			bondDoc, err := keeper.GetBondDoc(ctx, bondDid)
 			if err != nil {
-				return pubKey, sdkerrors.Wrapf(sdkerrors.ErrNoSignatures,"bond did not is not right %s", bondDid)
+				return pubKey, sdkerrors.Wrapf(sdkerrors.ErrNoSignatures, "bond did not is not right %s", bondDid)
 			}
 			copy(pubKey[:], base58.Decode(bondDoc.GetPubKey()))
 		default:
-			return pubKey, x.UnknownRequest( "No match for message type.")
+			return pubKey, x.UnknownRequest("No match for message type.")
 		}
 		return pubKey, nil
 	}

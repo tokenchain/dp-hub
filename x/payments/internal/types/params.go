@@ -4,12 +4,12 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/ixo"
 )
 
 // Parameter store keys
 var (
-	KeyIxoFactor                            = []byte("ixoFactor")
+	KeyIxoFactor                            = []byte("dapFactor")
 	KeyInitiationFeeAmount                  = []byte("InitiationFeeAmount")
 	KeyInitiationNodeFeePercentage          = []byte("InitiationNodeFeePercentage")
 	KeyClaimFeeAmount                       = []byte("ClaimFeeAmount")
@@ -64,12 +64,12 @@ func NewParams(ixoFactor, initiationFeeAmount, initiationNodeFeePercentage,
 func DefaultParams() Params {
 	return Params{
 		IxoFactor:                            sdk.OneDec(),                                             // 1
-		InitiationFeeAmount:                  sdk.NewDec(500).Mul(types.IxoDecimals),                // 500 * 1e3 = 500000
+		InitiationFeeAmount:                  sdk.NewDec(500).Mul(ixo.IxoDecimals),                   // 500 * 1e3 = 500000
 		InitiationNodeFeePercentage:          sdk.ZeroDec(),                                            // 0
-		ClaimFeeAmount:                       sdk.NewDec(6).Quo(sdk.NewDec(10)).Mul(types.IxoDecimals), // 0.6 * 1e3 = 600
-		EvaluationFeeAmount:                  sdk.NewDec(4).Quo(sdk.NewDec(10)).Mul(types.IxoDecimals), // 0.4 * 1e3 = 400
-		ServiceAgentRegistrationFeeAmount:    sdk.ZeroDec().Mul(types.IxoDecimals),                     // 0 * 1e3 = 0
-		EvaluationAgentRegistrationFeeAmount: sdk.ZeroDec().Mul(types.IxoDecimals),                     // 0 * 1e3 = 0
+		ClaimFeeAmount:                       sdk.NewDec(6).Quo(sdk.NewDec(10)).Mul(ixo.IxoDecimals), // 0.6 * 1e3 = 600
+		EvaluationFeeAmount:                  sdk.NewDec(4).Quo(sdk.NewDec(10)).Mul(ixo.IxoDecimals), // 0.4 * 1e3 = 400
+		ServiceAgentRegistrationFeeAmount:    sdk.ZeroDec().Mul(ixo.IxoDecimals),                     // 0 * 1e3 = 0
+		EvaluationAgentRegistrationFeeAmount: sdk.ZeroDec().Mul(ixo.IxoDecimals),                     // 0 * 1e3 = 0
 		NodeFeePercentage:                    sdk.NewDec(5).Quo(sdk.NewDec(10)),                        // 0.5
 		EvaluationPayFeePercentage:           sdk.NewDec(1).Quo(sdk.NewDec(10)),                        // 0.1
 		EvaluationPayNodeFeePercentage:       sdk.NewDec(4).Quo(sdk.NewDec(10)),                        // 0.4
@@ -79,16 +79,16 @@ func DefaultParams() Params {
 // Implements params.ParamSet
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
-		{KeyIxoFactor, &p.IxoFactor, decFoundation},
-		{KeyInitiationFeeAmount, &p.InitiationFeeAmount, decFoundation},
-		{KeyInitiationNodeFeePercentage, &p.InitiationNodeFeePercentage, decFoundation},
-		{KeyClaimFeeAmount, &p.ClaimFeeAmount, decFoundation},
-		{KeyEvaluationFeeAmount, &p.EvaluationFeeAmount, decFoundation},
-		{KeyServiceAgentRegistrationFeeAmount, &p.ServiceAgentRegistrationFeeAmount, decFoundation},
-		{KeyEvaluationAgentRegistrationFeeAmount, &p.EvaluationAgentRegistrationFeeAmount, decFoundation},
-		{KeyNodeFeePercentage, &p.NodeFeePercentage, decFoundation},
-		{KeyEvaluationPayFeePercentage, &p.EvaluationPayFeePercentage, decFoundation},
-		{KeyEvaluationPayNodeFeePercentage, &p.EvaluationPayNodeFeePercentage, decFoundation},
+		{KeyIxoFactor, &p.IxoFactor, decValidation},
+		{KeyInitiationFeeAmount, &p.InitiationFeeAmount, decValidation},
+		{KeyInitiationNodeFeePercentage, &p.InitiationNodeFeePercentage, decValidation},
+		{KeyClaimFeeAmount, &p.ClaimFeeAmount, decValidation},
+		{KeyEvaluationFeeAmount, &p.EvaluationFeeAmount, decValidation},
+		{KeyServiceAgentRegistrationFeeAmount, &p.ServiceAgentRegistrationFeeAmount, decValidation},
+		{KeyEvaluationAgentRegistrationFeeAmount, &p.EvaluationAgentRegistrationFeeAmount, decValidation},
+		{KeyNodeFeePercentage, &p.NodeFeePercentage, decValidation},
+		{KeyEvaluationPayFeePercentage, &p.EvaluationPayFeePercentage, decValidation},
+		{KeyEvaluationPayNodeFeePercentage, &p.EvaluationPayNodeFeePercentage, decValidation},
 	}
 }
 
@@ -130,7 +130,7 @@ func ValidateParams(params Params) error {
 
 func (p Params) String() string {
 	return fmt.Sprintf(`Payments Params:
-  Ixo Factor:                               %s
+  Dap Factor:                               %s
   Initiation Fee Amount:                    %s
   Initiation Node Fee Percentage:           %s
   Claim Fee Amount:                         %s
@@ -148,10 +148,13 @@ func (p Params) String() string {
 	)
 }
 
-func decFoundation(i interface{}) error {
-	_, ok := i.(sdk.Dec)
+func decValidation(i interface{}) error {
+	params, ok := i.(sdk.Dec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if params.LT(sdk.ZeroDec()) {
+		return fmt.Errorf("should be positive, is %s ", params.String())
 	}
 	return nil
 }

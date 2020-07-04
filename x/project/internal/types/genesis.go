@@ -17,13 +17,11 @@ func NewGenesisState(projectDocs []MsgCreateProject, accountMaps []AccountMap,
 	}
 }
 
-//noinspection GoUnusedParameter
 func ValidateGenesis(data GenesisState) error {
 	err := ValidateParams(data.Params)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 

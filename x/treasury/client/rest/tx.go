@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"net/http"
 
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
@@ -38,7 +38,7 @@ func sendRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := did.UnmarshalDxpDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -79,7 +79,7 @@ func oracleTransferRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		oracleDid, err := types2.UnmarshalSovrinDid(oracleDidParam)
+		oracleDid, err := did.UnmarshalDxpDid(oracleDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -119,7 +119,7 @@ func oracleMintRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		oracleDid, err := types2.UnmarshalSovrinDid(oracleDidParam)
+		oracleDid, err := did.UnmarshalDxpDid(oracleDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -159,7 +159,7 @@ func oracleBurnRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		oracleDid, err := types2.UnmarshalSovrinDid(oracleDidParam)
+		oracleDid, err := did.UnmarshalDxpDid(oracleDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))

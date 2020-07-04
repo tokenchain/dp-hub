@@ -5,6 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"strings"
 )
@@ -18,21 +19,21 @@ const (
 )
 
 var (
-	_ types.IxoMsg = MsgCreateBond{}
-	_ types.IxoMsg = MsgEditBond{}
-	_ types.IxoMsg = MsgBuy{}
-	_ types.IxoMsg = MsgSell{}
-	_ types.IxoMsg = MsgSwap{}
+	_ types.DpMsg = MsgCreateBond{}
+	_ types.DpMsg = MsgEditBond{}
+	_ types.DpMsg = MsgBuy{}
+	_ types.DpMsg = MsgSell{}
+	_ types.DpMsg = MsgSwap{}
 )
 
 type MsgCreateBond struct {
-	BondDid                types.Did      `json:"bond_did" yaml:"bond_did"`
+	BondDid                did.Did     `json:"bond_did" yaml:"bond_did"`
 	Token                  string         `json:"token" yaml:"token"`
 	Name                   string         `json:"name" yaml:"name"`
 	Description            string         `json:"description" yaml:"description"`
 	FunctionType           string         `json:"function_type" yaml:"function_type"`
 	FunctionParameters     FunctionParams `json:"function_parameters" yaml:"function_parameters"`
-	CreatorDid             types.Did      `json:"creator_did" yaml:"creator_did"`
+	CreatorDid             did.Did     `json:"creator_did" yaml:"creator_did"`
 	CreatorPubKey          string         `json:"pub_key" yaml:"pub_key"`
 	ReserveTokens          []string       `json:"reserve_tokens" yaml:"reserve_tokens"`
 	TxFeePercentage        sdk.Dec        `json:"tx_fee_percentage" yaml:"tx_fee_percentage"`
@@ -46,11 +47,11 @@ type MsgCreateBond struct {
 	BatchBlocks            sdk.Uint       `json:"batch_blocks" yaml:"batch_blocks"`
 }
 
-func NewMsgCreateBond(token, name, description string, creatorDid types.SovrinDid,
+func NewMsgCreateBond(token, name, description string, creatorDid did.DxpDid,
 	functionType string, functionParameters FunctionParams, reserveTokens []string,
 	txFeePercentage, exitFeePercentage sdk.Dec, feeAddress sdk.AccAddress, maxSupply sdk.Coin,
 	orderQuantityLimits sdk.Coins, sanityRate, sanityMarginPercentage sdk.Dec,
-	allowSell string, batchBlocks sdk.Uint, bondDid types.Did) MsgCreateBond {
+	allowSell string, batchBlocks sdk.Uint, bondDid did.Did) MsgCreateBond {
 	return MsgCreateBond{
 		BondDid:                bondDid,
 		Token:                  token,
@@ -159,9 +160,9 @@ func (msg MsgCreateBond) ValidateBasic() error {
 	// Note: uniqueness of reserve tokens checked when parsing
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.BondDid) {
+	if !did.IsValidDid(msg.BondDid) {
 		return x.ErrInvalidDid("bond did is invalid")
-	} else if !types.IsValidDid(msg.CreatorDid) {
+	} else if !did.IsValidDid(msg.CreatorDid) {
 		return x.ErrInvalidDid("creator did is invalid")
 	}
 
@@ -176,9 +177,9 @@ func (msg MsgCreateBond) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgCreateBond) GetSignerDid() types.Did { return msg.CreatorDid }
+func (msg MsgCreateBond) GetSignerDid() did.Did { return msg.CreatorDid }
 func (msg MsgCreateBond) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateBond) Route() string { return RouterKey }
@@ -186,19 +187,19 @@ func (msg MsgCreateBond) Route() string { return RouterKey }
 func (msg MsgCreateBond) Type() string { return TypeMsgCreateBond }
 
 type MsgEditBond struct {
-	BondDid                types.Did `json:"bond_did" yaml:"bond_did"`
-	Token                  string    `json:"token" yaml:"token"`
-	Name                   string    `json:"name" yaml:"name"`
-	Description            string    `json:"description" yaml:"description"`
-	OrderQuantityLimits    string    `json:"order_quantity_limits" yaml:"order_quantity_limits"`
-	SanityRate             string    `json:"sanity_rate" yaml:"sanity_rate"`
-	SanityMarginPercentage string    `json:"sanity_margin_percentage" yaml:"sanity_margin_percentage"`
-	EditorDid              types.Did `json:"editor_did" yaml:"editor_did"`
-	EditorPubKey           string    `json:"pub_key" yaml:"pub_key"`
+	BondDid                did.Did `json:"bond_did" yaml:"bond_did"`
+	Token                  string     `json:"token" yaml:"token"`
+	Name                   string     `json:"name" yaml:"name"`
+	Description            string     `json:"description" yaml:"description"`
+	OrderQuantityLimits    string     `json:"order_quantity_limits" yaml:"order_quantity_limits"`
+	SanityRate             string     `json:"sanity_rate" yaml:"sanity_rate"`
+	SanityMarginPercentage string     `json:"sanity_margin_percentage" yaml:"sanity_margin_percentage"`
+	EditorDid              did.Did `json:"editor_did" yaml:"editor_did"`
+	EditorPubKey           string     `json:"pub_key" yaml:"pub_key"`
 }
 
 func NewMsgEditBond(token, name, description, orderQuantityLimits, sanityRate,
-	sanityMarginPercentage string, editorDid types.SovrinDid, bondDid types.Did) MsgEditBond {
+	sanityMarginPercentage string, editorDid did.DxpDid, bondDid did.Did) MsgEditBond {
 	return MsgEditBond{
 		BondDid:                bondDid,
 		Token:                  token,
@@ -251,9 +252,9 @@ func (msg MsgEditBond) ValidateBasic() error {
 	}
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.BondDid) {
+	if !did.IsValidDid(msg.BondDid) {
 		return x.ErrInvalidDid("bond did is invalid")
-	} else if !types.IsValidDid(msg.EditorDid) {
+	} else if !did.IsValidDid(msg.EditorDid) {
 		return x.ErrInvalidDid("editor did is invalid")
 	}
 
@@ -268,9 +269,9 @@ func (msg MsgEditBond) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgEditBond) GetSignerDid() types.Did { return msg.EditorDid }
+func (msg MsgEditBond) GetSignerDid() did.Did { return msg.EditorDid }
 func (msg MsgEditBond) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgEditBond) Route() string { return RouterKey }
@@ -278,15 +279,15 @@ func (msg MsgEditBond) Route() string { return RouterKey }
 func (msg MsgEditBond) Type() string { return TypeMsgEditBond }
 
 type MsgBuy struct {
-	BuyerDid  types.Did `json:"buyer_did" yaml:"buyer_did"`
-	PubKey    string    `json:"pub_key" yaml:"pub_key"`
-	Amount    sdk.Coin  `json:"amount" yaml:"amount"`
-	MaxPrices sdk.Coins `json:"max_prices" yaml:"max_prices"`
-	BondDid   types.Did `json:"bond_did" yaml:"bond_did"`
+	BuyerDid  did.Did `json:"buyer_did" yaml:"buyer_did"`
+	PubKey    string     `json:"pub_key" yaml:"pub_key"`
+	Amount    sdk.Coin   `json:"amount" yaml:"amount"`
+	MaxPrices sdk.Coins  `json:"max_prices" yaml:"max_prices"`
+	BondDid   did.Did `json:"bond_did" yaml:"bond_did"`
 }
 
-func NewMsgBuy(buyerDid types.SovrinDid, amount sdk.Coin, maxPrices sdk.Coins,
-	bondDid types.Did) MsgBuy {
+func NewMsgBuy(buyerDid did.DxpDid, amount sdk.Coin, maxPrices sdk.Coins,
+	bondDid did.Did) MsgBuy {
 	return MsgBuy{
 		BuyerDid:  buyerDid.Did,
 		PubKey:    buyerDid.VerifyKey,
@@ -319,9 +320,9 @@ func (msg MsgBuy) ValidateBasic() error {
 	}
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.BondDid) {
+	if !did.IsValidDid(msg.BondDid) {
 		return x.ErrInvalidDid("bond did is invalid")
-	} else if !types.IsValidDid(msg.BuyerDid) {
+	} else if !did.IsValidDid(msg.BuyerDid) {
 		return x.ErrInvalidDid("buyer did is invalid")
 	}
 
@@ -336,9 +337,9 @@ func (msg MsgBuy) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgBuy) GetSignerDid() types.Did { return msg.BuyerDid }
+func (msg MsgBuy) GetSignerDid() did.Did { return msg.BuyerDid }
 func (msg MsgBuy) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgBuy) Route() string { return RouterKey }
@@ -346,13 +347,13 @@ func (msg MsgBuy) Route() string { return RouterKey }
 func (msg MsgBuy) Type() string { return TypeMsgBuy }
 
 type MsgSell struct {
-	SellerDid types.Did `json:"seller_did" yaml:"seller_did"`
-	PubKey    string    `json:"pub_key" yaml:"pub_key"`
-	Amount    sdk.Coin  `json:"amount" yaml:"amount"`
-	BondDid   types.Did `json:"bond_did" yaml:"bond_did"`
+	SellerDid did.Did `json:"seller_did" yaml:"seller_did"`
+	PubKey    string     `json:"pub_key" yaml:"pub_key"`
+	Amount    sdk.Coin   `json:"amount" yaml:"amount"`
+	BondDid   did.Did `json:"bond_did" yaml:"bond_did"`
 }
 
-func NewMsgSell(sellerDid types.SovrinDid, amount sdk.Coin, bondDid types.Did) MsgSell {
+func NewMsgSell(sellerDid did.DxpDid, amount sdk.Coin, bondDid did.Did) MsgSell {
 	return MsgSell{
 		SellerDid: sellerDid.Did,
 		PubKey:    sellerDid.VerifyKey,
@@ -379,9 +380,9 @@ func (msg MsgSell) ValidateBasic() error {
 	}
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.BondDid) {
+	if !did.IsValidDid(msg.BondDid) {
 		return x.ErrInvalidDid("bond did is invalid")
-	} else if !types.IsValidDid(msg.SellerDid) {
+	} else if !did.IsValidDid(msg.SellerDid) {
 		return x.ErrInvalidDid("seller did is invalid")
 	}
 
@@ -396,9 +397,9 @@ func (msg MsgSell) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgSell) GetSignerDid() types.Did { return msg.SellerDid }
+func (msg MsgSell) GetSignerDid() did.Did { return msg.SellerDid }
 func (msg MsgSell) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgSell) Route() string { return RouterKey }
@@ -406,15 +407,15 @@ func (msg MsgSell) Route() string { return RouterKey }
 func (msg MsgSell) Type() string { return TypeMsgSell }
 
 type MsgSwap struct {
-	SwapperDid types.Did `json:"swapper_did" yaml:"swapper_did"`
-	PubKey     string    `json:"pub_key" yaml:"pub_key"`
-	BondDid    types.Did `json:"bond_did" yaml:"bond_did"`
-	From       sdk.Coin  `json:"from" yaml:"from"`
-	ToToken    string    `json:"to_token" yaml:"to_token"`
+	SwapperDid did.Did `json:"swapper_did" yaml:"swapper_did"`
+	PubKey     string     `json:"pub_key" yaml:"pub_key"`
+	BondDid    did.Did `json:"bond_did" yaml:"bond_did"`
+	From       sdk.Coin   `json:"from" yaml:"from"`
+	ToToken    string     `json:"to_token" yaml:"to_token"`
 }
 
-func NewMsgSwap(swapperDid types.SovrinDid, from sdk.Coin, toToken string,
-	bondDid types.Did) MsgSwap {
+func NewMsgSwap(swapperDid did.DxpDid, from sdk.Coin, toToken string,
+	bondDid did.Did) MsgSwap {
 	return MsgSwap{
 		SwapperDid: swapperDid.Did,
 		PubKey:     swapperDid.VerifyKey,
@@ -460,9 +461,9 @@ func (msg MsgSwap) ValidateBasic() error {
 	// Note: From denom and amount must be valid since sdk.Coin
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.BondDid) {
+	if !did.IsValidDid(msg.BondDid) {
 		return x.ErrInvalidDid("bond did is invalid")
-	} else if !types.IsValidDid(msg.SwapperDid) {
+	} else if !did.IsValidDid(msg.SwapperDid) {
 		return x.ErrInvalidDid("swapper did is invalid")
 	}
 
@@ -477,9 +478,9 @@ func (msg MsgSwap) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgSwap) GetSignerDid() types.Did { return msg.SwapperDid }
+func (msg MsgSwap) GetSignerDid() did.Did { return msg.SwapperDid }
 func (msg MsgSwap) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgSwap) Route() string { return RouterKey }

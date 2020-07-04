@@ -3,7 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -15,7 +15,7 @@ import (
 )
 
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
-	r.HandleFunc("/bond", createBondRequestHandler(cliCtx)).Methods("POST")
+	r.HandleFunc("/bondDoc", createBondRequestHandler(cliCtx)).Methods("POST")
 	r.HandleFunc("/updateBondStatus", updateBondStatusRequestHandler(cliCtx)).Methods("PUT")
 }
 
@@ -35,7 +35,7 @@ func createBondRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		didDoc, err := types2.UnmarshalSovrinDid(didDocParam)
+		didDoc, err := did.UnmarshalDxpDid(didDocParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
@@ -64,7 +64,7 @@ func updateBondStatusRequestHandler(cliCtx context.CLIContext) http.HandlerFunc 
 		sovrinDidParam := r.URL.Query().Get("sovrinDid")
 		mode := r.URL.Query().Get("mode")
 
-		sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := did.UnmarshalDxpDid(sovrinDidParam)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))

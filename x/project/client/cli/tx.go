@@ -7,9 +7,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
-
 	"github.com/tokenchain/ixo-blockchain/x/project/internal/types"
 )
 
@@ -21,7 +20,7 @@ func GetCmdCreateProject(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			senderDid := args[0]
 			projectDocStr := args[1]
-			sovrinDid, err := types2.UnmarshalSovrinDid(args[2])
+			sovrinDid, err := did.UnmarshalDxpDid(args[2])
 			if err != nil {
 				return err
 			}
@@ -33,7 +32,7 @@ func GetCmdCreateProject(cdc *codec.Codec) *cobra.Command {
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgCreateProject(senderDid, projectDoc, sovrinDid)
 			stdSignMsg := msg.ToStdSignMsg(types.MsgCreateProjectFee)
@@ -58,7 +57,7 @@ func GetCmdUpdateProjectStatus(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			senderDid := args[0]
 			status := args[1]
-			sovrinDid, err := types2.UnmarshalSovrinDid(args[2])
+			sovrinDid, err := did.UnmarshalDxpDid(args[2])
 			if err != nil {
 				return err
 			}
@@ -79,7 +78,7 @@ func GetCmdUpdateProjectStatus(cdc *codec.Codec) *cobra.Command {
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgUpdateProjectStatus(senderDid, updateProjectStatusDoc, sovrinDid)
 
@@ -108,13 +107,13 @@ func GetCmdCreateAgent(cdc *codec.Codec) *cobra.Command {
 				Role:     role,
 			}
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(args[4])
+			sovrinDid, err := did.UnmarshalDxpDid(args[4])
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgCreateAgent(txHash, senderDid, createAgentDoc, sovrinDid)
 
@@ -145,13 +144,13 @@ func GetCmdUpdateAgent(cdc *codec.Codec) *cobra.Command {
 				Role:   agentRole,
 			}
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(args[5])
+			sovrinDid, err := did.UnmarshalDxpDid(args[5])
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgUpdateAgent(txHash, senderDid, updateAgentDoc, sovrinDid)
 
@@ -173,13 +172,13 @@ func GetCmdCreateClaim(cdc *codec.Codec) *cobra.Command {
 				ClaimID: claimId,
 			}
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(args[3])
+			sovrinDid, err := did.UnmarshalDxpDid(args[3])
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgCreateClaim(txHash, senderDid, createClaimDoc, sovrinDid)
 
@@ -208,13 +207,13 @@ func GetCmdCreateEvaluation(cdc *codec.Codec) *cobra.Command {
 				Status:  claimStatus,
 			}
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(args[4])
+			sovrinDid, err := did.UnmarshalDxpDid(args[4])
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(did.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgCreateEvaluation(txHash, senderDid, createEvaluationDoc, sovrinDid)
 
@@ -229,7 +228,7 @@ func GetCmdWithdrawFunds(cdc *codec.Codec) *cobra.Command {
 		Short: "Withdraw funds.",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			senderDid, err := types2.UnmarshalSovrinDid(args[0])
+			senderDid, err := did.UnmarshalDxpDid(args[0])
 			if err != nil {
 				return err
 			}
@@ -241,7 +240,7 @@ func GetCmdWithdrawFunds(cdc *codec.Codec) *cobra.Command {
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(senderDid.Did))
+				WithFromAddress(did.DidToAddr(senderDid.Did))
 
 			msg := types.NewMsgWithdrawFunds(senderDid.Did, data)
 

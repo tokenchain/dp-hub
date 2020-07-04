@@ -6,12 +6,13 @@ import (
 )
 
 const (
-	ModuleName   = types.ModuleName
-	QuerierRoute = types.QuerierRoute
-	RouterKey    = types.RouterKey
-	StoreKey     = types.StoreKey
-
-	DefaultCodespace = types.ModuleName
+	ModuleName              = types.ModuleName
+	QuerierRoute            = types.QuerierRoute
+	RouterKey               = types.RouterKey
+	StoreKey                = types.StoreKey
+	TypeMsgCreateBond       = types.TypeMsgCreateBond
+	TypeMsgUpdateBondStatus = types.TypeMsgUpdateBondStatus
+	DefaultCodespace        = types.ModuleName
 )
 
 type (
@@ -35,6 +36,5 @@ var (
 	ValidateGenesis     = types.ValidateGenesis
 
 	// variable aliases
-	ModuleCdc            = types.ModuleCdc
-
+	ModuleCdc = types.ModuleCdc
 )

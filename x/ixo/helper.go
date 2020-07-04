@@ -9,7 +9,7 @@ import (
 	"github.com/tendermint/ed25519"
 )
 
-func SignIxoMessage(signBytes []byte, privKey [64]byte) types.IxoSignature {
+func SignIxoMessage(signBytes []byte, privKey [64]byte) types.DpSignature {
 
 	signatureBytes := ed25519.Sign(&privKey, signBytes)
 	signature := *signatureBytes
@@ -17,7 +17,7 @@ func SignIxoMessage(signBytes []byte, privKey [64]byte) types.IxoSignature {
 	return types.NewSignature(time.Now(), signature)
 }
 
-func VerifySignature(signBytes []byte, publicKey [32]byte, sig types.IxoSignature) bool {
+func VerifySignature(signBytes []byte, publicKey [32]byte, sig types.DpSignature) bool {
 	result := ed25519.Verify(&publicKey, signBytes, &sig.SignatureValue)
 	if !result {
 		fmt.Println("******* VERIFY_MSG: Failed ******* ")

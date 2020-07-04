@@ -7,12 +7,11 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
-
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 )
 
 func CreateTestInput() (sdk.Context, Keeper, *codec.Codec) {
-	storeKey := sdk.NewKVStoreKey(types.StoreKey)
+	storeKey := sdk.NewKVStoreKey(did.StoreKey)
 
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)

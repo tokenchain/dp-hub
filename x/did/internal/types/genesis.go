@@ -1,14 +1,10 @@
 package types
 
-import (
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
-)
-
 type GenesisState struct {
-	DidDocs []types.DidDoc `json:"did_docs" yaml:"did_docs"`
+	DidDocs []DidDoc `json:"did_docs" yaml:"did_docs"`
 }
 
-func NewGenesisState(didDocs []types.DidDoc) GenesisState {
+func NewGenesisState(didDocs []DidDoc) GenesisState {
 	return GenesisState{
 		DidDocs: didDocs,
 	}

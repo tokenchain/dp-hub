@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 )
 
 const (
@@ -15,6 +15,6 @@ var (
 	BondKey = []byte{0x01}
 )
 
-func GetBondPrefixKey(did types.Did) []byte {
+func GetBondPrefixKey(did did.Did) []byte {
 	return append(BondKey, []byte(did)...)
 }

@@ -6,10 +6,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 )
 
-func (k Keeper) MustGetBatch(ctx sdk.Context, bondDid types2.Did) types.Batch {
+func (k Keeper) MustGetBatch(ctx sdk.Context, bondDid did.Did) types.Batch {
 	store := ctx.KVStore(k.storeKey)
 	if !k.BatchExists(ctx, bondDid) {
 		panic(fmt.Sprintf("batch not found for %s\n", bondDid))
@@ -22,7 +22,7 @@ func (k Keeper) MustGetBatch(ctx sdk.Context, bondDid types2.Did) types.Batch {
 	return batch
 }
 
-func (k Keeper) MustGetLastBatch(ctx sdk.Context, bondDid types2.Did) types.Batch {
+func (k Keeper) MustGetLastBatch(ctx sdk.Context, bondDid did.Did) types.Batch {
 	store := ctx.KVStore(k.storeKey)
 	if !k.LastBatchExists(ctx, bondDid) {
 		panic(fmt.Sprintf("last batch not found for %s\n", bondDid))
@@ -35,27 +35,27 @@ func (k Keeper) MustGetLastBatch(ctx sdk.Context, bondDid types2.Did) types.Batc
 	return batch
 }
 
-func (k Keeper) BatchExists(ctx sdk.Context, bondDid types2.Did) bool {
+func (k Keeper) BatchExists(ctx sdk.Context, bondDid did.Did) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has(types.GetBatchKey(bondDid))
 }
 
-func (k Keeper) LastBatchExists(ctx sdk.Context, bondDid types2.Did) bool {
+func (k Keeper) LastBatchExists(ctx sdk.Context, bondDid did.Did) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has(types.GetLastBatchKey(bondDid))
 }
 
-func (k Keeper) SetBatch(ctx sdk.Context, bondDid types2.Did, batch types.Batch) {
+func (k Keeper) SetBatch(ctx sdk.Context, bondDid did.Did, batch types.Batch) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.GetBatchKey(bondDid), k.cdc.MustMarshalBinaryBare(batch))
 }
 
-func (k Keeper) SetLastBatch(ctx sdk.Context, bondDid types2.Did, batch types.Batch) {
+func (k Keeper) SetLastBatch(ctx sdk.Context, bondDid did.Did, batch types.Batch) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.GetLastBatchKey(bondDid), k.cdc.MustMarshalBinaryBare(batch))
 }
 
-func (k Keeper) AddBuyOrder(ctx sdk.Context, bondDid types2.Did, bo types.BuyOrder, buyPrices, sellPrices sdk.DecCoins) {
+func (k Keeper) AddBuyOrder(ctx sdk.Context, bondDid did.Did, bo types.BuyOrder, buyPrices, sellPrices sdk.DecCoins) {
 	batch := k.MustGetBatch(ctx, bondDid)
 	batch.TotalBuyAmount = batch.TotalBuyAmount.Add(bo.Amount)
 	batch.BuyPrices = buyPrices
@@ -67,7 +67,7 @@ func (k Keeper) AddBuyOrder(ctx sdk.Context, bondDid types2.Did, bo types.BuyOrd
 	logger.Info(fmt.Sprintf("added buy order for %s from %s", bo.Amount.String(), bo.AccountDid))
 }
 
-func (k Keeper) AddSellOrder(ctx sdk.Context, bondDid types2.Did, so types.SellOrder, buyPrices, sellPrices sdk.DecCoins) {
+func (k Keeper) AddSellOrder(ctx sdk.Context, bondDid did.Did, so types.SellOrder, buyPrices, sellPrices sdk.DecCoins) {
 	batch := k.MustGetBatch(ctx, bondDid)
 	batch.TotalSellAmount = batch.TotalSellAmount.Add(so.Amount)
 	batch.BuyPrices = buyPrices
@@ -79,7 +79,7 @@ func (k Keeper) AddSellOrder(ctx sdk.Context, bondDid types2.Did, so types.SellO
 	logger.Info(fmt.Sprintf("added sell order for %s from %s", so.Amount.String(), so.AccountDid))
 }
 
-func (k Keeper) AddSwapOrder(ctx sdk.Context, bondDid types2.Did, so types.SwapOrder) {
+func (k Keeper) AddSwapOrder(ctx sdk.Context, bondDid did.Did, so types.SwapOrder) {
 	batch := k.MustGetBatch(ctx, bondDid)
 	batch.Swaps = append(batch.Swaps, so)
 	k.SetBatch(ctx, bondDid, batch)
@@ -139,7 +139,7 @@ func (k Keeper) GetBatchBuySellPrices(ctx sdk.Context, bondDid string, batch typ
 	return buyPricesPT, sellPricesPT, nil
 }
 
-func (k Keeper) GetUpdatedBatchPricesAfterBuy(ctx sdk.Context, bondDid types2.Did, bo types.BuyOrder) (buyPrices, sellPrices sdk.DecCoins, err error) {
+func (k Keeper) GetUpdatedBatchPricesAfterBuy(ctx sdk.Context, bondDid did.Did, bo types.BuyOrder) (buyPrices, sellPrices sdk.DecCoins, err error) {
 	bond := k.MustGetBond(ctx, bondDid)
 	batch := k.MustGetBatch(ctx, bondDid)
 
@@ -165,7 +165,7 @@ func (k Keeper) GetUpdatedBatchPricesAfterBuy(ctx sdk.Context, bondDid types2.Di
 	return buyPrices, sellPrices, nil
 }
 
-func (k Keeper) GetUpdatedBatchPricesAfterSell(ctx sdk.Context, bondDid types2.Did, so types.SellOrder) (buyPrices, sellPrices sdk.DecCoins, err error) {
+func (k Keeper) GetUpdatedBatchPricesAfterSell(ctx sdk.Context, bondDid did.Did, so types.SellOrder) (buyPrices, sellPrices sdk.DecCoins, err error) {
 	batch := k.MustGetBatch(ctx, bondDid)
 
 	// Cannot burn more tokens than what exists
@@ -184,9 +184,9 @@ func (k Keeper) GetUpdatedBatchPricesAfterSell(ctx sdk.Context, bondDid types2.D
 	return buyPrices, sellPrices, nil
 }
 
-func (k Keeper) PerformBuyAtPrice(ctx sdk.Context, bondDid types2.Did, bo types.BuyOrder, prices sdk.DecCoins) (err error) {
+func (k Keeper) PerformBuyAtPrice(ctx sdk.Context, bondDid did.Did, bo types.BuyOrder, prices sdk.DecCoins) (err error) {
 	bond := k.MustGetBond(ctx, bondDid)
-	buyerAddr := types2.DidToAddr(bo.AccountDid)
+	buyerAddr := did.DidToAddr(bo.AccountDid)
 
 	// Mint bond tokens
 	err = k.SupplyKeeper.MintCoins(ctx, types.BondsMintBurnAccount,
@@ -260,9 +260,9 @@ func (k Keeper) PerformBuyAtPrice(ctx sdk.Context, bondDid types2.Did, bo types.
 	return nil
 }
 
-func (k Keeper) PerformSellAtPrice(ctx sdk.Context, bondDid types2.Did, so types.SellOrder, prices sdk.DecCoins) (err error) {
+func (k Keeper) PerformSellAtPrice(ctx sdk.Context, bondDid did.Did, so types.SellOrder, prices sdk.DecCoins) (err error) {
 	bond := k.MustGetBond(ctx, bondDid)
-	sellerAddr := types2.DidToAddr(so.AccountDid)
+	sellerAddr := did.DidToAddr(so.AccountDid)
 
 	reserveReturns := types.MultiplyDecCoinsByInt(prices, so.Amount.Amount)
 	reserveReturnsRounded := types.RoundReserveReturns(reserveReturns)
@@ -310,7 +310,7 @@ func (k Keeper) PerformSellAtPrice(ctx sdk.Context, bondDid types2.Did, so types
 	return nil
 }
 
-func (k Keeper) PerformSwap(ctx sdk.Context, bondDid types2.Did, so types.SwapOrder) (err error, ok bool) {
+func (k Keeper) PerformSwap(ctx sdk.Context, bondDid did.Did, so types.SwapOrder) (err error, ok bool) {
 	bond := k.MustGetBond(ctx, bondDid)
 
 	// WARNING: do not return ok=true if money has already been transferred when error occurs
@@ -330,7 +330,7 @@ func (k Keeper) PerformSwap(ctx sdk.Context, bondDid types2.Did, so types.SwapOr
 	}
 
 	// Give resultant tokens to swapper (reserveReturns should never be zero)
-	swapperAddr := types2.DidToAddr(so.AccountDid)
+	swapperAddr := did.DidToAddr(so.AccountDid)
 	err = k.BankKeeper.SendCoins(ctx, bond.ReserveAddress, swapperAddr, reserveReturns)
 	if err != nil {
 		return err, false
@@ -369,7 +369,7 @@ func (k Keeper) PerformSwap(ctx sdk.Context, bondDid types2.Did, so types.SwapOr
 	return nil, true
 }
 
-func (k Keeper) PerformBuyOrders(ctx sdk.Context, bondDid types2.Did) {
+func (k Keeper) PerformBuyOrders(ctx sdk.Context, bondDid did.Did) {
 	batch := k.MustGetBatch(ctx, bondDid)
 
 	// Perform buys or return to buyer
@@ -388,7 +388,7 @@ func (k Keeper) PerformBuyOrders(ctx sdk.Context, bondDid types2.Did) {
 	k.SetBatch(ctx, bondDid, batch)
 }
 
-func (k Keeper) PerformSellOrders(ctx sdk.Context, bondDid types2.Did) {
+func (k Keeper) PerformSellOrders(ctx sdk.Context, bondDid did.Did) {
 	batch := k.MustGetBatch(ctx, bondDid)
 
 	// Perform sells or return to seller
@@ -407,7 +407,7 @@ func (k Keeper) PerformSellOrders(ctx sdk.Context, bondDid types2.Did) {
 	k.SetBatch(ctx, bondDid, batch)
 }
 
-func (k Keeper) PerformSwapOrders(ctx sdk.Context, bondDid types2.Did) {
+func (k Keeper) PerformSwapOrders(ctx sdk.Context, bondDid did.Did) {
 	logger := ctx.Logger()
 	batch := k.MustGetBatch(ctx, bondDid)
 
@@ -425,7 +425,7 @@ func (k Keeper) PerformSwapOrders(ctx sdk.Context, bondDid types2.Did) {
 					logger.Debug(fmt.Sprintf("cancellation reason: %s", err.Error()))
 
 					// Return from amount to swapper
-					swapperAddr := types2.DidToAddr(so.AccountDid)
+					swapperAddr := did.DidToAddr(so.AccountDid)
 					err := k.SupplyKeeper.SendCoinsFromModuleToAccount(ctx,
 						types.BatchesIntermediaryAccount, swapperAddr, sdk.Coins{so.Amount})
 					if err != nil {
@@ -444,13 +444,13 @@ func (k Keeper) PerformSwapOrders(ctx sdk.Context, bondDid types2.Did) {
 	k.SetBatch(ctx, bondDid, batch)
 }
 
-func (k Keeper) PerformOrders(ctx sdk.Context, bondDid types2.Did) {
+func (k Keeper) PerformOrders(ctx sdk.Context, bondDid did.Did) {
 	k.PerformBuyOrders(ctx, bondDid)
 	k.PerformSellOrders(ctx, bondDid)
 	k.PerformSwapOrders(ctx, bondDid)
 }
 
-func (k Keeper) CheckIfBuyOrderFulfillableAtPrice(ctx sdk.Context, bondDid types2.Did, bo types.BuyOrder, prices sdk.DecCoins) error {
+func (k Keeper) CheckIfBuyOrderFulfillableAtPrice(ctx sdk.Context, bondDid did.Did, bo types.BuyOrder, prices sdk.DecCoins) error {
 	bond := k.MustGetBond(ctx, bondDid)
 
 	reservePrices := types.MultiplyDecCoinsByInt(prices, bo.Amount.Amount)
@@ -466,7 +466,7 @@ func (k Keeper) CheckIfBuyOrderFulfillableAtPrice(ctx sdk.Context, bondDid types
 	return nil
 }
 
-func (k Keeper) CancelUnfulfillableBuys(ctx sdk.Context, bondDid types2.Did) (cancelledOrders int) {
+func (k Keeper) CancelUnfulfillableBuys(ctx sdk.Context, bondDid did.Did) (cancelledOrders int) {
 	logger := k.Logger(ctx)
 	batch := k.MustGetBatch(ctx, bondDid)
 
@@ -493,7 +493,7 @@ func (k Keeper) CancelUnfulfillableBuys(ctx sdk.Context, bondDid types2.Did) (ca
 				))
 
 				// Return reserve to buyer
-				buyerAddr := types2.DidToAddr(bo.AccountDid)
+				buyerAddr := did.DidToAddr(bo.AccountDid)
 				err := k.SupplyKeeper.SendCoinsFromModuleToAccount(ctx,
 					types.BatchesIntermediaryAccount, buyerAddr, bo.MaxPrices)
 				if err != nil {
@@ -508,7 +508,7 @@ func (k Keeper) CancelUnfulfillableBuys(ctx sdk.Context, bondDid types2.Did) (ca
 	return cancelledOrders
 }
 
-func (k Keeper) CancelUnfulfillableOrders(ctx sdk.Context, bondDid types2.Did) (cancelledOrders int) {
+func (k Keeper) CancelUnfulfillableOrders(ctx sdk.Context, bondDid did.Did) (cancelledOrders int) {
 	batch := k.MustGetBatch(ctx, bondDid)
 	cancelledOrders = 0
 

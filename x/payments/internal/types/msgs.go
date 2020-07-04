@@ -21,18 +21,18 @@ const (
 )
 
 var (
-	_ types.IxoMsg = MsgCreatePaymentTemplate{}
-	_ types.IxoMsg = MsgCreatePaymentContract{}
-	_ types.IxoMsg = MsgCreateSubscription{}
-	_ types.IxoMsg = MsgSetPaymentContractAuthorisation{}
-	_ types.IxoMsg = MsgGrantDiscount{}
-	_ types.IxoMsg = MsgRevokeDiscount{}
-	_ types.IxoMsg = MsgEffectPayment{}
+	_ types.DpMsg = MsgCreatePaymentTemplate{}
+	_ types.DpMsg = MsgCreatePaymentContract{}
+	_ types.DpMsg = MsgCreateSubscription{}
+	_ types.DpMsg = MsgSetPaymentContractAuthorisation{}
+	_ types.DpMsg = MsgGrantDiscount{}
+	_ types.DpMsg = MsgRevokeDiscount{}
+	_ types.DpMsg = MsgEffectPayment{}
 )
 
 type MsgCreatePaymentTemplate struct {
 	PubKey          string          `json:"pub_key" yaml:"pub_key"`
-	CreatorDid      types.Did       `json:"creator_did" yaml:"creator_did"`
+	CreatorDid      did.Did         `json:"creator_did" yaml:"creator_did"`
 	PaymentTemplate PaymentTemplate `json:"payment_template" yaml:"payment_template"`
 }
 
@@ -47,7 +47,7 @@ func (msg MsgCreatePaymentTemplate) ValidateBasic() error {
 	}
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.CreatorDid) {
+	if !did.IsValidDid(msg.CreatorDid) {
 		return errors.Wrap(x.ErrorInvalidDidE, "creator did is invalid")
 	}
 
@@ -59,9 +59,9 @@ func (msg MsgCreatePaymentTemplate) ValidateBasic() error {
 	return nil
 }
 
-func (msg MsgCreatePaymentTemplate) GetSignerDid() types.Did { return msg.CreatorDid }
+func (msg MsgCreatePaymentTemplate) GetSignerDid() did.Did { return msg.CreatorDid }
 func (msg MsgCreatePaymentTemplate) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreatePaymentTemplate) String() string {
@@ -82,7 +82,7 @@ func (msg MsgCreatePaymentTemplate) GetSignBytes() []byte {
 
 type MsgCreatePaymentContract struct {
 	PubKey            string         `json:"pub_key" yaml:"pub_key"`
-	CreatorDid        types.Did      `json:"creator_did" yaml:"creator_did"`
+	CreatorDid        did.Did        `json:"creator_did" yaml:"creator_did"`
 	PaymentTemplateId string         `json:"payment_template_id" yaml:"payment_template_id"`
 	PaymentContractId string         `json:"payment_contract_id" yaml:"payment_contract_id"`
 	Payer             sdk.AccAddress `json:"payer" yaml:"payer"`
@@ -103,7 +103,7 @@ func (msg MsgCreatePaymentContract) ValidateBasic() error {
 	}
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.CreatorDid) {
+	if !did.IsValidDid(msg.CreatorDid) {
 		return errors.Wrap(did.ErrorInvalidDid, "creator did is invalid")
 	}
 
@@ -117,9 +117,9 @@ func (msg MsgCreatePaymentContract) ValidateBasic() error {
 	return nil
 }
 
-func (msg MsgCreatePaymentContract) GetSignerDid() types.Did { return msg.CreatorDid }
+func (msg MsgCreatePaymentContract) GetSignerDid() did.Did { return msg.CreatorDid }
 func (msg MsgCreatePaymentContract) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreatePaymentContract) String() string {
@@ -139,12 +139,12 @@ func (msg MsgCreatePaymentContract) GetSignBytes() []byte {
 }
 
 type MsgCreateSubscription struct {
-	PubKey            string    `json:"pub_key" yaml:"pub_key"`
-	CreatorDid        types.Did `json:"creator_did" yaml:"creator_did"`
-	SubscriptionId    string    `json:"subscription_id" yaml:"subscription_id"`
-	PaymentContractId string    `json:"payment_contract_id" yaml:"payment_contract_id"`
-	MaxPeriods        sdk.Uint  `json:"max_periods" yaml:"max_periods"`
-	Period            Period    `json:"period" yaml:"period"`
+	PubKey            string   `json:"pub_key" yaml:"pub_key"`
+	CreatorDid        did.Did  `json:"creator_did" yaml:"creator_did"`
+	SubscriptionId    string   `json:"subscription_id" yaml:"subscription_id"`
+	PaymentContractId string   `json:"payment_contract_id" yaml:"payment_contract_id"`
+	MaxPeriods        sdk.Uint `json:"max_periods" yaml:"max_periods"`
+	Period            Period   `json:"period" yaml:"period"`
 }
 
 func (msg MsgCreateSubscription) Type() string  { return TypeMsgCreateSubscription }
@@ -158,7 +158,7 @@ func (msg MsgCreateSubscription) ValidateBasic() error {
 	}
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.CreatorDid) {
+	if !did.IsValidDid(msg.CreatorDid) {
 		return errors.Wrap(did.ErrorInvalidDid, "creator did is invalid")
 	}
 
@@ -175,9 +175,9 @@ func (msg MsgCreateSubscription) ValidateBasic() error {
 	return nil
 }
 
-func (msg MsgCreateSubscription) GetSignerDid() types.Did { return msg.CreatorDid }
+func (msg MsgCreateSubscription) GetSignerDid() did.Did { return msg.CreatorDid }
 func (msg MsgCreateSubscription) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateSubscription) String() string {
@@ -197,10 +197,10 @@ func (msg MsgCreateSubscription) GetSignBytes() []byte {
 }
 
 type MsgSetPaymentContractAuthorisation struct {
-	PubKey            string    `json:"pub_key" yaml:"pub_key"`
-	PayerDid          types.Did `json:"payer_did" yaml:"payer_did"`
-	PaymentContractId string    `json:"payment_contract_id" yaml:"payment_contract_id"`
-	Authorised        bool      `json:"authorised" yaml:"authorised"`
+	PubKey            string  `json:"pub_key" yaml:"pub_key"`
+	PayerDid          did.Did `json:"payer_did" yaml:"payer_did"`
+	PaymentContractId string  `json:"payment_contract_id" yaml:"payment_contract_id"`
+	Authorised        bool    `json:"authorised" yaml:"authorised"`
 }
 
 func (msg MsgSetPaymentContractAuthorisation) Type() string {
@@ -216,7 +216,7 @@ func (msg MsgSetPaymentContractAuthorisation) ValidateBasic() error {
 	}
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.PayerDid) {
+	if !did.IsValidDid(msg.PayerDid) {
 		return errors.Wrap(did.ErrorInvalidDid, "payer did is invalid")
 	}
 
@@ -228,9 +228,9 @@ func (msg MsgSetPaymentContractAuthorisation) ValidateBasic() error {
 	return nil
 }
 
-func (msg MsgSetPaymentContractAuthorisation) GetSignerDid() types.Did { return msg.PayerDid }
+func (msg MsgSetPaymentContractAuthorisation) GetSignerDid() did.Did { return msg.PayerDid }
 func (msg MsgSetPaymentContractAuthorisation) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgSetPaymentContractAuthorisation) String() string {
@@ -251,7 +251,7 @@ func (msg MsgSetPaymentContractAuthorisation) GetSignBytes() []byte {
 
 type MsgGrantDiscount struct {
 	PubKey            string         `json:"pub_key" yaml:"pub_key"`
-	SenderDid         types.Did      `json:"sender_did" yaml:"sender_did"`
+	SenderDid         did.Did        `json:"sender_did" yaml:"sender_did"`
 	PaymentContractId string         `json:"payment_contract_id" yaml:"payment_contract_id"`
 	DiscountId        sdk.Uint       `json:"discount_id" yaml:"discount_id"`
 	Recipient         sdk.AccAddress `json:"recipient" yaml:"recipient"`
@@ -270,7 +270,7 @@ func (msg MsgGrantDiscount) ValidateBasic() error {
 	}
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.SenderDid) {
+	if !did.IsValidDid(msg.SenderDid) {
 		return errors.Wrap(did.ErrorInvalidDid, "sender did is invalid")
 	}
 
@@ -282,9 +282,9 @@ func (msg MsgGrantDiscount) ValidateBasic() error {
 	return nil
 }
 
-func (msg MsgGrantDiscount) GetSignerDid() types.Did { return msg.SenderDid }
+func (msg MsgGrantDiscount) GetSignerDid() did.Did { return msg.SenderDid }
 func (msg MsgGrantDiscount) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgGrantDiscount) String() string {
@@ -305,7 +305,7 @@ func (msg MsgGrantDiscount) GetSignBytes() []byte {
 
 type MsgRevokeDiscount struct {
 	PubKey            string         `json:"pub_key" yaml:"pub_key"`
-	SenderDid         types.Did      `json:"sender_did" yaml:"sender_did"`
+	SenderDid         did.Did        `json:"sender_did" yaml:"sender_did"`
 	PaymentContractId string         `json:"payment_contract_id" yaml:"payment_contract_id"`
 	Holder            sdk.AccAddress `json:"holder" yaml:"holder"`
 }
@@ -323,7 +323,7 @@ func (msg MsgRevokeDiscount) ValidateBasic() error {
 	}
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.SenderDid) {
+	if !did.IsValidDid(msg.SenderDid) {
 		return errors.Wrap(did.ErrorInvalidDid, "sender did is invalid")
 	}
 
@@ -335,9 +335,9 @@ func (msg MsgRevokeDiscount) ValidateBasic() error {
 	return nil
 }
 
-func (msg MsgRevokeDiscount) GetSignerDid() types.Did { return msg.SenderDid }
+func (msg MsgRevokeDiscount) GetSignerDid() did.Did { return msg.SenderDid }
 func (msg MsgRevokeDiscount) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgRevokeDiscount) String() string {
@@ -357,9 +357,9 @@ func (msg MsgRevokeDiscount) GetSignBytes() []byte {
 }
 
 type MsgEffectPayment struct {
-	PubKey            string    `json:"pub_key" yaml:"pub_key"`
-	SenderDid         types.Did `json:"sender_did" yaml:"sender_did"`
-	PaymentContractId string    `json:"payment_contract_id" yaml:"payment_contract_id"`
+	PubKey            string  `json:"pub_key" yaml:"pub_key"`
+	SenderDid         did.Did `json:"sender_did" yaml:"sender_did"`
+	PaymentContractId string  `json:"payment_contract_id" yaml:"payment_contract_id"`
 }
 
 func (msg MsgEffectPayment) Type() string  { return TypeMsgEffectPayment }
@@ -373,7 +373,7 @@ func (msg MsgEffectPayment) ValidateBasic() error {
 	}
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.SenderDid) {
+	if !did.IsValidDid(msg.SenderDid) {
 		return errors.Wrap(did.ErrorInvalidDid, "sender did is invalid")
 	}
 
@@ -385,9 +385,9 @@ func (msg MsgEffectPayment) ValidateBasic() error {
 	return nil
 }
 
-func (msg MsgEffectPayment) GetSignerDid() types.Did { return msg.SenderDid }
+func (msg MsgEffectPayment) GetSignerDid() did.Did { return msg.SenderDid }
 func (msg MsgEffectPayment) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgEffectPayment) String() string {

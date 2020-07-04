@@ -100,6 +100,10 @@ var (
 
 	// Reserved payments module ID prefixes
 	paymentsReservedIdPrefixes = []string{}
+
+	allowedReceivingModAcc = map[string]bool{
+		distribution.ModuleName: true,
+	}
 )
 
 func MakeCodec() *codec.Codec {
@@ -110,6 +114,36 @@ func MakeCodec() *codec.Codec {
 	codec.RegisterCrypto(cdc)
 	return cdc.Seal()
 }
+
+// App implements the common methods for a Cosmos SDK-based application
+// specific blockchain.
+type App interface {
+	// The assigned name of the app.
+	Name() string
+	// The application types codec.
+	// NOTE: This shoult be sealed before being returned.
+	Codec() *codec.Codec
+	// Application updates every begin block.
+	BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock
+	// Application updates every end block.
+	EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock
+	// Application update at chain (i.e app) initialization.
+	InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain
+	// Loads the app at a given height.
+	LoadHeight(height int64) error
+	// Exports the state of the application for a genesis file.
+	ExportAppStateAndValidators(
+		forZeroHeight bool, jailWhiteList []string,
+	) (json.RawMessage, []tmtypes.GenesisValidator, error)
+	// All the registered module account addreses.
+	ModuleAccountAddrs() map[string]bool
+	// Helper for the simulation framework.
+	SimulationManager() *module.SimulationManager
+	prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList []string)
+}
+
+// Verify app interface at compile time
+var _ App = (*DpApp)(nil)
 
 type DpApp struct {
 	*bam.BaseApp
@@ -191,16 +225,49 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	// The BankKeeper allows you perform sdk.Coins interactions
 	//app.bankKeeper = bank.NewBaseKeeper(app.accountKeeper, app.subspaces[bank.ModuleName], app.ModuleAccountAddrs(), )
 	//app.bankKeeper = bank.NewBaseKeeper(app.accountKeeper, app.subspaces[bank.ModuleName], app.ModuleAccountAddrs())
-	app.bankKeeper = bank.NewBaseKeeper(app.accountKeeper, app.subspaces[bank.ModuleName], app.ModuleAccountAddrs())
-	app.supplyKeeper = supply.NewKeeper(app.cdc, keys[supply.StoreKey], app.accountKeeper, app.bankKeeper, maccPerms)
+	app.bankKeeper = bank.NewBaseKeeper(
+		app.accountKeeper,
+		app.subspaces[bank.ModuleName],
+		app.BlacklistedAccAddrs(),
+	)
+	app.supplyKeeper = supply.NewKeeper(
+		app.cdc, keys[supply.StoreKey],
+		app.accountKeeper,
+		app.bankKeeper,
+		maccPerms,
+	)
 	//stakingKeeper := staking.NewKeeper(app.cdc, keys[staking.StoreKey], app.supplyKeeper, app.subspaces[staking.ModuleName])
-	stakingKeeper := staking.NewKeeper(app.cdc, keys[staking.StoreKey], app.supplyKeeper, app.subspaces[staking.ModuleName])
-	app.mintKeeper = mint.NewKeeper(app.cdc, keys[mint.StoreKey], app.subspaces[mint.ModuleName], &stakingKeeper, app.supplyKeeper, auth.FeeCollectorName)
+	stakingKeeper := staking.NewKeeper(
+		app.cdc, keys[staking.StoreKey],
+		app.supplyKeeper,
+		app.subspaces[staking.ModuleName],
+	)
+	app.mintKeeper = mint.NewKeeper(
+		app.cdc, keys[mint.StoreKey],
+		app.subspaces[mint.ModuleName],
+		&stakingKeeper, app.supplyKeeper,
+		auth.FeeCollectorName,
+	)
 	//app.distributionKeeper = distribution.NewKeeper(app.cdc, keys[distribution.StoreKey], app.subspaces[distribution.ModuleName], &stakingKeeper, app.supplyKeeper, auth.FeeCollectorName, app.ModuleAccountAddrs())
-	app.distributionKeeper = distribution.NewKeeper(app.cdc, keys[distribution.StoreKey], app.subspaces[distribution.ModuleName], &stakingKeeper, app.supplyKeeper, auth.FeeCollectorName, app.ModuleAccountAddrs())
+	app.distributionKeeper = distribution.NewKeeper(
+		app.cdc, keys[distribution.StoreKey],
+		app.subspaces[distribution.ModuleName],
+		&stakingKeeper, app.supplyKeeper,
+		auth.FeeCollectorName,
+		app.ModuleAccountAddrs(),
+	)
 	//app.slashingKeeper = slashing.NewKeeper(app.cdc, keys[slashing.StoreKey], &stakingKeeper, app.subspaces[slashing.ModuleName])
-	app.slashingKeeper = slashing.NewKeeper(app.cdc, keys[slashing.StoreKey], &stakingKeeper, app.subspaces[slashing.ModuleName])
-	app.crisisKeeper = crisis.NewKeeper(app.subspaces[crisis.ModuleName], invCheckPeriod, app.supplyKeeper, auth.FeeCollectorName)
+	app.slashingKeeper = slashing.NewKeeper(
+		app.cdc, keys[slashing.StoreKey],
+		&stakingKeeper,
+		app.subspaces[slashing.ModuleName],
+	)
+	app.crisisKeeper = crisis.NewKeeper(
+		app.subspaces[crisis.ModuleName],
+		invCheckPeriod,
+		app.supplyKeeper,
+		auth.FeeCollectorName,
+	)
 	app.upgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
 
 	// create evidence keeper with evidence router
@@ -257,7 +324,6 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		upgrade.NewAppModule(app.upgradeKeeper),
 		evidence.NewAppModule(app.evidenceKeeper),
 
-
 		did.NewAppModule(app.didKeeper),
 		payments.NewAppModule(app.paymentsKeeper, app.bankKeeper),
 		project.NewAppModule(app.projectKeeper, app.paymentsKeeper, app.bankKeeper),
@@ -305,7 +371,6 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
 	//app.mm.RegisterInvariants(&app.crisisKeeper)
-
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
@@ -320,6 +385,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		distribution.NewAppModule(app.distributionKeeper, app.accountKeeper, app.supplyKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.accountKeeper, app.stakingKeeper),
+		params.NewAppModule(),
 		// TODO: Add your module(s)
 	)
 
@@ -344,9 +410,8 @@ type GenesisState map[string]json.RawMessage
 func NewDefaultGenesisState() GenesisState {
 	return ModuleBasics.DefaultGenesis()
 }
-
+func (app *DpApp) Name() string { return app.BaseApp.Name() }
 func (app *DpApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	//var genesisState map[string]json.RawMessage
 	var genesisState simapp.GenesisState
 	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 	return app.mm.InitGenesis(ctx, genesisState)
@@ -381,6 +446,16 @@ func (app *DpApp) Codec() *codec.Codec {
 // SimulationManager implements the SimulationApp interface
 func (app *DpApp) SimulationManager() *module.SimulationManager {
 	return app.sm
+}
+
+// BlacklistedAccAddrs returns all the app's module account addresses black listed for receiving tokens.
+func (app *DpApp) BlacklistedAccAddrs() map[string]bool {
+	blacklistedAddrs := make(map[string]bool)
+	for acc := range maccPerms {
+		blacklistedAddrs[supply.NewModuleAddress(acc).String()] = !allowedReceivingModAcc[acc]
+	}
+
+	return blacklistedAddrs
 }
 
 // GetMaccPerms returns a mapping of the application's module account permissions.
@@ -547,7 +622,6 @@ func initAnteHandler(app *DpApp) sdk.AnteHandler {
 	bondsPubKeyGetter := bonds.GetPubKeyGetter(app.bondsKeeper, app.didKeeper)
 	treasuryPubKeyGetter := treasury.GetPubKeyGetter(app.didKeeper)
 	paymentsPubKeyGetter := payments.GetPubKeyGetter(app.didKeeper)
-	cosmosAnteHandler := auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer)
 	didAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, didPubKeyGetter)
 	projectAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, projectPubKeyGetter)
 	bonddocAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, bonddocPubKeyGetter)
@@ -555,7 +629,11 @@ func initAnteHandler(app *DpApp) sdk.AnteHandler {
 	treasuryAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, treasuryPubKeyGetter)
 	//feesAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, paymentsPubKeyGetter)
 	paymentsAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, paymentsPubKeyGetter)
-
+	cosmosAnteHandler := auth.NewAnteHandler(
+		app.accountKeeper,
+		app.supplyKeeper,
+		auth.DefaultSigVerificationGasConsumer,
+	)
 	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (_ sdk.Context, _ error) {
 		msg := tx.GetMsgs()[0]
 		switch msg.Route() {

@@ -40,7 +40,6 @@ func (pt PaymentTemplate) Validate() error {
 	if !IsValidPaymentTemplateId(pt.Id) {
 		return ErrInvalidId("payment template id invalid")
 	}
-
 	// Validate payment amount, minimum, maximum
 	amt := &pt.PaymentAmount
 	min := &pt.PaymentMinimum

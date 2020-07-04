@@ -1,11 +1,11 @@
 package types
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 )
 
 type StoredBondDoc interface {
-	GetBondDid() types.Did
+	GetBondDid() did.Did
 	GetPubKey() string
 	GetStatus() BondStatus
 	SetStatus(status BondStatus)

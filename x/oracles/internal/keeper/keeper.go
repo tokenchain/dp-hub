@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	 "github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/oracles/internal/types"
 )
 
@@ -36,7 +36,7 @@ func (k Keeper) GetOracles(ctx sdk.Context) (oracles types.Oracles) {
 }
 
 // MustGetOracle returns the oracle if it exists
-func (k Keeper) MustGetOracle(ctx sdk.Context, oracleDid types2.Did) types.Oracle {
+func (k Keeper) MustGetOracle(ctx sdk.Context, oracleDid did.Did) types.Oracle {
 
 	store := ctx.KVStore(k.storeKey)
 	if !k.OracleExists(ctx, oracleDid) {
@@ -51,7 +51,7 @@ func (k Keeper) MustGetOracle(ctx sdk.Context, oracleDid types2.Did) types.Oracl
 }
 
 // OracleExists checks if an oracle exists
-func (k Keeper) OracleExists(ctx sdk.Context, oracleDid types2.Did) bool {
+func (k Keeper) OracleExists(ctx sdk.Context, oracleDid did.Did) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has(types.GetOraclePrefixKey(oracleDid))
 }

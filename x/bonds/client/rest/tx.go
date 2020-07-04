@@ -8,8 +8,8 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/client"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 	"net/http"
 	"strings"
 )
@@ -146,7 +146,7 @@ func createBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// Parse creator's sovrin DID
-		creatorDid, err2 := types2.UnmarshalSovrinDid(req.CreatorDid)
+		creatorDid, err2 := did.UnmarshalDxpDid(req.CreatorDid)
 		if err2 != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err2.Error())
 			return
@@ -196,7 +196,7 @@ func editBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// Parse editor's sovrin DID
-		editorDid, err := types2.UnmarshalSovrinDid(req.EditorDid)
+		editorDid, err := did.UnmarshalDxpDid(req.EditorDid)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -253,7 +253,7 @@ func buyHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// Parse buyer's sovrin DID
-		buyerDid, err := types2.UnmarshalSovrinDid(req.BuyerDid)
+		buyerDid, err := did.UnmarshalDxpDid(req.BuyerDid)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -301,7 +301,7 @@ func sellHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// Parse seller's sovrin DID
-		sellerDid, err := types2.UnmarshalSovrinDid(req.SellerDid)
+		sellerDid, err := did.UnmarshalDxpDid(req.SellerDid)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -351,7 +351,7 @@ func swapHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// Parse swapper's sovrin DID
-		swapperDid, err := types2.UnmarshalSovrinDid(req.SwapperDid)
+		swapperDid, err := did.UnmarshalDxpDid(req.SwapperDid)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))

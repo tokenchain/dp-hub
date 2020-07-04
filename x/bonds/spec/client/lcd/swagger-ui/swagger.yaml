@@ -298,7 +298,7 @@ paths:
               bond_did:
                 $ref: "#/definitions/Did"
               buyer_did:
-                $ref: "#/definitions/SovrinDid"
+                $ref: "#/definitions/DxpDid"
   /bonds/sell:
     post:
       description: Sell tokens from a bond
@@ -325,7 +325,7 @@ paths:
               bond_did:
                 $ref: "#/definitions/Did"
               seller_did:
-                $ref: "#/definitions/SovrinDid"
+                $ref: "#/definitions/DxpDid"
   /bonds/swap:
     post:
       description: Perform a swap between two tokens using a swapper bond
@@ -355,7 +355,7 @@ paths:
               bond_did:
                 $ref: "#/definitions/Did"
               swapper_did:
-                $ref: "#/definitions/SovrinDid"
+                $ref: "#/definitions/DxpDid"
 definitions:
   AnyCoin:
     type: object
@@ -631,7 +631,7 @@ definitions:
         type: string
         example: "5"
       bond_did:
-        $ref: "#/definitions/SovrinDid"
+        $ref: "#/definitions/DxpDid"
       creator_did:
         $ref: "#/definitions/Did"
   BondEdit:
@@ -656,7 +656,7 @@ definitions:
         type: string
         example: "56.78"
       bond_did:
-        $ref: "#/definitions/SovrinDid"
+        $ref: "#/definitions/DxpDid"
       editor_did:
         $ref: "#/definitions/Did"
   FunctionParameter:
@@ -675,6 +675,6 @@ definitions:
   Did:
     type: string
     example: "U7GK8p8rVhJMKhBVRCJJ8c"
-  SovrinDid:
+  DxpDid:
     type: string
     example: "{\"did\":\"U7GK8p8rVhJMKhBVRCJJ8c\",\"verifyKey\":\"FmwNAfvV2xEqHwszrVJVBR3JgQ8AFCQEVzo1p6x4L8VW\",\"encryptionPublicKey\":\"domKpTpjrHQtKUnaFLjCuDLe2oHeS4b1sKt7yU9cq7m\",\"secret\":{\"seed\":\"933e454dbcfc1437f3afc10a0cd512cf0339787b6595819849f53707c268b053\",\"signKey\":\"Aun1EpjR1HQu1idBsPQ4u4C4dMwtbYPe1SdSC5bUerFC\",\"encryptionPrivateKey\":\"Aun1EpjR1HQu1idBsPQ4u4C4dMwtbYPe1SdSC5bUerFC\"}}"

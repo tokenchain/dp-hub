@@ -7,15 +7,14 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
 	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
 )
 
 func GetPubKeyGetter(keeper Keeper, didKeeper did.Keeper) ixo.PubKeyGetter {
-	return func(ctx sdk.Context, msg types2.IxoMsg) ([32]byte, error) {
+	return func(ctx sdk.Context, msg ixo.DpMsg) ([32]byte, error) {
 
 		// Get signer PubKey and sender DID
 		var pubKey [32]byte
-		var senderDid types2.Did
+		var senderDid did.Did
 		switch msg := msg.(type) {
 		case types.MsgCreateBond:
 			senderDid = msg.CreatorDid

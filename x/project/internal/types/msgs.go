@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/spf13/viper"
 	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -25,21 +26,21 @@ const (
 )
 
 var (
-	_ types.IxoMsg = MsgCreateProject{}
-	_ types.IxoMsg = MsgUpdateProjectStatus{}
-	_ types.IxoMsg = MsgCreateAgent{}
-	_ types.IxoMsg = MsgUpdateAgent{}
-	_ types.IxoMsg = MsgCreateClaim{}
-	_ types.IxoMsg = MsgCreateEvaluation{}
-	_ types.IxoMsg = MsgWithdrawFunds{}
+	_ types.DpMsg = MsgCreateProject{}
+	_ types.DpMsg = MsgUpdateProjectStatus{}
+	_ types.DpMsg = MsgCreateAgent{}
+	_ types.DpMsg = MsgUpdateAgent{}
+	_ types.DpMsg = MsgCreateClaim{}
+	_ types.DpMsg = MsgCreateEvaluation{}
+	_ types.DpMsg = MsgWithdrawFunds{}
 
 	_ StoredProjectDoc = (*MsgCreateProject)(nil)
 )
 
 type MsgCreateProject struct {
 	TxHash     string     `json:"txHash" yaml:"txHash"`
-	SenderDid  types.Did  `json:"senderDid" yaml:"senderDid"`
-	ProjectDid types.Did  `json:"projectDid" yaml:"projectDid"`
+	SenderDid  did.Did `json:"senderDid" yaml:"senderDid"`
+	ProjectDid did.Did `json:"projectDid" yaml:"projectDid"`
 	PubKey     string     `json:"pubKey" yaml:"pubKey"`
 	Data       ProjectDoc `json:"data" yaml:"data"`
 }
@@ -89,11 +90,11 @@ func (msg MsgCreateProject) ValidateBasic() error {
 	return nil
 }
 
-func (msg MsgCreateProject) GetProjectDid() types.Did { return msg.ProjectDid }
-func (msg MsgCreateProject) GetSenderDid() types.Did  { return msg.SenderDid }
-func (msg MsgCreateProject) GetSignerDid() types.Did  { return msg.ProjectDid }
+func (msg MsgCreateProject) GetProjectDid() did.Did { return msg.ProjectDid }
+func (msg MsgCreateProject) GetSenderDid() did.Did  { return msg.SenderDid }
+func (msg MsgCreateProject) GetSignerDid() did.Did  { return msg.ProjectDid }
 func (msg MsgCreateProject) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateProject) String() string {
@@ -121,8 +122,8 @@ func (msg MsgCreateProject) GetSignBytes() []byte {
 
 type MsgUpdateProjectStatus struct {
 	TxHash     string                 `json:"txHash" yaml:"txHash"`
-	SenderDid  types.Did              `json:"senderDid" yaml:"senderDid"`
-	ProjectDid types.Did              `json:"projectDid" yaml:"projectDid"`
+	SenderDid  did.Did             `json:"senderDid" yaml:"senderDid"`
+	ProjectDid did.Did             `json:"projectDid" yaml:"projectDid"`
 	Data       UpdateProjectStatusDoc `json:"data" yaml:"data"`
 }
 
@@ -159,15 +160,15 @@ func (msg MsgUpdateProjectStatus) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgUpdateProjectStatus) GetSignerDid() types.Did { return msg.ProjectDid }
+func (msg MsgUpdateProjectStatus) GetSignerDid() did.Did { return msg.ProjectDid }
 func (msg MsgUpdateProjectStatus) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 type MsgCreateAgent struct {
 	TxHash     string         `json:"txHash" yaml:"txHash"`
-	SenderDid  types.Did      `json:"senderDid" yaml:"senderDid"`
-	ProjectDid types.Did      `json:"projectDid" yaml:"projectDid"`
+	SenderDid  did.Did     `json:"senderDid" yaml:"senderDid"`
+	ProjectDid did.Did     `json:"projectDid" yaml:"projectDid"`
 	Data       CreateAgentDoc `json:"data" yaml:"data"`
 }
 
@@ -195,9 +196,9 @@ func (msg MsgCreateAgent) ValidateBasic() error {
 	return nil
 }
 
-func (msg MsgCreateAgent) GetSignerDid() types.Did { return msg.ProjectDid }
+func (msg MsgCreateAgent) GetSignerDid() did.Did { return msg.ProjectDid }
 func (msg MsgCreateAgent) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateAgent) GetSignBytes() []byte {
@@ -218,8 +219,8 @@ func (msg MsgCreateAgent) String() string {
 
 type MsgUpdateAgent struct {
 	TxHash     string         `json:"txHash" yaml:"txHash"`
-	SenderDid  types.Did      `json:"senderDid" yaml:"senderDid"`
-	ProjectDid types.Did      `json:"projectDid" yaml:"projectDid"`
+	SenderDid  did.Did     `json:"senderDid" yaml:"senderDid"`
+	ProjectDid did.Did     `json:"projectDid" yaml:"projectDid"`
 	Data       UpdateAgentDoc `json:"data" yaml:"data"`
 }
 
@@ -247,9 +248,9 @@ func (msg MsgUpdateAgent) ValidateBasic() error {
 	return nil
 }
 
-func (msg MsgUpdateAgent) GetSignerDid() types.Did { return msg.ProjectDid }
+func (msg MsgUpdateAgent) GetSignerDid() did.Did { return msg.ProjectDid }
 func (msg MsgUpdateAgent) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgUpdateAgent) GetSignBytes() []byte {
@@ -271,8 +272,8 @@ func (msg MsgUpdateAgent) String() string {
 
 type MsgCreateClaim struct {
 	TxHash     string         `json:"txHash" yaml:"txHash"`
-	SenderDid  types.Did      `json:"senderDid" yaml:"senderDid"`
-	ProjectDid types.Did      `json:"projectDid" yaml:"projectDid"`
+	SenderDid  did.Did     `json:"senderDid" yaml:"senderDid"`
+	ProjectDid did.Did     `json:"projectDid" yaml:"projectDid"`
 	Data       CreateClaimDoc `json:"data" yaml:"data"`
 }
 
@@ -299,9 +300,9 @@ func (msg MsgCreateClaim) ValidateBasic() error {
 	return nil
 }
 
-func (msg MsgCreateClaim) GetSignerDid() types.Did { return msg.ProjectDid }
+func (msg MsgCreateClaim) GetSignerDid() did.Did { return msg.ProjectDid }
 func (msg MsgCreateClaim) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateClaim) GetSignBytes() []byte {
@@ -323,8 +324,8 @@ func (msg MsgCreateClaim) String() string {
 
 type MsgCreateEvaluation struct {
 	TxHash     string              `json:"txHash" yaml:"txHash"`
-	SenderDid  types.Did           `json:"senderDid" yaml:"senderDid"`
-	ProjectDid types.Did           `json:"projectDid" yaml:"projectDid"`
+	SenderDid  did.Did          `json:"senderDid" yaml:"senderDid"`
+	ProjectDid did.Did          `json:"projectDid" yaml:"projectDid"`
 	Data       CreateEvaluationDoc `json:"data" yaml:"data"`
 }
 
@@ -351,9 +352,9 @@ func (msg MsgCreateEvaluation) ValidateBasic() error {
 	return nil
 }
 
-func (msg MsgCreateEvaluation) GetSignerDid() types.Did { return msg.ProjectDid }
+func (msg MsgCreateEvaluation) GetSignerDid() did.Did { return msg.ProjectDid }
 func (msg MsgCreateEvaluation) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateEvaluation) GetSignBytes() []byte {
@@ -374,7 +375,7 @@ func (msg MsgCreateEvaluation) String() string {
 }
 
 type MsgWithdrawFunds struct {
-	SenderDid types.Did        `json:"senderDid" yaml:"senderDid"`
+	SenderDid did.Did       `json:"senderDid" yaml:"senderDid"`
 	Data      WithdrawFundsDoc `json:"data" yaml:"data"`
 }
 
@@ -415,9 +416,9 @@ func (msg MsgWithdrawFunds) ValidateBasic() error {
 	return nil
 }
 
-func (msg MsgWithdrawFunds) GetSignerDid() types.Did { return msg.Data.RecipientDid }
+func (msg MsgWithdrawFunds) GetSignerDid() did.Did { return msg.Data.RecipientDid }
 func (msg MsgWithdrawFunds) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgWithdrawFunds) GetSignBytes() []byte {

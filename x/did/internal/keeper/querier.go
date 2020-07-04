@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 )
 
 const (
@@ -57,7 +57,7 @@ func queryAllDids(ctx sdk.Context, k Keeper) ([]byte, error) {
 }
 
 func queryAllDidDocs(ctx sdk.Context, k Keeper) ([]byte, error) {
-	var didDocs []types.DidDoc
+	var didDocs []did.DidDoc
 	didDocs = k.GetAllDidDocs(ctx)
 
 	res, errRes := json.Marshal(didDocs)

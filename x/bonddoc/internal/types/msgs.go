@@ -5,6 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	er "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 )
 
@@ -14,18 +15,17 @@ const (
 )
 
 var (
-	_ types.IxoMsg = MsgCreateBond{}
-	_ types.IxoMsg = MsgUpdateBondStatus{}
-
+	_ types.DpMsg   = MsgCreateBond{}
+	_ types.DpMsg   = MsgUpdateBondStatus{}
 	_ StoredBondDoc = (*MsgCreateBond)(nil)
 )
 
 type MsgCreateBond struct {
-	TxHash    string    `json:"tx_hash" yaml:"tx_hash"`
-	SenderDid types.Did `json:"sender_did" yaml:"sender_did"`
-	BondDid   types.Did `json:"bond_did" yaml:"bond_did"`
-	PubKey    string    `json:"pub_key" yaml:"pub_key"`
-	Data      BondDoc   `json:"data" yaml:"data"`
+	TxHash    string  `json:"tx_hash" yaml:"tx_hash"`
+	SenderDid did.Did `json:"sender_did" yaml:"sender_did"`
+	BondDid   did.Did `json:"bond_did" yaml:"bond_did"`
+	PubKey    string  `json:"pub_key" yaml:"pub_key"`
+	Data      BondDoc `json:"data" yaml:"data"`
 }
 
 func (msg MsgCreateBond) Type() string  { return TypeMsgCreateBond }
@@ -42,10 +42,10 @@ func (msg MsgCreateBond) ValidateBasic() error {
 	}
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.BondDid) {
+	if !did.IsValidDid(msg.BondDid) {
 		return er.Wrapf(x.ErrorInvalidDidE, "bond did is invalid")
 		//	return did.ErrorInvalidDid(DefaultCodespace, "bond did is invalid")
-	} else if !types.IsValidDid(msg.SenderDid) {
+	} else if !did.IsValidDid(msg.SenderDid) {
 		return er.Wrapf(x.ErrorInvalidDidE, "sender did is invalid")
 		//return did.ErrorInvalidDid(DefaultCodespace, "sender did is invalid")
 	}
@@ -54,10 +54,10 @@ func (msg MsgCreateBond) ValidateBasic() error {
 
 	return nil
 }
-func (msg MsgCreateBond) GetBondDid() types.Did   { return msg.BondDid }
-func (msg MsgCreateBond) GetSignerDid() types.Did { return msg.GetBondDid() }
+func (msg MsgCreateBond) GetBondDid() did.Did   { return msg.BondDid }
+func (msg MsgCreateBond) GetSignerDid() did.Did { return msg.GetBondDid() }
 func (msg MsgCreateBond) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateBond) String() string {
@@ -83,8 +83,8 @@ func (msg MsgCreateBond) GetSignBytes() []byte {
 }
 
 type MsgUpdateBondStatus struct {
-	SenderDid types.Did           `json:"sender_did" yaml:"sender_did"`
-	BondDid   types.Did           `json:"bond_did" yaml:"bond_did"`
+	SenderDid did.Did             `json:"sender_did" yaml:"sender_did"`
+	BondDid   did.Did             `json:"bond_did" yaml:"bond_did"`
 	Data      UpdateBondStatusDoc `json:"data" yaml:"data"`
 }
 
@@ -100,10 +100,10 @@ func (msg MsgUpdateBondStatus) ValidateBasic() error {
 	}
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.BondDid) {
+	if !did.IsValidDid(msg.BondDid) {
 		//return did.ErrorInvalidDid(DefaultCodespace, "bond did is invalid")
 		return er.Wrap(x.ErrorInvalidDidE, "bond did is invalid")
-	} else if !types.IsValidDid(msg.SenderDid) {
+	} else if !did.IsValidDid(msg.SenderDid) {
 		return er.Wrap(x.ErrorInvalidDidE, "sender did is invalid")
 		//return did.ErrorInvalidDid(DefaultCodespace, "sender did is invalid")
 	}
@@ -122,7 +122,7 @@ func (msg MsgUpdateBondStatus) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgUpdateBondStatus) GetSignerDid() types.Did { return msg.BondDid }
+func (msg MsgUpdateBondStatus) GetSignerDid() did.Did { return msg.BondDid }
 func (msg MsgUpdateBondStatus) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 }

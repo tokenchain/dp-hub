@@ -1,6 +1,7 @@
 package bonds
 
 import (
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
 )
@@ -23,6 +24,9 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
 			keeper.SetBatch(ctx, b.BondDid, b)
 		}
 	}
+
+	println("===batch init done===")
+
 }
 
 func ExportGenesis(ctx sdk.Context, k Keeper) GenesisState {
