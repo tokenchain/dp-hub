@@ -1,4 +1,4 @@
-# DP Chain Hub
+# DP Chain Hub ::sparkle::
 
 [![version](https://img.shields.io/github/tag/tokenchain/ixo-blockchain.svg)](https://github.com/tokenchain/ixo-blockchain/releases/latest)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tokenchain/ixo-blockchain)](https://goreportcard.com/report/github.com/tokenchain/ixo-blockchain)
@@ -15,28 +15,28 @@ This is the official repository for the Internet of Impact Relayer Hub (DP Hub)
 ## Scripts
 Quick-start:
 ```bash
-cd ixo-blockchain/scripts/
+cd ./scripts/
 bash clean_build.sh && bash run_with_some_data.sh  # Option 1
 bash clean_build.sh && bash run_with_all_data.sh   # Option 2
 ```
 
 To run without resetting data:
 ```bash
-cd ixo-blockchain/scripts/
+cd ./scripts/
 bash run_only.sh
 ```
 
 (Optional) Once the chain has started, run one of the following:
 
-- Add more data and activity:
+Add more data and activity:
 ```bash
-cd ixo-blockchain/scripts/
+cd ./scripts/
 bash add_dummy_testnet_data.sh
 ```
 
-- Demos:
+Demos:
 ```bash
-cd ixo-blockchain/scripts
+cd ./scripts
 bash demo_bonds.sh              # Option 1
 bash demo_bonds_swapper.sh      # Option 2
 bash demo_project.sh            # Option 3
@@ -44,7 +44,7 @@ bash demo_tx_broadcast_rest.sh  # Option 4
 bash demo_tx_broadcast_rpc.sh   # Option 5
 ```
 
-
+Nginx setup
 To expose ports on nginx server
 ```shell script
 server {
@@ -97,5 +97,10 @@ server {
 }
 ```
 
-- [Whitepaper](https://github.com/tokenchain/ixo-blockchain/blob/master/whitepaper.md)
+
+#### API Doc
+Please find the api document to be located at `*:1317/swagger-ui/` at the LCD.
+
+#### Other documentations
+- [Whitepaper](https://github.com/tokenchain/dp-hub/blob/master/whitepaper.md)
 - [Chinese Developer Guide](https://github.com/twjang/gaia/blob/d26d6eddcf8dbb87ed101f69419e3b79cdb568c6/docs/translations/cn/gaiacli.md)
