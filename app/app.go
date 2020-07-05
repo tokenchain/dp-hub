@@ -139,6 +139,12 @@ type DpApp struct {
 	treasuryKeeper     treasury.Keeper
 	//nsKeeper           nameservice.Keeper
 
+/*
+	AssetKeeper  asset.Keeper
+	MarketKeeper market.Keeper
+	OrderKeeper  order.Keeper
+	ExecKeeper   execution.Keeper*/
+
 	mm *module.Manager
 	sm *module.SimulationManager // simulation manager
 }

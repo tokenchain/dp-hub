@@ -173,6 +173,8 @@ func GetCmdEditBond(cdc *codec.Codec) *cobra.Command {
 			_sanityMarginPercentage := viper.GetString(FlagSanityMarginPercentage)
 			_bondDid := viper.GetString(FlagBondDid)
 			_editorDid := viper.GetString(FlagEditorDid)
+			//_maxSupply := viper.GetString(FlagMaxSupply)
+
 
 			// Parse editor's sovrin DID
 			editorDid, err := types2.UnmarshalSovrinDid(_editorDid)

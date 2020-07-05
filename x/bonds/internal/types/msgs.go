@@ -15,6 +15,77 @@ const (
 	TypeMsgBuy        = "buy"
 	TypeMsgSell       = "sell"
 	TypeMsgSwap       = "swap"
+	TypeMsgBurn       = "burn"
+	TypeMsgMint       = "mint"
+	TypeMsgTransfer   = "transfer"
+)
+
+type (
+	MsgCreateBond struct {
+		BondDid                types.Did      `json:"bond_did" yaml:"bond_did"`
+		Token                  string         `json:"token" yaml:"token"`
+		Name                   string         `json:"name" yaml:"name"`
+		Description            string         `json:"description" yaml:"description"`
+		FunctionType           string         `json:"function_type" yaml:"function_type"`
+		FunctionParameters     FunctionParams `json:"function_parameters" yaml:"function_parameters"`
+		CreatorDid             types.Did      `json:"creator_did" yaml:"creator_did"`
+		CreatorPubKey          string         `json:"pub_key" yaml:"pub_key"`
+		ReserveTokens          []string       `json:"reserve_tokens" yaml:"reserve_tokens"`
+		TxFeePercentage        sdk.Dec        `json:"tx_fee_percentage" yaml:"tx_fee_percentage"`
+		ExitFeePercentage      sdk.Dec        `json:"exit_fee_percentage" yaml:"exit_fee_percentage"`
+		FeeAddress             sdk.AccAddress `json:"fee_address" yaml:"fee_address"`
+		MaxSupply              sdk.Coin       `json:"max_supply" yaml:"max_supply"`
+		OrderQuantityLimits    sdk.Coins      `json:"order_quantity_limits" yaml:"order_quantity_limits"`
+		SanityRate             sdk.Dec        `json:"sanity_rate" yaml:"sanity_rate"`
+		SanityMarginPercentage sdk.Dec        `json:"sanity_margin_percentage" yaml:"sanity_margin_percentage"`
+		AllowSells             string         `json:"allow_sells" yaml:"allow_sells"`
+		BatchBlocks            sdk.Uint       `json:"batch_blocks" yaml:"batch_blocks"`
+	}
+	MsgEditBond struct {
+		BondDid                types.Did `json:"bond_did" yaml:"bond_did"`
+		Token                  string    `json:"token" yaml:"token"`
+		Name                   string    `json:"name" yaml:"name"`
+		Description            string    `json:"description" yaml:"description"`
+		OrderQuantityLimits    string    `json:"order_quantity_limits" yaml:"order_quantity_limits"`
+		SanityRate             string    `json:"sanity_rate" yaml:"sanity_rate"`
+		SanityMarginPercentage string    `json:"sanity_margin_percentage" yaml:"sanity_margin_percentage"`
+		EditorDid              types.Did `json:"editor_did" yaml:"editor_did"`
+		EditorPubKey           string    `json:"pub_key" yaml:"pub_key"`
+	}
+	MsgBuy struct {
+		BuyerDid  types.Did `json:"buyer_did" yaml:"buyer_did"`
+		PubKey    string    `json:"pub_key" yaml:"pub_key"`
+		Amount    sdk.Coin  `json:"amount" yaml:"amount"`
+		MaxPrices sdk.Coins `json:"max_prices" yaml:"max_prices"`
+		BondDid   types.Did `json:"bond_did" yaml:"bond_did"`
+	}
+
+	MsgSwap struct {
+		SwapperDid types.Did `json:"swapper_did" yaml:"swapper_did"`
+		PubKey     string    `json:"pub_key" yaml:"pub_key"`
+		BondDid    types.Did `json:"bond_did" yaml:"bond_did"`
+		From       sdk.Coin  `json:"from" yaml:"from"`
+		ToToken    string    `json:"to_token" yaml:"to_token"`
+	}
+
+	MsgMint struct {
+		ID     types.Did      `json:"minter_did" yaml:"minter_did"`
+		Minter sdk.AccAddress `json:"minter_address" yaml:"minter_address"`
+		Amount sdk.Uint       `json:"amount" yaml:"amount"`
+	}
+
+	MsgBurn struct {
+		ID     types.Did      `json:"burner_did" yaml:"burner_did"`
+		Burner sdk.AccAddress `json:"burner_address" yaml:"burner_address"`
+		Amount sdk.Uint       `json:"amount" yaml:"amount"`
+	}
+
+	MsgTransfer struct {
+		ID     types.Did      `json:"transfer_did" yaml:"transfer_did"`
+		From   sdk.AccAddress `json:"from_address" yaml:"from_address"`
+		To     sdk.AccAddress `json:"to_address" yaml:"to_address"`
+		Amount sdk.Uint       `json:"amount" yaml:"amount"`
+	}
 )
 
 var (
@@ -23,28 +94,10 @@ var (
 	_ types.IxoMsg = MsgBuy{}
 	_ types.IxoMsg = MsgSell{}
 	_ types.IxoMsg = MsgSwap{}
+	_ types.IxoMsg = MsgMint{}
+	_ types.IxoMsg = MsgBurn{}
+	_ types.IxoMsg = MsgTransfer{}
 )
-
-type MsgCreateBond struct {
-	BondDid                types.Did      `json:"bond_did" yaml:"bond_did"`
-	Token                  string         `json:"token" yaml:"token"`
-	Name                   string         `json:"name" yaml:"name"`
-	Description            string         `json:"description" yaml:"description"`
-	FunctionType           string         `json:"function_type" yaml:"function_type"`
-	FunctionParameters     FunctionParams `json:"function_parameters" yaml:"function_parameters"`
-	CreatorDid             types.Did      `json:"creator_did" yaml:"creator_did"`
-	CreatorPubKey          string         `json:"pub_key" yaml:"pub_key"`
-	ReserveTokens          []string       `json:"reserve_tokens" yaml:"reserve_tokens"`
-	TxFeePercentage        sdk.Dec        `json:"tx_fee_percentage" yaml:"tx_fee_percentage"`
-	ExitFeePercentage      sdk.Dec        `json:"exit_fee_percentage" yaml:"exit_fee_percentage"`
-	FeeAddress             sdk.AccAddress `json:"fee_address" yaml:"fee_address"`
-	MaxSupply              sdk.Coin       `json:"max_supply" yaml:"max_supply"`
-	OrderQuantityLimits    sdk.Coins      `json:"order_quantity_limits" yaml:"order_quantity_limits"`
-	SanityRate             sdk.Dec        `json:"sanity_rate" yaml:"sanity_rate"`
-	SanityMarginPercentage sdk.Dec        `json:"sanity_margin_percentage" yaml:"sanity_margin_percentage"`
-	AllowSells             string         `json:"allow_sells" yaml:"allow_sells"`
-	BatchBlocks            sdk.Uint       `json:"batch_blocks" yaml:"batch_blocks"`
-}
 
 func NewMsgCreateBond(token, name, description string, creatorDid types.SovrinDid,
 	functionType string, functionParameters FunctionParams, reserveTokens []string,
@@ -185,18 +238,6 @@ func (msg MsgCreateBond) Route() string { return RouterKey }
 
 func (msg MsgCreateBond) Type() string { return TypeMsgCreateBond }
 
-type MsgEditBond struct {
-	BondDid                types.Did `json:"bond_did" yaml:"bond_did"`
-	Token                  string    `json:"token" yaml:"token"`
-	Name                   string    `json:"name" yaml:"name"`
-	Description            string    `json:"description" yaml:"description"`
-	OrderQuantityLimits    string    `json:"order_quantity_limits" yaml:"order_quantity_limits"`
-	SanityRate             string    `json:"sanity_rate" yaml:"sanity_rate"`
-	SanityMarginPercentage string    `json:"sanity_margin_percentage" yaml:"sanity_margin_percentage"`
-	EditorDid              types.Did `json:"editor_did" yaml:"editor_did"`
-	EditorPubKey           string    `json:"pub_key" yaml:"pub_key"`
-}
-
 func NewMsgEditBond(token, name, description, orderQuantityLimits, sanityRate,
 	sanityMarginPercentage string, editorDid types.SovrinDid, bondDid types.Did) MsgEditBond {
 	return MsgEditBond{
@@ -276,14 +317,6 @@ func (msg MsgEditBond) GetSigners() []sdk.AccAddress {
 func (msg MsgEditBond) Route() string { return RouterKey }
 
 func (msg MsgEditBond) Type() string { return TypeMsgEditBond }
-
-type MsgBuy struct {
-	BuyerDid  types.Did `json:"buyer_did" yaml:"buyer_did"`
-	PubKey    string    `json:"pub_key" yaml:"pub_key"`
-	Amount    sdk.Coin  `json:"amount" yaml:"amount"`
-	MaxPrices sdk.Coins `json:"max_prices" yaml:"max_prices"`
-	BondDid   types.Did `json:"bond_did" yaml:"bond_did"`
-}
 
 func NewMsgBuy(buyerDid types.SovrinDid, amount sdk.Coin, maxPrices sdk.Coins,
 	bondDid types.Did) MsgBuy {
@@ -405,14 +438,6 @@ func (msg MsgSell) Route() string { return RouterKey }
 
 func (msg MsgSell) Type() string { return TypeMsgSell }
 
-type MsgSwap struct {
-	SwapperDid types.Did `json:"swapper_did" yaml:"swapper_did"`
-	PubKey     string    `json:"pub_key" yaml:"pub_key"`
-	BondDid    types.Did `json:"bond_did" yaml:"bond_did"`
-	From       sdk.Coin  `json:"from" yaml:"from"`
-	ToToken    string    `json:"to_token" yaml:"to_token"`
-}
-
 func NewMsgSwap(swapperDid types.SovrinDid, from sdk.Coin, toToken string,
 	bondDid types.Did) MsgSwap {
 	return MsgSwap{
@@ -485,3 +510,73 @@ func (msg MsgSwap) GetSigners() []sdk.AccAddress {
 func (msg MsgSwap) Route() string { return RouterKey }
 
 func (msg MsgSwap) Type() string { return TypeMsgSwap }
+
+func NewMsgTransfer(id types.Did, from sdk.AccAddress, to sdk.AccAddress, amount sdk.Uint) MsgTransfer {
+	return MsgTransfer{
+		ID:     id,
+		From:   from,
+		To:     to,
+		Amount: amount,
+	}
+}
+
+func (msg MsgTransfer) ValidateBasic() error    { return nil }
+func (msg MsgTransfer) GetSignerDid() types.Did { return msg.ID }
+func (msg MsgTransfer) Type() string            { return TypeMsgTransfer }
+func (msg MsgTransfer) Route() string           { return RouterKey }
+func (msg MsgTransfer) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+}
+func (msg MsgTransfer) GetSignBytes() []byte {
+	if bz, err := json.Marshal(msg); err != nil {
+		panic(err)
+	} else {
+		return sdk.MustSortJSON(bz)
+	}
+}
+
+func NewMsgBurn(id types.Did, from sdk.AccAddress, amount sdk.Uint) MsgBurn {
+	return MsgBurn{
+		ID:     id,
+		Burner: from,
+		Amount: amount,
+	}
+}
+
+func (msg MsgBurn) ValidateBasic() error    { return nil }
+func (msg MsgBurn) GetSignerDid() types.Did { return msg.ID }
+func (msg MsgBurn) Type() string            { return TypeMsgBurn }
+func (msg MsgBurn) Route() string           { return RouterKey }
+func (msg MsgBurn) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+}
+func (msg MsgBurn) GetSignBytes() []byte {
+	if bz, err := json.Marshal(msg); err != nil {
+		panic(err)
+	} else {
+		return sdk.MustSortJSON(bz)
+	}
+}
+
+func NewMsgMint(id types.Did, from sdk.AccAddress, amount sdk.Uint) MsgMint {
+	return MsgMint{
+		ID:     id,
+		Minter: from,
+		Amount: amount,
+	}
+}
+
+func (msg MsgMint) ValidateBasic() error    { return nil }
+func (msg MsgMint) GetSignerDid() types.Did { return msg.ID }
+func (msg MsgMint) Type() string            { return TypeMsgMint }
+func (msg MsgMint) Route() string           { return RouterKey }
+func (msg MsgMint) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+}
+func (msg MsgMint) GetSignBytes() []byte {
+	if bz, err := json.Marshal(msg); err != nil {
+		panic(err)
+	} else {
+		return sdk.MustSortJSON(bz)
+	}
+}
