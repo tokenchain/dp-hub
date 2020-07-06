@@ -6,11 +6,11 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
 	"github.com/tokenchain/ixo-blockchain/x/did"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 )
 
-func GetPubKeyGetter(keeper Keeper, didKeeper did.Keeper) ixo.PubKeyGetter {
+func GetPubKeyGetter(keeper Keeper, didKeeper did.Keeper) dap.PubKeyGetter {
 	return func(ctx sdk.Context, msg types2.IxoMsg) ([32]byte, error) {
 
 		// Get signer PubKey and sender DID

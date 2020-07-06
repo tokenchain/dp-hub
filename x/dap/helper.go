@@ -1,8 +1,8 @@
-package ixo
+package dap
 
 import (
 	"fmt"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"os"
 	"time"
 

@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -28,7 +28,7 @@ func GetCmdAddDidDoc(cdc *codec.Codec) *cobra.Command {
 				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgAddDid(sovrinDid.Did, sovrinDid.VerifyKey)
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
@@ -55,7 +55,7 @@ func GetCmdAddCredential(cdc *codec.Codec) *cobra.Command {
 				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
 
 			msg := types.NewMsgAddCredential(didAddr, credTypes, sovrinDid.Did, issued)
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }

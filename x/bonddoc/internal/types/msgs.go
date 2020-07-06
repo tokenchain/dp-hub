@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	er "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 )
 
 const (

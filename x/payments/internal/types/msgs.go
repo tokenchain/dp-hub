@@ -5,7 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

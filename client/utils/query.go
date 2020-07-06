@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	core "github.com/tendermint/tendermint/rpc/core/types"
-	coin "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	coin "github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"time"
 )
 

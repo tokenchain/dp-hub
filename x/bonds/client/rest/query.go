@@ -76,10 +76,8 @@ func queryBondHandler(cliCtx context.CLIContext, queryRoute string) http.Handler
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		bondDid := vars[RestBondDid]
-
 		res, _, err := cliCtx.QueryWithData(
-			fmt.Sprintf("custom/%s/bond/%s",
-				queryRoute, bondDid), nil)
+			fmt.Sprintf("custom/%s/bond/%s", queryRoute, bondDid), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
@@ -93,7 +91,6 @@ func queryBatchHandler(cliCtx context.CLIContext, queryRoute string) http.Handle
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		bondDid := vars[RestBondDid]
-
 		res, _, err := cliCtx.QueryWithData(
 			fmt.Sprintf("custom/%s/batch/%s",
 				queryRoute, bondDid), nil)
@@ -101,7 +98,6 @@ func queryBatchHandler(cliCtx context.CLIContext, queryRoute string) http.Handle
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
 		}
-
 		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }
@@ -110,15 +106,12 @@ func queryLastBatchHandler(cliCtx context.CLIContext, queryRoute string) http.Ha
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		bondDid := vars[RestBondDid]
-
 		res, _, err := cliCtx.QueryWithData(
-			fmt.Sprintf("custom/%s/last_batch/%s",
-				queryRoute, bondDid), nil)
+			fmt.Sprintf("custom/%s/last_batch/%s", queryRoute, bondDid), nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
 		}
-
 		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }

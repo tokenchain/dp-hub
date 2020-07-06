@@ -1,7 +1,7 @@
 package types
 
 import "github.com/cosmos/cosmos-sdk/types/errors"
-import "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+import "github.com/tokenchain/ixo-blockchain/x/dap/types"
 import "github.com/tokenchain/ixo-blockchain/x"
 
 func ErrFromAndToCannotBeTheSameToken() error {

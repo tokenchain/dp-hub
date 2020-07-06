@@ -5,10 +5,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"net/http"
 
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
 	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/types"
 )
 
@@ -47,7 +47,7 @@ func sendRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgSend(toDidParam, coins, sovrinDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -88,7 +88,7 @@ func oracleTransferRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgOracleTransfer(fromDidParam, toDidParam, coins, oracleDid, proofParam)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, oracleDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, oracleDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -128,7 +128,7 @@ func oracleMintRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgOracleMint(toDidParam, coins, oracleDid, proofParam)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, oracleDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, oracleDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -168,7 +168,7 @@ func oracleBurnRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgOracleBurn(fromDidParam, coins, oracleDid, proofParam)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, oracleDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, oracleDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))

@@ -2,7 +2,7 @@ package types
 
 import (
 	er "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"strings"
 )
 

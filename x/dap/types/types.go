@@ -27,7 +27,13 @@ var (
 	//   possibly should just be `^did:(dxp:|sov:)([a-zA-Z0-9]){21,22}$`.
 )
 
-const IxoNativeToken = "dap"
+const (
+	ModuleName        = "dapx"
+	DefaultParamspace = ModuleName
+	StoreKey          = ModuleName
+	RouterKey         = ModuleName
+	QuerierRoute      = ModuleName
+)
 
 func StringToAddr(str string) sdk.AccAddress {
 	return sdk.AccAddress(crypto.AddressHash([]byte(str)))

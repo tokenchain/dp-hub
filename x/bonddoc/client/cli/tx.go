@@ -6,8 +6,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 
 	"github.com/tokenchain/ixo-blockchain/x/bonddoc/internal/types"
 )
@@ -36,7 +36,7 @@ func GetCmdCreateBond(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgCreateBond(senderDid, bondDoc, sovrinDid)
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
@@ -74,7 +74,7 @@ func GetCmdUpdateBondStatus(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgUpdateBondStatus(senderDid, updateBondStatusDoc, sovrinDid)
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }

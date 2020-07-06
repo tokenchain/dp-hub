@@ -40,6 +40,7 @@ var (
 
 type (
 	Keeper       = keeper.Keeper
+	Bond         = types.Bond
 	CodeType     = x.CodeType
 	GenesisState = types.GenesisState
 )

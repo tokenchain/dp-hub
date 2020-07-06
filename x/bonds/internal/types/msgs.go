@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"strings"
 )
 
@@ -71,20 +71,20 @@ type (
 	MsgMint struct {
 		ID     types.Did      `json:"minter_did" yaml:"minter_did"`
 		Minter sdk.AccAddress `json:"minter_address" yaml:"minter_address"`
-		Amount sdk.Uint       `json:"amount" yaml:"amount"`
+		Amount sdk.Coin       `json:"amount" yaml:"amount"`
 	}
 
 	MsgBurn struct {
 		ID     types.Did      `json:"burner_did" yaml:"burner_did"`
 		Burner sdk.AccAddress `json:"burner_address" yaml:"burner_address"`
-		Amount sdk.Uint       `json:"amount" yaml:"amount"`
+		Amount sdk.Coin       `json:"amount" yaml:"amount"`
 	}
 
 	MsgTransfer struct {
 		ID     types.Did      `json:"transfer_did" yaml:"transfer_did"`
 		From   sdk.AccAddress `json:"from_address" yaml:"from_address"`
 		To     sdk.AccAddress `json:"to_address" yaml:"to_address"`
-		Amount sdk.Uint       `json:"amount" yaml:"amount"`
+		Amount sdk.Coin       `json:"amount" yaml:"amount"`
 	}
 )
 
@@ -511,7 +511,7 @@ func (msg MsgSwap) Route() string { return RouterKey }
 
 func (msg MsgSwap) Type() string { return TypeMsgSwap }
 
-func NewMsgTransfer(id types.Did, from sdk.AccAddress, to sdk.AccAddress, amount sdk.Uint) MsgTransfer {
+func NewMsgTransfer(id types.Did, from sdk.AccAddress, to sdk.AccAddress, amount sdk.Coin) MsgTransfer {
 	return MsgTransfer{
 		ID:     id,
 		From:   from,
@@ -520,7 +520,21 @@ func NewMsgTransfer(id types.Did, from sdk.AccAddress, to sdk.AccAddress, amount
 	}
 }
 
-func (msg MsgTransfer) ValidateBasic() error    { return nil }
+func (msg MsgTransfer) ValidateBasic() error {
+	// Check if empty
+	if strings.TrimSpace(msg.ID) == "" {
+		return x.ErrArgumentCannotBeEmpty("ID")
+	}
+
+	// Check that amount valid and non zero
+	if !msg.Amount.IsValid() {
+		return x.IntErr("amount is invalid")
+	} else if msg.Amount.Amount.IsZero() {
+		return x.ErrArgumentMustBePositive("Amount")
+	}
+
+	return nil
+}
 func (msg MsgTransfer) GetSignerDid() types.Did { return msg.ID }
 func (msg MsgTransfer) Type() string            { return TypeMsgTransfer }
 func (msg MsgTransfer) Route() string           { return RouterKey }
@@ -535,7 +549,7 @@ func (msg MsgTransfer) GetSignBytes() []byte {
 	}
 }
 
-func NewMsgBurn(id types.Did, from sdk.AccAddress, amount sdk.Uint) MsgBurn {
+func NewMsgBurn(id types.Did, from sdk.AccAddress, amount sdk.Coin) MsgBurn {
 	return MsgBurn{
 		ID:     id,
 		Burner: from,
@@ -543,7 +557,21 @@ func NewMsgBurn(id types.Did, from sdk.AccAddress, amount sdk.Uint) MsgBurn {
 	}
 }
 
-func (msg MsgBurn) ValidateBasic() error    { return nil }
+func (msg MsgBurn) ValidateBasic() error {
+	// Check if empty
+	if strings.TrimSpace(msg.ID) == "" {
+		return x.ErrArgumentCannotBeEmpty("ID")
+	}
+
+	// Check that amount valid and non zero
+	if !msg.Amount.IsValid() {
+		return x.IntErr("amount is invalid")
+	} else if msg.Amount.Amount.IsZero() {
+		return x.ErrArgumentMustBePositive("Amount")
+	}
+
+	return nil
+}
 func (msg MsgBurn) GetSignerDid() types.Did { return msg.ID }
 func (msg MsgBurn) Type() string            { return TypeMsgBurn }
 func (msg MsgBurn) Route() string           { return RouterKey }
@@ -558,7 +586,7 @@ func (msg MsgBurn) GetSignBytes() []byte {
 	}
 }
 
-func NewMsgMint(id types.Did, from sdk.AccAddress, amount sdk.Uint) MsgMint {
+func NewMsgMint(id types.Did, from sdk.AccAddress, amount sdk.Coin) MsgMint {
 	return MsgMint{
 		ID:     id,
 		Minter: from,
@@ -566,7 +594,21 @@ func NewMsgMint(id types.Did, from sdk.AccAddress, amount sdk.Uint) MsgMint {
 	}
 }
 
-func (msg MsgMint) ValidateBasic() error    { return nil }
+func (msg MsgMint) ValidateBasic() error {
+	// Check if empty
+	if strings.TrimSpace(msg.ID) == "" {
+		return x.ErrArgumentCannotBeEmpty("ID")
+	}
+
+	// Check that amount valid and non zero
+	if !msg.Amount.IsValid() {
+		return x.IntErr("amount is invalid")
+	} else if msg.Amount.Amount.IsZero() {
+		return x.ErrArgumentMustBePositive("Amount")
+	}
+
+	return nil
+}
 func (msg MsgMint) GetSignerDid() types.Did { return msg.ID }
 func (msg MsgMint) Type() string            { return TypeMsgMint }
 func (msg MsgMint) Route() string           { return RouterKey }

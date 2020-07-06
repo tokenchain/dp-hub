@@ -14,8 +14,8 @@ import (
 	"github.com/gorilla/mux"
 	utils2 "github.com/tokenchain/ixo-blockchain/client/utils"
 	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"github.com/tokenchain/ixo-blockchain/x/project"
 	"io/ioutil"
 	"net/http"
@@ -237,7 +237,7 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 				stdSignMsg.Msgs[0], stdSignMsg.Fee, signature, stdSignMsg.Memo)
 
 			// Approximate fee
-			fee, err := ixo.ApproximateFeeForTx(cliCtx, tx, txBldr.ChainID())
+			fee, err := dap.ApproximateFeeForTx(cliCtx, tx, txBldr.ChainID())
 			if err != nil {
 				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 				return

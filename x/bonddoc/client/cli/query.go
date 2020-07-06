@@ -3,7 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"

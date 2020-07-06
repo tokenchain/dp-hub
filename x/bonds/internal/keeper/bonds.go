@@ -5,7 +5,7 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 )
 
 func (k Keeper) GetBondIterator(ctx sdk.Context) sdk.Iterator {

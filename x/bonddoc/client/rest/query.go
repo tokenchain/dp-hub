@@ -3,7 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"

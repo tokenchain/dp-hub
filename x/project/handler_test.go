@@ -1,7 +1,7 @@
 package project
 
 import (
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/codec"

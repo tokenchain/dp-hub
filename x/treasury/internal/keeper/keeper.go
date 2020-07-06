@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/tokenchain/ixo-blockchain/x"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"github.com/tokenchain/ixo-blockchain/x/oracles"
 	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/types"
 )

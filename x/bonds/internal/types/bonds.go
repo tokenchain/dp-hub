@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"sort"
 )
 
@@ -31,10 +31,35 @@ var (
 	}
 )
 
-type FunctionParam struct {
-	Param string  `json:"param" yaml:"param"`
-	Value sdk.Int `json:"value" yaml:"value"`
-}
+type (
+	Bond struct {
+		Token                  string         `json:"token" yaml:"token"`
+		Name                   string         `json:"name" yaml:"name"`
+		Description            string         `json:"description" yaml:"description"`
+		CreatorDid             types.Did      `json:"creator_did" yaml:"creator_did"`
+		FunctionType           string         `json:"function_type" yaml:"function_type"`
+		FunctionParameters     FunctionParams `json:"function_parameters" yaml:"function_parameters"`
+		ReserveTokens          []string       `json:"reserve_tokens" yaml:"reserve_tokens"`
+		ReserveAddress         sdk.AccAddress `json:"reserve_address" yaml:"reserve_address"`
+		TxFeePercentage        sdk.Dec        `json:"tx_fee_percentage" yaml:"tx_fee_percentage"`
+		ExitFeePercentage      sdk.Dec        `json:"exit_fee_percentage" yaml:"exit_fee_percentage"`
+		FeeAddress             sdk.AccAddress `json:"fee_address" yaml:"fee_address"`
+		MaxSupply              sdk.Coin       `json:"max_supply" yaml:"max_supply"`
+		OrderQuantityLimits    sdk.Coins      `json:"order_quantity_limits" yaml:"order_quantity_limits"`
+		SanityRate             sdk.Dec        `json:"sanity_rate" yaml:"sanity_rate"`
+		SanityMarginPercentage sdk.Dec        `json:"sanity_margin_percentage" yaml:"sanity_margin_percentage"`
+		CurrentSupply          sdk.Coin       `json:"current_supply" yaml:"current_supply"`
+		AllowSells             string         `json:"allow_sells" yaml:"allow_sells"`
+		BatchBlocks            sdk.Uint       `json:"batch_blocks" yaml:"batch_blocks"`
+		BondDid                types.Did      `json:"bond_did" yaml:"bond_did"`
+		CreatorPubKey          string         `json:"pub_key" yaml:"pub_key"`
+	}
+	FunctionParam struct {
+		Param string  `json:"param" yaml:"param"`
+		Value sdk.Int `json:"value" yaml:"value"`
+	}
+	FunctionParams []FunctionParam
+)
 
 func NewFunctionParam(param string, value sdk.Int) FunctionParam {
 	return FunctionParam{
@@ -42,8 +67,6 @@ func NewFunctionParam(param string, value sdk.Int) FunctionParam {
 		Value: value,
 	}
 }
-
-type FunctionParams []FunctionParam
 
 func (fps FunctionParams) Validate(functionType string) error {
 	// Come up with list of expected parameters
@@ -89,29 +112,6 @@ func (fps FunctionParams) AsMap() (paramsMap map[string]sdk.Int) {
 		paramsMap[fp.Param] = fp.Value
 	}
 	return paramsMap
-}
-
-type Bond struct {
-	Token                  string         `json:"token" yaml:"token"`
-	Name                   string         `json:"name" yaml:"name"`
-	Description            string         `json:"description" yaml:"description"`
-	CreatorDid             types.Did      `json:"creator_did" yaml:"creator_did"`
-	FunctionType           string         `json:"function_type" yaml:"function_type"`
-	FunctionParameters     FunctionParams `json:"function_parameters" yaml:"function_parameters"`
-	ReserveTokens          []string       `json:"reserve_tokens" yaml:"reserve_tokens"`
-	ReserveAddress         sdk.AccAddress `json:"reserve_address" yaml:"reserve_address"`
-	TxFeePercentage        sdk.Dec        `json:"tx_fee_percentage" yaml:"tx_fee_percentage"`
-	ExitFeePercentage      sdk.Dec        `json:"exit_fee_percentage" yaml:"exit_fee_percentage"`
-	FeeAddress             sdk.AccAddress `json:"fee_address" yaml:"fee_address"`
-	MaxSupply              sdk.Coin       `json:"max_supply" yaml:"max_supply"`
-	OrderQuantityLimits    sdk.Coins      `json:"order_quantity_limits" yaml:"order_quantity_limits"`
-	SanityRate             sdk.Dec        `json:"sanity_rate" yaml:"sanity_rate"`
-	SanityMarginPercentage sdk.Dec        `json:"sanity_margin_percentage" yaml:"sanity_margin_percentage"`
-	CurrentSupply          sdk.Coin       `json:"current_supply" yaml:"current_supply"`
-	AllowSells             string         `json:"allow_sells" yaml:"allow_sells"`
-	BatchBlocks            sdk.Uint       `json:"batch_blocks" yaml:"batch_blocks"`
-	BondDid                types.Did      `json:"bond_did" yaml:"bond_did"`
-	CreatorPubKey          string         `json:"pub_key" yaml:"pub_key"`
 }
 
 func NewBond(token, name, description string, creatorDid types.Did,

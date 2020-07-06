@@ -2,7 +2,7 @@ package types
 
 import (
 	"errors"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 )
 
 var _ types.DidDoc = (*BaseDidDoc)(nil)

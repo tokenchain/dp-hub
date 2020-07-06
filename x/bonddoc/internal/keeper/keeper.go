@@ -6,7 +6,7 @@ import (
 	r "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonddoc/internal/types"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 )
 
 type Keeper struct {

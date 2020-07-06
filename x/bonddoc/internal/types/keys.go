@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 )
 
 const (

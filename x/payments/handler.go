@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tokenchain/ixo-blockchain/x"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"github.com/tokenchain/ixo-blockchain/x/payments/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
 )

@@ -3,7 +3,7 @@ package rest
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/types/rest"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"net/http"
 	"time"
 
@@ -12,7 +12,7 @@ import (
 
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
 )
 
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
@@ -37,7 +37,7 @@ func createDidRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgAddDid(sovrinDid.Did, sovrinDid.VerifyKey)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -79,7 +79,7 @@ func addCredentialRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgAddCredential(did, credTypes, sovrinDid.Did, issued)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))

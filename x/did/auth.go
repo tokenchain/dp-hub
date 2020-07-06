@@ -5,11 +5,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 )
 
-func GetPubKeyGetter(keeper Keeper) ixo.PubKeyGetter {
+func GetPubKeyGetter(keeper Keeper) dap.PubKeyGetter {
 	return func(ctx sdk.Context, msg types2.IxoMsg) ([32]byte, error) {
 
 		// Get signer PubKey

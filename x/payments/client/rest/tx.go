@@ -6,8 +6,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"net/http"
 	"strings"
 
@@ -67,7 +67,7 @@ func createPaymentTemplateHandler(ctx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgCreatePaymentTemplate(template, sovrinDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
+		output, err := dap.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -123,7 +123,7 @@ func createPaymentContractHandler(ctx context.CLIContext) http.HandlerFunc {
 		msg := types.NewMsgCreatePaymentContract(templateIdParam,
 			contractIdParam, payerAddr, canDeauthorise, discountId, sovrinDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
+		output, err := dap.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -172,7 +172,7 @@ func createSubscriptionHandler(ctx context.CLIContext) http.HandlerFunc {
 		msg := types.NewMsgCreateSubscription(subIdParam, contractIdParam,
 			maxPeriods, period, sovrinDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
+		output, err := dap.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -211,7 +211,7 @@ func setPaymentContractAuthorisationHandler(ctx context.CLIContext) http.Handler
 		msg := types.NewMsgSetPaymentContractAuthorisation(contractIdParam,
 			authorised, sovrinDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
+		output, err := dap.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -258,7 +258,7 @@ func grantDiscountHandler(ctx context.CLIContext) http.HandlerFunc {
 		msg := types.NewMsgGrantDiscount(contractIdParam, discountId,
 			recipientAddr, sovrinDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
+		output, err := dap.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -297,7 +297,7 @@ func revokeDiscountHandler(ctx context.CLIContext) http.HandlerFunc {
 		msg := types.NewMsgRevokeDiscount(contractIdParam, holderAddr,
 			sovrinDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
+		output, err := dap.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -327,7 +327,7 @@ func effectPaymentHandler(ctx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgEffectPayment(contractIdParam, sovrinDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
+		output, err := dap.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))

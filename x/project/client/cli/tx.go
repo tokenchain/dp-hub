@@ -7,8 +7,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 
 	"github.com/tokenchain/ixo-blockchain/x/project/internal/types"
 )
@@ -38,7 +38,7 @@ func GetCmdCreateProject(cdc *codec.Codec) *cobra.Command {
 			msg := types.NewMsgCreateProject(senderDid, projectDoc, sovrinDid)
 			stdSignMsg := msg.ToStdSignMsg(types.MsgCreateProjectFee)
 
-			res, err := ixo.SignAndBroadcastTxFromStdSignMsg(cliCtx, stdSignMsg, sovrinDid)
+			res, err := dap.SignAndBroadcastTxFromStdSignMsg(cliCtx, stdSignMsg, sovrinDid)
 			if err != nil {
 				return err
 			}
@@ -83,7 +83,7 @@ func GetCmdUpdateProjectStatus(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgUpdateProjectStatus(senderDid, updateProjectStatusDoc, sovrinDid)
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
@@ -118,7 +118,7 @@ func GetCmdCreateAgent(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgCreateAgent(txHash, senderDid, createAgentDoc, sovrinDid)
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
@@ -155,7 +155,7 @@ func GetCmdUpdateAgent(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgUpdateAgent(txHash, senderDid, updateAgentDoc, sovrinDid)
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
@@ -183,7 +183,7 @@ func GetCmdCreateClaim(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgCreateClaim(txHash, senderDid, createClaimDoc, sovrinDid)
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
@@ -218,7 +218,7 @@ func GetCmdCreateEvaluation(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgCreateEvaluation(txHash, senderDid, createEvaluationDoc, sovrinDid)
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
@@ -245,7 +245,7 @@ func GetCmdWithdrawFunds(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgWithdrawFunds(senderDid.Did, data)
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, senderDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, senderDid)
 		},
 	}
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/spf13/viper"
 	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -48,7 +48,7 @@ func (msg MsgCreateProject) ToStdSignMsg(fee int64) auth.StdSignMsg {
 	chainID := viper.GetString(flags.FlagChainID)
 	accNum, accSeq := uint64(0), uint64(0)
 	stdFee := auth.NewStdFee(0, sdk.NewCoins(sdk.NewCoin(
-		types.IxoNativeToken, sdk.NewInt(fee))))
+		types.NativeToken, sdk.NewInt(fee))))
 	memo := viper.GetString(flags.FlagMemo)
 
 	return auth.StdSignMsg{

@@ -11,11 +11,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 )
 
-func GetPubKeyGetter(keeper Keeper, didKeeper did.Keeper) ixo.PubKeyGetter {
+func GetPubKeyGetter(keeper Keeper, didKeeper did.Keeper) dap.PubKeyGetter {
 	return func(ctx sdk.Context, msg types.IxoMsg) ([32]byte, error) {
 
 		// Get signer PubKey
@@ -110,7 +110,7 @@ func getProjectCreationSignBytes(chainID string, ixoTx types.IxoTx, acc exported
 }
 
 func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
-	bk bank.Keeper, pubKeyGetter ixo.PubKeyGetter) sdk.AnteHandler {
+	bk bank.Keeper, pubKeyGetter dap.PubKeyGetter) sdk.AnteHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, res error) {
 
 		if addr := sk.GetModuleAddress(auth.FeeCollectorName); addr == nil {
@@ -137,7 +137,7 @@ func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
 
 		newCtx.GasMeter().ConsumeGas(params.TxSizeCostPerByte*sdk.Gas(len(newCtx.TxBytes())), "txSize")
 
-		if res := ixo.ValidateMemo(types.IxoTx{Memo: ixoTx.Memo}, params); res != nil {
+		if res := dap.ValidateMemo(types.IxoTx{Memo: ixoTx.Memo}, params); res != nil {
 			return newCtx, res
 		}
 
@@ -155,13 +155,13 @@ func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
 		}
 
 		// confirm that fee is the exact amount expected
-		expectedTotalFee := sdk.NewCoins(sdk.NewCoin(types.IxoNativeToken, sdk.NewInt(MsgCreateProjectFee)))
+		expectedTotalFee := sdk.NewCoins(sdk.NewCoin(types.NativeToken, sdk.NewInt(MsgCreateProjectFee)))
 		if !ixoTx.Fee.Amount.IsEqual(expectedTotalFee) {
 			return newCtx, x.ErrInvalidCoins("invalid fee")
 		}
 
 		// Calculate transaction fee and project funding
-		transactionFee := sdk.NewCoins(sdk.NewCoin(types.IxoNativeToken, sdk.NewInt(MsgCreateProjectTransactionFee)))
+		transactionFee := sdk.NewCoins(sdk.NewCoin(types.NativeToken, sdk.NewInt(MsgCreateProjectTransactionFee)))
 		projectFunding := expectedTotalFee.Sub(transactionFee) // panics if negative result
 
 		// deduct the fees
@@ -204,7 +204,7 @@ func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
 		ixoSig := ixoTx.GetSignatures()[0]
 		isGenesis := ctx.BlockHeight() == 0
 		signBytes := getProjectCreationSignBytes(newCtx.ChainID(), ixoTx, signerAcc, isGenesis)
-		signerAcc, res = ixo.ProcessSig(newCtx, signerAcc, signBytes, pubKey, ixoSig, simulate, params)
+		signerAcc, res = dap.ProcessSig(newCtx, signerAcc, signBytes, pubKey, ixoSig, simulate, params)
 		if res != nil {
 			return newCtx, res
 		}

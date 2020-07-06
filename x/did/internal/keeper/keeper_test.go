@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"testing"
 
 	"github.com/stretchr/testify/require"

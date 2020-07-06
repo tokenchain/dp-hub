@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 )
 
 func GetCmdAddressFromDid() *cobra.Command {

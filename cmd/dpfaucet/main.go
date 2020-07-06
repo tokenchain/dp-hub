@@ -15,7 +15,7 @@ import (
 	"github.com/tendermint/tendermint/libs/bech32"
 	"github.com/tokenchain/ixo-blockchain/app"
 	cli2 "github.com/tokenchain/ixo-blockchain/client/cli"
-	client2 "github.com/tokenchain/ixo-blockchain/x/accmix/client"
+	client2 "github.com/tokenchain/ixo-blockchain/x/dapmining/client"
 	"github.com/tomasen/realip"
 	"io"
 	"log"

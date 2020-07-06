@@ -2,7 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 )
 
 type Batch struct {
@@ -12,8 +12,8 @@ type Batch struct {
 	TotalSellAmount sdk.Coin     `json:"total_sell_amount" yaml:"total_sell_amount"`
 	BuyPrices       sdk.DecCoins `json:"buy_prices" yaml:"buy_prices"`
 	SellPrices      sdk.DecCoins `json:"sell_prices" yaml:"sell_prices"`
-	Buys            []BuyOrder   `json:"buys" yaml:"buys"`
-	Sells           []SellOrder  `json:"sells" yaml:"sells"`
+	Bids            []BuyOrder   `json:"buys" yaml:"buys"`
+	Asks            []SellOrder  `json:"sells" yaml:"sells"`
 	Swaps           []SwapOrder  `json:"swaps" yaml:"swaps"`
 }
 

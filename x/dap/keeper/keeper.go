@@ -1,19 +1,19 @@
 package keeper
-/*
+
 import (
-	"encoding/binary"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/cosmos/cosmos-sdk/x/bank"
 )
 
 type Keeper struct {
-	storeKey      sdk.StoreKey
-	cdc           *codec.Codec
-	BankKeeper    types.BankKeeper
-	ChannelKeeper types.ChannelKeeper
+	storeKey   sdk.StoreKey
+	cdc        *codec.Codec
+	BankKeeper bank.Keeper
+	//ChannelKeeper channel.Keeper
 }
 
+/*
 // NewKeeper creates a new band consumer Keeper instance.
 func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankKeeper types.BankKeeper,
 	channelKeeper types.ChannelKeeper,

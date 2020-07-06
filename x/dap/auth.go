@@ -1,4 +1,4 @@
-package ixo
+package dap
 
 import (
 	"bufio"
@@ -18,12 +18,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/spf13/viper"
 	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"os"
 )
 
 var (
-	expectedMinGasPrices       = "0.025" + types.IxoNativeToken
+	expectedMinGasPrices       = "0.025" + types.NativeToken
 	approximationGasAdjustment = float64(1.5)
 	// TODO: parameterise (or remove) hard-coded gas prices and adjustments
 )
@@ -274,7 +274,7 @@ func ApproximateFeeForTx(cliCtx context.CLIContext, tx types.IxoTx, chainId stri
 	cdc := cliCtx.Codec
 	txEncoder := auth.DefaultTxEncoder
 	gasAdjustment := approximationGasAdjustment
-	fees := sdk.NewCoins(sdk.NewCoin(types.IxoNativeToken, sdk.OneInt()))
+	fees := sdk.NewCoins(sdk.NewCoin(types.NativeToken, sdk.OneInt()))
 	txBldr := auth.NewTxBuilder(txEncoder(cdc), 0, 0, 0, gasAdjustment, true, chainId, tx.Memo, fees, nil)
 
 	// Approximate gas consumption

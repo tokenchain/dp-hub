@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/tokenchain/ixo-blockchain/x"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"github.com/tokenchain/ixo-blockchain/x/payments"
 
 	"github.com/tokenchain/ixo-blockchain/x/project/internal/types"

@@ -8,7 +8,7 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"strings"
 )
 

@@ -2,7 +2,7 @@ package types
 
 import (
 	"fmt"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"strings"
 )
 

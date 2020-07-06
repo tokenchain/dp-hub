@@ -4,12 +4,12 @@ import (
 	"github.com/btcsuite/btcutil/base58"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"github.com/tokenchain/ixo-blockchain/x/did"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
 )
 
-func GetPubKeyGetter(didKeeper did.Keeper) ixo.PubKeyGetter {
+func GetPubKeyGetter(didKeeper did.Keeper) dap.PubKeyGetter {
 	return func(ctx sdk.Context, msg types.IxoMsg) ([32]byte, error) {
 
 		// Get signer PubKey

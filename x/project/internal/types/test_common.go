@@ -2,7 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 )
 
 var ValidCreateProjectMsg = MsgCreateProject{
@@ -41,7 +41,7 @@ var ValidWithdrawalInfo = WithdrawalInfo{
 	ActionID:     "1",
 	ProjectDid:   "6iftm1hHdaU6LJGKayRMev",
 	RecipientDid: "6iftm1hHdaU6LJGKayRMev",
-	Amount:       sdk.NewCoin(types.IxoNativeToken, sdk.NewInt(10)),
+	Amount:       sdk.NewCoin(types.NativeToken, sdk.NewInt(10)),
 }
 
 var (

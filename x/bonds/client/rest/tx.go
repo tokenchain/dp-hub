@@ -8,59 +8,76 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/client"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"net/http"
 	"strings"
 )
 
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
-	r.HandleFunc(
-		"/bonds/create_bond",
-		createBondHandler(cliCtx),
-	).Methods("POST")
-
-	r.HandleFunc(
-		"/bonds/edit_bond",
-		editBondHandler(cliCtx),
-	).Methods("POST")
-
-	r.HandleFunc(
-		"/bonds/buy",
-		buyHandler(cliCtx),
-	).Methods("POST")
-
-	r.HandleFunc(
-		"/bonds/sell",
-		sellHandler(cliCtx),
-	).Methods("POST")
-
-	r.HandleFunc(
-		"/bonds/swap",
-		swapHandler(cliCtx),
-	).Methods("POST")
+	r.HandleFunc("/bonds/create_bond", createBondHandler(cliCtx), ).Methods("POST")
+	r.HandleFunc("/bonds/edit_bond", editBondHandler(cliCtx), ).Methods("POST")
+	r.HandleFunc("/bonds/buy", buyHandler(cliCtx), ).Methods("POST")
+	r.HandleFunc("/bonds/sell", sellHandler(cliCtx), ).Methods("POST")
+	r.HandleFunc("/bonds/swap", swapHandler(cliCtx), ).Methods("POST")
 }
 
-type createBondReq struct {
-	BaseReq                rest.BaseReq `json:"base_req" yaml:"base_req"`
-	Token                  string       `json:"token" yaml:"token"`
-	Name                   string       `json:"name" yaml:"name"`
-	Description            string       `json:"description" yaml:"description"`
-	FunctionType           string       `json:"function_type" yaml:"function_type"`
-	FunctionParameters     string       `json:"function_parameters" yaml:"function_parameters"`
-	ReserveTokens          string       `json:"reserve_tokens" yaml:"reserve_tokens"`
-	TxFeePercentage        string       `json:"tx_fee_percentage" yaml:"tx_fee_percentage"`
-	ExitFeePercentage      string       `json:"exit_fee_percentage" yaml:"exit_fee_percentage"`
-	FeeAddress             string       `json:"fee_address" yaml:"fee_address"`
-	MaxSupply              string       `json:"max_supply" yaml:"max_supply"`
-	OrderQuantityLimits    string       `json:"order_quantity_limits" yaml:"order_quantity_limits"`
-	SanityRate             string       `json:"sanity_rate" yaml:"sanity_rate"`
-	SanityMarginPercentage string       `json:"sanity_margin_percentage" yaml:"sanity_margin_percentage"`
-	AllowSells             string       `json:"allow_sells" yaml:"allow_sells"`
-	BatchBlocks            string       `json:"batch_blocks" yaml:"batch_blocks"`
-	BondDid                string       `json:"bond_did" yaml:"bond_did"`
-	CreatorDid             string       `json:"creator_did" yaml:"creator_did"`
-}
+type (
+	createBondReq struct {
+		BaseReq                rest.BaseReq `json:"base_req" yaml:"base_req"`
+		Token                  string       `json:"token" yaml:"token"`
+		Name                   string       `json:"name" yaml:"name"`
+		Description            string       `json:"description" yaml:"description"`
+		FunctionType           string       `json:"function_type" yaml:"function_type"`
+		FunctionParameters     string       `json:"function_parameters" yaml:"function_parameters"`
+		ReserveTokens          string       `json:"reserve_tokens" yaml:"reserve_tokens"`
+		TxFeePercentage        string       `json:"tx_fee_percentage" yaml:"tx_fee_percentage"`
+		ExitFeePercentage      string       `json:"exit_fee_percentage" yaml:"exit_fee_percentage"`
+		FeeAddress             string       `json:"fee_address" yaml:"fee_address"`
+		MaxSupply              string       `json:"max_supply" yaml:"max_supply"`
+		OrderQuantityLimits    string       `json:"order_quantity_limits" yaml:"order_quantity_limits"`
+		SanityRate             string       `json:"sanity_rate" yaml:"sanity_rate"`
+		SanityMarginPercentage string       `json:"sanity_margin_percentage" yaml:"sanity_margin_percentage"`
+		AllowSells             string       `json:"allow_sells" yaml:"allow_sells"`
+		BatchBlocks            string       `json:"batch_blocks" yaml:"batch_blocks"`
+		BondDid                string       `json:"bond_did" yaml:"bond_did"`
+		CreatorDid             string       `json:"creator_did" yaml:"creator_did"`
+	}
+	buyReq struct {
+		BaseReq    rest.BaseReq `json:"base_req" yaml:"base_req"`
+		BondToken  string       `json:"bond_token" yaml:"bond_token"`
+		BondAmount string       `json:"bond_amount" yaml:"bond_amount"`
+		MaxPrices  string       `json:"max_prices" yaml:"max_prices"`
+		BondDid    string       `json:"bond_did" yaml:"bond_did"`
+		BuyerDid   string       `json:"buyer_did" yaml:"buyer_did"`
+	}
+	editBondReq struct {
+		BaseReq                rest.BaseReq `json:"base_req" yaml:"base_req"`
+		Token                  string       `json:"token" yaml:"token"`
+		Name                   string       `json:"name" yaml:"name"`
+		Description            string       `json:"description" yaml:"description"`
+		OrderQuantityLimits    string       `json:"order_quantity_limits" yaml:"order_quantity_limits"`
+		SanityRate             string       `json:"sanity_rate" yaml:"sanity_rate"`
+		SanityMarginPercentage string       `json:"sanity_margin_percentage" yaml:"sanity_margin_percentage"`
+		BondDid                string       `json:"bond_did" yaml:"bond_did"`
+		EditorDid              string       `json:"editor_did" yaml:"editor_did"`
+	}
+	sellReq struct {
+		BaseReq    rest.BaseReq `json:"base_req" yaml:"base_req"`
+		BondToken  string       `json:"bond_token" yaml:"bond_token"`
+		BondAmount string       `json:"bond_amount" yaml:"bond_amount"`
+		BondDid    string       `json:"bond_did" yaml:"bond_did"`
+		SellerDid  string       `json:"seller_did" yaml:"seller_did"`
+	}
+	swapReq struct {
+		BaseReq    rest.BaseReq `json:"base_req" yaml:"base_req"`
+		FromAmount string       `json:"from_amount" yaml:"from_amount"`
+		FromToken  string       `json:"from_token" yaml:"from_token"`
+		ToToken    string       `json:"to_token" yaml:"to_token"`
+		BondDid    string       `json:"bond_did" yaml:"bond_did"`
+		SwapperDid string       `json:"swapper_did" yaml:"swapper_did"`
+	}
+)
 
 func createBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -158,7 +175,7 @@ func createBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			orderQuantityLimits, sanityRate, sanityMarginPercentage,
 			req.AllowSells, batchBlocks, req.BondDid)
 
-		output, err2 := ixo.SignAndBroadcastTxRest(cliCtx, msg, creatorDid)
+		output, err2 := dap.SignAndBroadcastTxRest(cliCtx, msg, creatorDid)
 		if err2 != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err2.Error()))
@@ -167,18 +184,6 @@ func createBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		rest.PostProcessResponse(w, cliCtx, output)
 	}
-}
-
-type editBondReq struct {
-	BaseReq                rest.BaseReq `json:"base_req" yaml:"base_req"`
-	Token                  string       `json:"token" yaml:"token"`
-	Name                   string       `json:"name" yaml:"name"`
-	Description            string       `json:"description" yaml:"description"`
-	OrderQuantityLimits    string       `json:"order_quantity_limits" yaml:"order_quantity_limits"`
-	SanityRate             string       `json:"sanity_rate" yaml:"sanity_rate"`
-	SanityMarginPercentage string       `json:"sanity_margin_percentage" yaml:"sanity_margin_percentage"`
-	BondDid                string       `json:"bond_did" yaml:"bond_did"`
-	EditorDid              string       `json:"editor_did" yaml:"editor_did"`
 }
 
 func editBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
@@ -206,7 +211,7 @@ func editBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			req.OrderQuantityLimits, req.SanityRate,
 			req.SanityMarginPercentage, editorDid, req.BondDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, editorDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, editorDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -215,15 +220,6 @@ func editBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		rest.PostProcessResponse(w, cliCtx, output)
 	}
-}
-
-type buyReq struct {
-	BaseReq    rest.BaseReq `json:"base_req" yaml:"base_req"`
-	BondToken  string       `json:"bond_token" yaml:"bond_token"`
-	BondAmount string       `json:"bond_amount" yaml:"bond_amount"`
-	MaxPrices  string       `json:"max_prices" yaml:"max_prices"`
-	BondDid    string       `json:"bond_did" yaml:"bond_did"`
-	BuyerDid   string       `json:"buyer_did" yaml:"buyer_did"`
 }
 
 func buyHandler(cliCtx context.CLIContext) http.HandlerFunc {
@@ -261,7 +257,7 @@ func buyHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgBuy(buyerDid, bondCoin, maxPrices, req.BondDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, buyerDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, buyerDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -270,14 +266,6 @@ func buyHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		rest.PostProcessResponse(w, cliCtx, output)
 	}
-}
-
-type sellReq struct {
-	BaseReq    rest.BaseReq `json:"base_req" yaml:"base_req"`
-	BondToken  string       `json:"bond_token" yaml:"bond_token"`
-	BondAmount string       `json:"bond_amount" yaml:"bond_amount"`
-	BondDid    string       `json:"bond_did" yaml:"bond_did"`
-	SellerDid  string       `json:"seller_did" yaml:"seller_did"`
 }
 
 func sellHandler(cliCtx context.CLIContext) http.HandlerFunc {
@@ -309,7 +297,7 @@ func sellHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgSell(sellerDid, bondCoin, req.BondDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, sellerDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sellerDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -318,15 +306,6 @@ func sellHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		rest.PostProcessResponse(w, cliCtx, output)
 	}
-}
-
-type swapReq struct {
-	BaseReq    rest.BaseReq `json:"base_req" yaml:"base_req"`
-	FromAmount string       `json:"from_amount" yaml:"from_amount"`
-	FromToken  string       `json:"from_token" yaml:"from_token"`
-	ToToken    string       `json:"to_token" yaml:"to_token"`
-	BondDid    string       `json:"bond_did" yaml:"bond_did"`
-	SwapperDid string       `json:"swapper_did" yaml:"swapper_did"`
 }
 
 func swapHandler(cliCtx context.CLIContext) http.HandlerFunc {
@@ -360,7 +339,7 @@ func swapHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgSwap(swapperDid, fromCoin, req.ToToken, req.BondDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, swapperDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, swapperDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))

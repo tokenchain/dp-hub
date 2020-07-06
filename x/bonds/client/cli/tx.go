@@ -12,8 +12,8 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x"
 	client2 "github.com/tokenchain/ixo-blockchain/x/bonds/client"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"strings"
 )
 
@@ -132,7 +132,7 @@ func GetCmdCreateBond(cdc *codec.Codec) *cobra.Command {
 				orderQuantityLimits, sanityRate, sanityMarginPercentage,
 				_allowSells, batchBlocks, _bondDid)
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, creatorDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, creatorDid)
 		},
 	}
 
@@ -189,7 +189,7 @@ func GetCmdEditBond(cdc *codec.Codec) *cobra.Command {
 				_token, _name, _description, _orderQuantityLimits, _sanityRate,
 				_sanityMarginPercentage, editorDid, _bondDid)
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, editorDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, editorDid)
 		},
 	}
 
@@ -233,7 +233,7 @@ func GetCmdBuy(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgBuy(buyerDid, bondCoinWithAmount, maxPrices, args[2])
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, buyerDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, buyerDid)
 		},
 	}
 	return cmd
@@ -262,7 +262,7 @@ func GetCmdSell(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgSell(sellerDid, bondCoinWithAmount, args[1])
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sellerDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, sellerDid)
 		},
 	}
 	return cmd
@@ -294,7 +294,7 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgSwap(swapperDid, from, args[2], args[3])
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, swapperDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, swapperDid)
 		},
 	}
 	return cmd

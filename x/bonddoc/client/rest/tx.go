@@ -3,7 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
-	types2 "github.com/tokenchain/ixo-blockchain/x/ixo/types"
+	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/tokenchain/ixo-blockchain/x/bonddoc/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
 )
 
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
@@ -45,7 +45,7 @@ func createBondRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		cliCtx = cliCtx.WithBroadcastMode(mode)
 		msg := types.NewMsgCreateBond(senderDid, bondDoc, didDoc)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, didDoc)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, didDoc)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -91,7 +91,7 @@ func updateBondStatusRequestHandler(cliCtx context.CLIContext) http.HandlerFunc 
 
 		msg := types.NewMsgUpdateBondStatus(senderDid, updateBondStatusDoc, sovrinDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
