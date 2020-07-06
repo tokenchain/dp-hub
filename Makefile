@@ -1,5 +1,4 @@
 #!/usr/bin/make -f
-
 VERSION := v$(shell cat version.txt)              # $(shell echo $(shell git describe --tags) | sed 's/^v//')
 COMMIT := $(shell git log -1 --format='%H')
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
@@ -8,7 +7,9 @@ BINDIR ?= $(GOPATH)/bin
 GPG_SIGNING_KEY = ''
 export GO111MODULE = on
 export COSMOS_SDK_TEST_KEYRING = n
-
+define update_check
+ sh update.sh
+endef
 # process build tags
 
 build_tags = 
@@ -62,26 +63,33 @@ ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))
 
 BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
+SHOWTIMECMD :=  date "+%Y/%m/%d H:%M:%S"
 
 all: lint install
 OS=linux
+
 
 build: go.sum
 ifeq ($(OS),Windows_NT)
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpd.exe ./cmd/dpd
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli.exe ./cmd/dpcli
+	go build -mod=readonly $(BUILD_FLAGS) -o build/dpfaucet.exe ./cmd/dpfaucet
 else
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpd ./cmd/dpd
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli ./cmd/dpcli
+	go build -mod=readonly $(BUILD_FLAGS) -o build/dpfaucet ./cmd/dpfaucet
 endif
+	$(update_check)
 
 buildlinux: go.sum
 	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/dpd ./cmd/dpd
 	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli ./cmd/dpcli
+	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/dpfaucet ./cmd/dpfaucet
 
 install: go.sum
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/dpd
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/dpcli
+	go install -mod=readonly $(BUILD_FLAGS) ./cmd/dpfaucet
 
 sign-release:
 	if test -n "$(GPG_SIGNING_KEY)"; then \

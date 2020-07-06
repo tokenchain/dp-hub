@@ -47,10 +47,11 @@ bash demo_tx_broadcast_rpc.sh   # Option 5
 Nginx setup
 To expose ports on nginx server
 ```shell script
+
 server {
-        listen 80;
-        listen [::]:80;
-        server_name node.talkshop.name;
+        listen 1317;
+        listen [::]:1317;
+        server_name cli.darkpool.vip;
         add_header 'Access-Control-Allow-Origin' '*';
         add_header 'Access-Control-Allow_Credentials' 'true';
         add_header 'Access-Control-Allow-Headers' 'Authorization,Accept,Origin,DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';
@@ -71,11 +72,10 @@ server {
         }
 }
 
-
 server {
-        listen 80;
-        listen [::]:80;
-        server_name cli.talkshop.name;
+        listen 26657;
+        listen [::]:26657;
+        server_name demon.darkpool.vip;
         add_header 'Access-Control-Allow-Origin' '*';
         add_header 'Access-Control-Allow_Credentials' 'true';
         add_header 'Access-Control-Allow-Headers' 'Authorization,Accept,Origin,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,Cache-Control,Content-Type';
@@ -92,7 +92,7 @@ server {
                 proxy_set_header host $host;
                 proxy_set_header X-real-ip $remote_addr;
                 proxy_set_header X-forward-for $proxy_add_x_forwarded_for;
-                proxy_pass http://0.0.0.0:26657;
+                proxy_pass http://localhost:26657;
         }
 }
 ```
