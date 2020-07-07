@@ -1,15 +1,16 @@
 package rest
 
 import (
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/client"
+	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
 	"github.com/tokenchain/ixo-blockchain/x/dap"
-	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"net/http"
 	"strings"
 )
@@ -79,6 +80,15 @@ type (
 	}
 )
 
+func writeHeadf(w http.ResponseWriter, code int, format string, i ...interface{}) {
+	w.WriteHeader(code)
+	_, _ = w.Write([]byte(fmt.Sprintf(format, i...)))
+}
+func writeHead(w http.ResponseWriter, code int, txt string) {
+	w.WriteHeader(code)
+	_, _ = w.Write([]byte(txt))
+}
+
 func createBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req createBondReq
@@ -106,7 +116,7 @@ func createBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		// Parse tx fee percentage
 		txFeePercentageDec, errc := sdk.NewDecFromStr(req.TxFeePercentage)
 		if errc != nil {
-			err = x.ErrArgumentMissingOrNonFloat("tx fee percentage")
+			err = errors.ArgumentMissingOrNonFloat("tx fee percentage")
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
@@ -114,7 +124,7 @@ func createBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		// Parse exit fee percentage
 		exitFeePercentageDec, errc := sdk.NewDecFromStr(req.ExitFeePercentage)
 		if errc != nil {
-			err = x.ErrArgumentMissingOrNonFloat("exit fee percentage")
+			err = errors.ArgumentMissingOrNonFloat("exit fee percentage")
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
@@ -157,13 +167,13 @@ func createBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		// Parse batch blocks
 		batchBlocks, err2 := sdk.ParseUint(req.BatchBlocks)
 		if err2 != nil {
-			err := x.ErrArgumentMissingOrNonUInteger("max batch blocks")
+			err := errors.ArgumentMissingOrNonUInteger("max batch blocks")
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		// Parse creator's sovrin DID
-		creatorDid, err2 := types2.UnmarshalSovrinDid(req.CreatorDid)
+		creatorDid, err2 := exported.UnmarshalDxpDid(req.CreatorDid)
 		if err2 != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err2.Error())
 			return
@@ -177,8 +187,7 @@ func createBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		output, err2 := dap.SignAndBroadcastTxRest(cliCtx, msg, creatorDid)
 		if err2 != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err2.Error()))
+			writeHead(w, http.StatusInternalServerError, err2.Error())
 			return
 		}
 
@@ -201,7 +210,7 @@ func editBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// Parse editor's sovrin DID
-		editorDid, err := types2.UnmarshalSovrinDid(req.EditorDid)
+		editorDid, err := exported.UnmarshalDxpDid(req.EditorDid)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -213,8 +222,7 @@ func editBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, editorDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -249,18 +257,17 @@ func buyHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// Parse buyer's sovrin DID
-		buyerDid, err := types2.UnmarshalSovrinDid(req.BuyerDid)
+		buyerDid, err := exported.UnmarshalDxpDid(req.BuyerDid)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		msg := types.NewMsgBuy(buyerDid, bondCoin, maxPrices, req.BondDid)
+		msg := types.NewMsgBuy(buyerDid.Did, bondCoin, maxPrices, req.BondDid)
 
 		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, buyerDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -289,7 +296,7 @@ func sellHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// Parse seller's sovrin DID
-		sellerDid, err := types2.UnmarshalSovrinDid(req.SellerDid)
+		sellerDid, err := exported.UnmarshalDxpDid(req.SellerDid)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -299,8 +306,7 @@ func sellHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sellerDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -330,10 +336,9 @@ func swapHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// Parse swapper's sovrin DID
-		swapperDid, err := types2.UnmarshalSovrinDid(req.SwapperDid)
+		swapperDid, err := exported.UnmarshalDxpDid(req.SwapperDid)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
@@ -341,8 +346,7 @@ func swapHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, swapperDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 

@@ -2,7 +2,7 @@ package types
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
 )
 

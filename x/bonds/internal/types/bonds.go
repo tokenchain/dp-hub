@@ -3,9 +3,9 @@ package types
 import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
+	"github.com/tokenchain/ixo-blockchain/x/did"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"sort"
 )
 
@@ -29,14 +29,20 @@ var (
 		SigmoidFunction: AnyNumberOfReserveTokens,
 		SwapperFunction: 2,
 	}
+	ExtraParameterRestrictions = map[string]FunctionParamRestrictions{
+		PowerFunction:   nil,
+		SigmoidFunction: sigmoidParameterRestrictions,
+		SwapperFunction: nil,
+	}
 )
 
 type (
-	Bond struct {
+	FunctionParamRestrictions func(paramsMap map[string]sdk.Int) error
+	Bond                      struct {
 		Token                  string         `json:"token" yaml:"token"`
 		Name                   string         `json:"name" yaml:"name"`
 		Description            string         `json:"description" yaml:"description"`
-		CreatorDid             types.Did      `json:"creator_did" yaml:"creator_did"`
+		CreatorDid             did.Did        `json:"creator_did" yaml:"creator_did"`
 		FunctionType           string         `json:"function_type" yaml:"function_type"`
 		FunctionParameters     FunctionParams `json:"function_parameters" yaml:"function_parameters"`
 		ReserveTokens          []string       `json:"reserve_tokens" yaml:"reserve_tokens"`
@@ -51,8 +57,7 @@ type (
 		CurrentSupply          sdk.Coin       `json:"current_supply" yaml:"current_supply"`
 		AllowSells             string         `json:"allow_sells" yaml:"allow_sells"`
 		BatchBlocks            sdk.Uint       `json:"batch_blocks" yaml:"batch_blocks"`
-		BondDid                types.Did      `json:"bond_did" yaml:"bond_did"`
-		CreatorPubKey          string         `json:"pub_key" yaml:"pub_key"`
+		BondDid                did.Did        `json:"bond_did" yaml:"bond_did"`
 	}
 	FunctionParam struct {
 		Param string  `json:"param" yaml:"param"`
@@ -77,7 +82,7 @@ func (fps FunctionParams) Validate(functionType string) error {
 
 	// Check that number of params is as expected
 	if len(fps) != len(expectedParams) {
-		return x.ErrIncorrectNumberOfFunctionParameters(len(expectedParams))
+		return errors.IncorrectNumberOfFunctionParameters(len(expectedParams))
 	}
 
 	// Check that params match and all values are positive
@@ -85,9 +90,21 @@ func (fps FunctionParams) Validate(functionType string) error {
 	for _, p := range expectedParams {
 		val, ok := fpsMap[p]
 		if !ok {
-			return x.ErrFunctionParameterMissingOrNonInteger(p)
+			return errors.FunctionParameterMissingOrNonInteger(p)
 		} else if !val.IsPositive() {
-			return x.ErrArgumentMustBePositive("FunctionParams:" + p)
+			return errors.ArgumentMustBePositive("FunctionParams:" + p)
+		}
+	}
+
+	// Get extra function parameter restrictions
+	extraRestrictions, err := GetExceptionsForFunctionType(functionType)
+	if err != nil {
+		return err
+	}
+	if extraRestrictions != nil {
+		err := extraRestrictions(fpsMap)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -114,12 +131,22 @@ func (fps FunctionParams) AsMap() (paramsMap map[string]sdk.Int) {
 	return paramsMap
 }
 
-func NewBond(token, name, description string, creatorDid types.Did,
-	creatorPubKey, functionType string, functionParameters FunctionParams,
+func sigmoidParameterRestrictions(paramsMap map[string]sdk.Int) error {
+	// Sigmoid exception 1: c != 0, otherwise we run into divisions by zero
+	val, ok := paramsMap["c"]
+	if !ok {
+		panic("did not find parameter c for sigmoid function")
+	} else if !val.IsPositive() {
+		return errors.ArgumentMustBePositive("FunctionParams:c")
+	}
+	return nil
+}
+
+func NewBond(token, name, description string, creatorDid exported.Did, functionType string, functionParameters FunctionParams,
 	reserveTokens []string, reserveAdddress sdk.AccAddress, txFeePercentage,
 	exitFeePercentage sdk.Dec, feeAddress sdk.AccAddress, maxSupply sdk.Coin,
 	orderQuantityLimits sdk.Coins, sanityRate, sanityMarginPercentage sdk.Dec,
-	allowSells string, batchBlocks sdk.Uint, bondDid types.Did) Bond {
+	allowSells string, batchBlocks sdk.Uint, bondDid exported.Did) Bond {
 
 	// Ensure tokens and coins are sorted
 	sort.Strings(reserveTokens)
@@ -130,7 +157,6 @@ func NewBond(token, name, description string, creatorDid types.Did,
 		Name:                   name,
 		Description:            description,
 		CreatorDid:             creatorDid,
-		CreatorPubKey:          creatorPubKey,
 		FunctionType:           functionType,
 		FunctionParameters:     functionParameters,
 		ReserveTokens:          reserveTokens,
@@ -185,7 +211,7 @@ func (bond Bond) GetPricesAtSupply(supply sdk.Int) (result sdk.DecCoins, err err
 		temp3 := SquareRootInt(temp2)
 		result = bond.GetNewReserveDecCoins(aDec.Mul(sdk.NewDecFromInt(temp1).Quo(temp3).Add(sdk.OneDec())))
 	case SwapperFunction:
-		return nil, ErrFunctionNotAvailableForFunctionType()
+		return nil, errors.FunctionNotAvailableForFunctionType()
 	default:
 		panic("unrecognized function type")
 	}
@@ -240,8 +266,8 @@ func (bond Bond) CurveIntegral(supply sdk.Int) (result sdk.Dec) {
 		temp2 := temp1.Mul(temp1).Add(c)
 		temp3 := SquareRootInt(temp2)
 		temp5 := aDec.Mul(temp3.Add(xDec))
-		constant := aDec.Mul(SquareRootDec(bDec.Mul(bDec).Add(cDec)))
-		result = temp5.Sub(constant)
+		temp6 := aDec.Mul(SquareRootDec(bDec.Mul(bDec).Add(cDec)))
+		result = temp5.Sub(temp6)
 	case SwapperFunction:
 		panic("invalid function for function type")
 	default:
@@ -323,7 +349,7 @@ func (bond Bond) GetPricesToMint(mint sdk.Int, reserveBalances sdk.Coins) (sdk.D
 		return bond.GetNewReserveDecCoins(priceToMint), nil
 	case SwapperFunction:
 		if bond.CurrentSupply.Amount.IsZero() {
-			return nil, errors.Wrap(x.ErrFunctionRequiresNonZeroCurrentSupply, "")
+			return nil, errors.FunctionRequiresNonZeroCurrentSupply()
 		}
 		return bond.GetReserveDeltaForLiquidityDelta(mint, reserveBalances), nil
 	default:
@@ -374,13 +400,13 @@ func (bond Bond) GetReturnsForSwap(from sdk.Coin, toToken string, reserveBalance
 	case PowerFunction:
 		fallthrough
 	case SigmoidFunction:
-		return nil, sdk.Coin{}, errors.Wrap(x.ErrFunctionNotAvailableForFunctionType, "")
+		return nil, sdk.Coin{}, errors.FunctionNotAvailableForFunctionType()
 	case SwapperFunction:
 		// Check that from and to are reserve tokens
 		if from.Denom != bond.ReserveTokens[0] && from.Denom != bond.ReserveTokens[1] {
-			return nil, sdk.Coin{}, x.ErrTokenIsNotAValidReserveToken(from.Denom)
+			return nil, sdk.Coin{}, errors.TokenIsNotAValidReserveToken(from.Denom)
 		} else if toToken != bond.ReserveTokens[0] && toToken != bond.ReserveTokens[1] {
-			return nil, sdk.Coin{}, x.ErrTokenIsNotAValidReserveToken(toToken)
+			return nil, sdk.Coin{}, errors.TokenIsNotAValidReserveToken(from.Denom)
 		}
 
 		inAmt := from.Amount
@@ -393,7 +419,8 @@ func (bond Bond) GetReturnsForSwap(from sdk.Coin, toToken string, reserveBalance
 
 		// Check that at least 1 token is going in
 		if inAmt.IsZero() {
-			return nil, sdk.Coin{}, x.ErrSwapAmountTooSmallToGiveAnyReturn(from.Denom, toToken)
+			return nil, sdk.Coin{},
+				errors.SwapAmountTooSmallToGiveAnyReturn(from.Denom, toToken)
 		}
 
 		// Calculate output amount using Uniswap formula: Δy = (Δx*y)/(x+Δx)
@@ -401,9 +428,11 @@ func (bond Bond) GetReturnsForSwap(from sdk.Coin, toToken string, reserveBalance
 
 		// Check that not giving out all of the available outRes or nothing at all
 		if outAmt.Equal(outRes) {
-			return nil, sdk.Coin{}, x.ErrSwapAmountCausesReserveDepletion(from.Denom, toToken)
+			return nil, sdk.Coin{},
+				errors.SwapAmountCausesReserveDepletion(from.Denom, toToken)
 		} else if outAmt.IsZero() {
-			return nil, sdk.Coin{}, x.ErrSwapAmountTooSmallToGiveAnyReturn(from.Denom, toToken)
+			return nil, sdk.Coin{},
+				errors.SwapAmountTooSmallToGiveAnyReturn(from.Denom, toToken)
 		} else if outAmt.IsNegative() {
 			panic(fmt.Sprintf("negative return for swap result for bond %s", bond))
 		}

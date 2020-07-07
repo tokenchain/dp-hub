@@ -2,7 +2,7 @@ package cli
 
 import (
 	"github.com/tokenchain/ixo-blockchain/x/dap"
-	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -19,13 +19,13 @@ func GetCmdAddDidDoc(cdc *codec.Codec) *cobra.Command {
 		Short: "Add a new SovrinDid",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			sovrinDid, err := types2.UnmarshalSovrinDid(args[0])
+			sovrinDid, err := exported.UnmarshalDxpDid(args[0])
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(sovrinDid.Address())
 
 			msg := types.NewMsgAddDid(sovrinDid.Did, sovrinDid.VerifyKey)
 			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
@@ -41,7 +41,7 @@ func GetCmdAddCredential(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			didAddr := args[0]
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(args[1])
+			sovrinDid, err := exported.UnmarshalDxpDid(args[1])
 			if err != nil {
 				return err
 			}
@@ -52,7 +52,7 @@ func GetCmdAddCredential(cdc *codec.Codec) *cobra.Command {
 			credTypes := []string{"Credential", "ProofOfKYC"}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(sovrinDid.Address())
 
 			msg := types.NewMsgAddCredential(didAddr, credTypes, sovrinDid.Did, issued)
 			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)

@@ -2,7 +2,7 @@ package types
 
 import (
 	"fmt"
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
 )
 
@@ -10,13 +10,13 @@ import (
 
 type (
 	Oracle struct {
-		OracleDid    types.Did       `json:"oracle_did" yaml:"oracle_did"`
+		OracleDid    exported.Did       `json:"oracle_did" yaml:"oracle_did"`
 		Capabilities OracleTokenCaps `json:"capabilities" yaml:"capabilities"`
 	}
 	Oracles []Oracle
 )
 
-func NewOracle(oracleDid types.Did, caps OracleTokenCaps) Oracle {
+func NewOracle(oracleDid exported.Did, caps OracleTokenCaps) Oracle {
 	return Oracle{
 		OracleDid:    oracleDid,
 		Capabilities: caps,

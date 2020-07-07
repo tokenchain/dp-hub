@@ -3,6 +3,7 @@ package rest
 import (
 	"fmt"
 	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -27,7 +28,7 @@ func queryAddressFromDidRequestHandler(cliCtx context.CLIContext) http.HandlerFu
 		w.Header().Set("Content-Type", "application/json")
 		vars := mux.Vars(r)
 
-		if !types2.IsValidDid(vars["did"]) {
+		if !exported.IsValidDid(vars["did"]) {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte("input is not a valid did"))
 			return
@@ -45,7 +46,7 @@ func queryDidDocRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		vars := mux.Vars(r)
 		didAddr := vars["did"]
-		key := types2.Did(didAddr)
+		key := exported.Did(didAddr)
 		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
 			keeper.QueryDidDoc, key), nil)
 		if err != nil {
@@ -83,7 +84,7 @@ func queryAllDidsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		var dids []types2.Did
+		var dids []exported.Did
 		cliCtx.Codec.MustUnmarshalJSON(res, &dids)
 
 		rest.PostProcessResponse(w, cliCtx.Codec, dids, true)

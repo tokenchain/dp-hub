@@ -7,6 +7,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/client"
+	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
 	"strings"
 )
@@ -206,7 +207,7 @@ func queryBuyPrice(ctx sdk.Context, path []string, keeper Keeper) (res []byte, e
 	// Max supply cannot be less than supply (max supply >= supply)
 	adjustedSupply := keeper.GetSupplyAdjustedForBuy(ctx, bondDid)
 	if bond.MaxSupply.IsLT(adjustedSupply.Add(bondCoin)) {
-		return nil, x.ErrCannotMintMoreThanMaxSupply()
+		return nil, errors.CannotMintMoreThanMaxSupply()
 	}
 
 	reserveBalances := keeper.GetReserveBalances(ctx, bondDid)
@@ -247,13 +248,13 @@ func querySellReturn(ctx sdk.Context, path []string, keeper Keeper) (res []byte,
 	}
 
 	if strings.ToLower(bond.AllowSells) == types.FALSE {
-		return nil, types.ErrBondDoesNotAllowSelling()
+		return nil, errors.ErrBondDoesNotAllowSelling()
 	}
 
 	// Cannot burn more tokens than what exists
 	adjustedSupply := keeper.GetSupplyAdjustedForSell(ctx, bondDid)
 	if adjustedSupply.IsLT(bondCoin) {
-		return nil, x.ErrCannotBurnMoreThanSupply()
+		return nil, errors.CannotBurnMoreThanSupply()
 	}
 
 	reserveBalances := keeper.GetReserveBalances(ctx, bondDid)
@@ -293,7 +294,7 @@ func querySwapReturn(ctx sdk.Context, path []string, keeper Keeper) (res []byte,
 
 	bond, found := keeper.GetBond(ctx, bondDid)
 	if !found {
-		return nil, types.ErrBondDoesNotExist(bondDid)
+		return nil, errors.ErrBondDoesNotExist(bondDid)
 	}
 
 	reserveBalances := keeper.GetReserveBalances(ctx, bondDid)

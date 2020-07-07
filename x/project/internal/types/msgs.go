@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -37,11 +38,11 @@ var (
 )
 
 type MsgCreateProject struct {
-	TxHash     string     `json:"txHash" yaml:"txHash"`
-	SenderDid  types.Did  `json:"senderDid" yaml:"senderDid"`
-	ProjectDid types.Did  `json:"projectDid" yaml:"projectDid"`
-	PubKey     string     `json:"pubKey" yaml:"pubKey"`
-	Data       ProjectDoc `json:"data" yaml:"data"`
+	TxHash     string       `json:"txHash" yaml:"txHash"`
+	SenderDid  exported.Did `json:"senderDid" yaml:"senderDid"`
+	ProjectDid exported.Did `json:"projectDid" yaml:"projectDid"`
+	PubKey     string       `json:"pubKey" yaml:"pubKey"`
+	Data       ProjectDoc   `json:"data" yaml:"data"`
 }
 
 func (msg MsgCreateProject) ToStdSignMsg(fee int64) auth.StdSignMsg {
@@ -80,28 +81,20 @@ func (msg MsgCreateProject) ValidateBasic() error {
 	}
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.ProjectDid) {
+	if !exported.IsValidDid(msg.ProjectDid) {
 		return x.ErrInvalidDid("project did is invalid")
-	} else if !types.IsValidDid(msg.SenderDid) {
+	} else if !exported.IsValidDid(msg.SenderDid) {
 		return x.ErrInvalidDid("sender did is invalid")
 	}
 
 	return nil
 }
 
-func (msg MsgCreateProject) GetProjectDid() types.Did { return msg.ProjectDid }
-func (msg MsgCreateProject) GetSenderDid() types.Did  { return msg.SenderDid }
-func (msg MsgCreateProject) GetSignerDid() types.Did  { return msg.ProjectDid }
+func (msg MsgCreateProject) GetProjectDid() exported.Did { return msg.ProjectDid }
+func (msg MsgCreateProject) GetSenderDid() exported.Did  { return msg.SenderDid }
+func (msg MsgCreateProject) GetSignerDid() exported.Did  { return msg.ProjectDid }
 func (msg MsgCreateProject) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
-}
-
-func (msg MsgCreateProject) String() string {
-	b, err := json.Marshal(msg)
-	if err != nil {
-		panic(err)
-	}
-	return string(b)
 }
 
 func (msg MsgCreateProject) GetPubKey() string        { return msg.PubKey }
@@ -119,10 +112,18 @@ func (msg MsgCreateProject) GetSignBytes() []byte {
 	}
 }
 
+func (msg MsgCreateProject) String() string {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+	return string(b)
+}
+
 type MsgUpdateProjectStatus struct {
 	TxHash     string                 `json:"txHash" yaml:"txHash"`
-	SenderDid  types.Did              `json:"senderDid" yaml:"senderDid"`
-	ProjectDid types.Did              `json:"projectDid" yaml:"projectDid"`
+	SenderDid  exported.Did           `json:"senderDid" yaml:"senderDid"`
+	ProjectDid exported.Did           `json:"projectDid" yaml:"projectDid"`
 	Data       UpdateProjectStatusDoc `json:"data" yaml:"data"`
 }
 
@@ -140,9 +141,9 @@ func (msg MsgUpdateProjectStatus) ValidateBasic() error {
 	// TODO: perform some checks on the Data (of type UpdateProjectStatusDoc)
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.ProjectDid) {
+	if !exported.IsValidDid(msg.ProjectDid) {
 		return x.ErrInvalidDid("project did is invalid")
-	} else if !types.IsValidDid(msg.SenderDid) {
+	} else if !exported.IsValidDid(msg.SenderDid) {
 		return x.ErrInvalidDid("sender did is invalid")
 	}
 
@@ -159,15 +160,16 @@ func (msg MsgUpdateProjectStatus) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgUpdateProjectStatus) GetSignerDid() types.Did { return msg.ProjectDid }
+func (msg MsgUpdateProjectStatus) GetSignerDid() exported.Did { return msg.ProjectDid }
 func (msg MsgUpdateProjectStatus) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	//	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	panic("tried to use unimplemented GetSigners function")
 }
 
 type MsgCreateAgent struct {
 	TxHash     string         `json:"txHash" yaml:"txHash"`
-	SenderDid  types.Did      `json:"senderDid" yaml:"senderDid"`
-	ProjectDid types.Did      `json:"projectDid" yaml:"projectDid"`
+	SenderDid  exported.Did   `json:"senderDid" yaml:"senderDid"`
+	ProjectDid exported.Did   `json:"projectDid" yaml:"projectDid"`
 	Data       CreateAgentDoc `json:"data" yaml:"data"`
 }
 
@@ -184,18 +186,18 @@ func (msg MsgCreateAgent) ValidateBasic() error {
 	// TODO: perform some checks on the Data (of type CreateAgentDoc)
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.ProjectDid) {
+	if !exported.IsValidDid(msg.ProjectDid) {
 		return x.ErrInvalidDid("project did is invalid")
-	} else if !types.IsValidDid(msg.SenderDid) {
+	} else if !exported.IsValidDid(msg.SenderDid) {
 		return x.ErrInvalidDid("sender did is invalid")
-	} else if !types.IsValidDid(msg.Data.AgentDid) {
+	} else if !exported.IsValidDid(msg.Data.AgentDid) {
 		return x.ErrInvalidDid("agent did is invalid")
 	}
 
 	return nil
 }
 
-func (msg MsgCreateAgent) GetSignerDid() types.Did { return msg.ProjectDid }
+func (msg MsgCreateAgent) GetSignerDid() exported.Did { return msg.ProjectDid }
 func (msg MsgCreateAgent) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
@@ -218,8 +220,8 @@ func (msg MsgCreateAgent) String() string {
 
 type MsgUpdateAgent struct {
 	TxHash     string         `json:"txHash" yaml:"txHash"`
-	SenderDid  types.Did      `json:"senderDid" yaml:"senderDid"`
-	ProjectDid types.Did      `json:"projectDid" yaml:"projectDid"`
+	SenderDid  exported.Did   `json:"senderDid" yaml:"senderDid"`
+	ProjectDid exported.Did   `json:"projectDid" yaml:"projectDid"`
 	Data       UpdateAgentDoc `json:"data" yaml:"data"`
 }
 
@@ -236,18 +238,18 @@ func (msg MsgUpdateAgent) ValidateBasic() error {
 	// TODO: perform some checks on the Data (of type UpdateAgentDoc)
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.ProjectDid) {
+	if !exported.IsValidDid(msg.ProjectDid) {
 		return x.ErrInvalidDid("project did is invalid")
-	} else if !types.IsValidDid(msg.SenderDid) {
+	} else if !exported.IsValidDid(msg.SenderDid) {
 		return x.ErrInvalidDid("sender did is invalid")
-	} else if !types.IsValidDid(msg.Data.Did) {
+	} else if !exported.IsValidDid(msg.Data.Did) {
 		return x.ErrInvalidDid("agent did is invalid")
 	}
 
 	return nil
 }
 
-func (msg MsgUpdateAgent) GetSignerDid() types.Did { return msg.ProjectDid }
+func (msg MsgUpdateAgent) GetSignerDid() exported.Did { return msg.ProjectDid }
 func (msg MsgUpdateAgent) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
@@ -271,8 +273,8 @@ func (msg MsgUpdateAgent) String() string {
 
 type MsgCreateClaim struct {
 	TxHash     string         `json:"txHash" yaml:"txHash"`
-	SenderDid  types.Did      `json:"senderDid" yaml:"senderDid"`
-	ProjectDid types.Did      `json:"projectDid" yaml:"projectDid"`
+	SenderDid  exported.Did   `json:"senderDid" yaml:"senderDid"`
+	ProjectDid exported.Did   `json:"projectDid" yaml:"projectDid"`
 	Data       CreateClaimDoc `json:"data" yaml:"data"`
 }
 
@@ -290,18 +292,19 @@ func (msg MsgCreateClaim) ValidateBasic() error {
 	// TODO: perform some checks on the Data (of type CreateClaimDoc)
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.ProjectDid) {
+	if !exported.IsValidDid(msg.ProjectDid) {
 		return x.ErrInvalidDid("project did is invalid")
-	} else if !types.IsValidDid(msg.SenderDid) {
+	} else if !exported.IsValidDid(msg.SenderDid) {
 		return x.ErrInvalidDid("sender did is invalid")
 	}
 
 	return nil
 }
 
-func (msg MsgCreateClaim) GetSignerDid() types.Did { return msg.ProjectDid }
+func (msg MsgCreateClaim) GetSignerDid() exported.Did { return msg.ProjectDid }
 func (msg MsgCreateClaim) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	//return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	panic("tried to use unimplemented GetSigners function")
 }
 
 func (msg MsgCreateClaim) GetSignBytes() []byte {
@@ -323,8 +326,8 @@ func (msg MsgCreateClaim) String() string {
 
 type MsgCreateEvaluation struct {
 	TxHash     string              `json:"txHash" yaml:"txHash"`
-	SenderDid  types.Did           `json:"senderDid" yaml:"senderDid"`
-	ProjectDid types.Did           `json:"projectDid" yaml:"projectDid"`
+	SenderDid  exported.Did        `json:"senderDid" yaml:"senderDid"`
+	ProjectDid exported.Did        `json:"projectDid" yaml:"projectDid"`
 	Data       CreateEvaluationDoc `json:"data" yaml:"data"`
 }
 
@@ -342,18 +345,19 @@ func (msg MsgCreateEvaluation) ValidateBasic() error {
 	// TODO: perform some checks on the Data (of type CreateEvaluationDoc)
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.ProjectDid) {
+	if !exported.IsValidDid(msg.ProjectDid) {
 		return x.ErrInvalidDid("project did is invalid")
-	} else if !types.IsValidDid(msg.SenderDid) {
+	} else if !exported.IsValidDid(msg.SenderDid) {
 		return x.ErrInvalidDid("sender did is invalid")
 	}
 
 	return nil
 }
 
-func (msg MsgCreateEvaluation) GetSignerDid() types.Did { return msg.ProjectDid }
+func (msg MsgCreateEvaluation) GetSignerDid() exported.Did { return msg.ProjectDid }
 func (msg MsgCreateEvaluation) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	//	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	panic("tried to use unimplemented GetSigners function")
 }
 
 func (msg MsgCreateEvaluation) GetSignBytes() []byte {
@@ -374,7 +378,7 @@ func (msg MsgCreateEvaluation) String() string {
 }
 
 type MsgWithdrawFunds struct {
-	SenderDid types.Did        `json:"senderDid" yaml:"senderDid"`
+	SenderDid exported.Did     `json:"senderDid" yaml:"senderDid"`
 	Data      WithdrawFundsDoc `json:"data" yaml:"data"`
 }
 
@@ -394,11 +398,11 @@ func (msg MsgWithdrawFunds) ValidateBasic() error {
 	// TODO: perform some checks on the Data (of type WithdrawFundsDoc)
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.SenderDid) {
+	if !exported.IsValidDid(msg.SenderDid) {
 		return x.ErrInvalidDid("sender did is invalid")
-	} else if !types.IsValidDid(msg.Data.ProjectDid) {
+	} else if !exported.IsValidDid(msg.Data.ProjectDid) {
 		return x.ErrInvalidDid("project did is invalid")
-	} else if !types.IsValidDid(msg.Data.RecipientDid) {
+	} else if !exported.IsValidDid(msg.Data.RecipientDid) {
 		return x.ErrInvalidDid("recipient did is invalid")
 	}
 
@@ -415,9 +419,10 @@ func (msg MsgWithdrawFunds) ValidateBasic() error {
 	return nil
 }
 
-func (msg MsgWithdrawFunds) GetSignerDid() types.Did { return msg.Data.RecipientDid }
+func (msg MsgWithdrawFunds) GetSignerDid() exported.Did { return msg.Data.RecipientDid }
 func (msg MsgWithdrawFunds) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+//	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	panic("tried to use unimplemented GetSigners function")
 }
 
 func (msg MsgWithdrawFunds) GetSignBytes() []byte {

@@ -3,9 +3,9 @@ package bonds
 import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/errors"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
 	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
@@ -63,15 +63,15 @@ func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) []abci.ValidatorUpdate {
 
 func handleMsgCreateBond(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgCreateBond) (*sdk.Result, error) {
 	if keeper.BankKeeper.BlacklistedAddr(msg.FeeAddress) {
-		return nil, x.Unauthorized(fmt.Sprintf("%s is not allowed to receive transactions", msg.FeeAddress))
+		return nil, errors.Unauthorizedf("%s is not allowed to receive transactions", msg.FeeAddress)
 	}
 
 	if keeper.BondExists(ctx, msg.BondDid) {
-		return nil, types.ErrBondAlreadyExists(msg.BondDid)
+		return nil, errors.ErrBondAlreadyExists(msg.BondDid)
 	} else if keeper.BondDidExists(ctx, msg.Token) {
-		return nil, types.ErrBondTokenIsTaken(msg.Token)
+		return nil, errors.ErrBondTokenIsTaken(msg.Token)
 	} else if msg.Token == keeper.StakingKeeper.GetParams(ctx).BondDenom {
-		return nil, x.ErrBondTokenCannotBeStakingToken()
+		return nil, errors.BondTokenCannotBeStakingToken()
 	}
 
 	reserveAddress := keeper.GetNextUnusedReserveAddress(ctx)
@@ -85,7 +85,7 @@ func handleMsgCreateBond(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgCre
 	// (ii) use a global res. address and store (in the bond) the share of the pool.
 
 	bond := types.NewBond(msg.Token, msg.Name, msg.Description, msg.CreatorDid,
-		msg.CreatorPubKey, msg.FunctionType, msg.FunctionParameters,
+		msg.FunctionType, msg.FunctionParameters,
 		msg.ReserveTokens, reserveAddress, msg.TxFeePercentage, msg.ExitFeePercentage,
 		msg.FeeAddress, msg.MaxSupply, msg.OrderQuantityLimits, msg.SanityRate,
 		msg.SanityMarginPercentage, msg.AllowSells, msg.BatchBlocks, msg.BondDid)
@@ -133,12 +133,11 @@ func handleMsgEditBond(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgEditB
 
 	bond, found := keeper.GetBond(ctx, msg.BondDid)
 	if !found {
-		return nil, types.ErrBondDoesNotExist(msg.BondDid)
+		return nil, errors.ErrBondDoesNotExist(msg.BondDid)
 	}
 
 	if bond.CreatorDid != msg.EditorDid {
-		errMsg := fmt.Sprintf("Editor must be the creator of the bond")
-		return nil, x.IntErr(errMsg)
+		return nil, errors.InternalErr("Editor must be the creator of the bond")
 	}
 
 	if msg.Name != types.DoNotModifyField {
@@ -151,7 +150,7 @@ func handleMsgEditBond(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgEditB
 	if msg.OrderQuantityLimits != types.DoNotModifyField {
 		orderQuantityLimits, err := sdk.ParseCoins(msg.OrderQuantityLimits)
 		if err != nil {
-			return nil, x.IntErr(err.Error())
+			return nil, errors.InternalErr(err.Error())
 		}
 		bond.OrderQuantityLimits = orderQuantityLimits
 	}
@@ -164,15 +163,15 @@ func handleMsgEditBond(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgEditB
 		} else {
 			parsedSanityRate, err := sdk.NewDecFromStr(msg.SanityRate)
 			if err != nil {
-				return nil, x.ErrArgumentMissingOrNonFloat("sanity rate")
+				return nil, errors.ArgumentMissingOrNonFloat("sanity rate")
 			} else if parsedSanityRate.IsNegative() {
-				return nil, x.ErrArgumentCannotBeNegative("sanity rate")
+				return nil, errors.ArgumentCannotBeNegative("sanity rate")
 			}
 			parsedSanityMarginPercentage, err := sdk.NewDecFromStr(msg.SanityMarginPercentage)
 			if err != nil {
-				return nil, x.ErrArgumentMissingOrNonFloat("sanity margin percentage")
+				return nil, errors.ArgumentMissingOrNonFloat("sanity margin percentage")
 			} else if parsedSanityMarginPercentage.IsNegative() {
-				return nil, x.ErrArgumentCannotBeNegative("sanity margin percentage")
+				return nil, errors.ArgumentCannotBeNegative("sanity margin percentage")
 			}
 			sanityRate = parsedSanityRate
 			sanityMarginPercentage = parsedSanityMarginPercentage
@@ -213,22 +212,22 @@ func handleMsgBuy(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgBuy) (*sdk
 
 	bond, found := keeper.GetBond(ctx, msg.BondDid)
 	if !found {
-		return nil, types.ErrBondDoesNotExist(msg.BondDid)
+		return nil, errors.ErrBondDoesNotExist(msg.BondDid)
 	}
 
 	// Check that bond token used belongs to this bond
 	if msg.Amount.Denom != bond.Token {
-		return nil, x.ErrBondTokenDoesNotMatchBond()
+		return nil, errors.BondTokenDoesNotMatchBond()
 	}
 
 	// Check max prices
 	if !bond.ReserveDenomsEqualTo(msg.MaxPrices) {
-		return nil, x.ErrReserveDenomsMismatch(msg.MaxPrices.String(), bond.ReserveTokens)
+		return nil, errors.ReserveDenomsMismatch(msg.MaxPrices.String(), bond.ReserveTokens)
 	}
 
 	// Check if order quantity limit exceeded
 	if bond.AnyOrderQuantityLimitsExceeded(sdk.Coins{msg.Amount}) {
-		return nil, errors.Wrap(x.ErrOrderQuantityLimitExceeded, "order quantity limit exceeded")
+		return nil, errors.OrderQuantityLimitExceeded()
 	}
 
 	// For the swapper, the first buy is the initialisation of the reserves
@@ -284,17 +283,17 @@ func performFirstSwapperFunctionBuy(ctx sdk.Context, keeper keeper.Keeper, msg t
 
 	bond, found := keeper.GetBond(ctx, msg.BondDid)
 	if !found {
-		return nil, types.ErrBondDoesNotExist(msg.BondDid)
+		return nil, errors.ErrBondDoesNotExist(msg.BondDid)
 	}
 
 	// Check that bond token used belongs to this bond
 	if msg.Amount.Denom != bond.Token {
-		return nil, x.ErrBondTokenDoesNotMatchBond()
+		return nil, errors.BondTokenDoesNotMatchBond()
 	}
 
 	// Check if initial liquidity violates sanity rate
 	if bond.ReservesViolateSanityRate(msg.MaxPrices) {
-		return nil, errors.Wrap(x.ErrValuesViolateSanityRate, "liquidity violates sanity rate")
+		return nil, errors.ValuesViolateSanityRate()
 	}
 
 	// Use max prices as the amount to send to the liquidity pool (i.e. price)
@@ -341,21 +340,21 @@ func handleMsgSell(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgSell) (*s
 
 	bond, found := keeper.GetBond(ctx, msg.BondDid)
 	if !found {
-		return nil, types.ErrBondDoesNotExist(msg.BondDid)
+		return nil, errors.ErrBondDoesNotExist(msg.BondDid)
 	}
 
 	if strings.ToLower(bond.AllowSells) == types.FALSE {
-		return nil, types.ErrBondDoesNotAllowSelling()
+		return nil, errors.ErrBondDoesNotAllowSelling()
 	}
 
 	// Check that bond token used belongs to this bond
 	if msg.Amount.Denom != bond.Token {
-		return nil, x.ErrBondTokenDoesNotMatchBond()
+		return nil, errors.BondTokenDoesNotMatchBond()
 	}
 
 	// Check if order quantity limit exceeded
 	if bond.AnyOrderQuantityLimitsExceeded(sdk.Coins{msg.Amount}) {
-		return nil, errors.Wrap(x.ErrOrderQuantityLimitExceeded, "order quantity limit exceeded")
+		return nil, errors.OrderQuantityLimitExceeded()
 	}
 
 	// Send coins to be burned from seller (enforces sellAmount <= balance)
@@ -408,19 +407,19 @@ func handleMsgSwap(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgSwap) (*s
 
 	bond, found := keeper.GetBond(ctx, msg.BondDid)
 	if !found {
-		return nil, types.ErrBondDoesNotExist(msg.BondDid)
+		return nil, errors.ErrBondDoesNotExist(msg.BondDid)
 	}
 
 	// Check that from and to use reserve token names
 	fromAndTo := sdk.NewCoins(msg.From, sdk.NewCoin(msg.ToToken, sdk.OneInt()))
 	fromAndToDenoms := msg.From.Denom + "," + msg.ToToken
 	if !bond.ReserveDenomsEqualTo(fromAndTo) {
-		return nil, x.ErrReserveDenomsMismatch(fromAndToDenoms, bond.ReserveTokens)
+		return nil, errors.ReserveDenomsMismatch(fromAndToDenoms, bond.ReserveTokens)
 	}
 
 	// Check if order quantity limit exceeded
 	if bond.AnyOrderQuantityLimitsExceeded(sdk.Coins{msg.From}) {
-		return nil, errors.Wrap(x.ErrOrderQuantityLimitExceeded, "order quantity limit exceeded")
+		return nil, errors.OrderQuantityLimitExceeded()
 	}
 
 	// Take coins to be swapped from swapper (enforces swapAmount <= balance)

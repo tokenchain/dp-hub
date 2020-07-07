@@ -7,7 +7,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/tokenchain/ixo-blockchain/x"
-	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/oracles"
 	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/types"
 )
@@ -18,10 +19,11 @@ type Keeper struct {
 	bankKeeper    bank.Keeper
 	oraclesKeeper oracles.Keeper
 	supplyKeeper  supply.Keeper
+	didKeeper     did.Keeper
 }
 
 func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankKeeper bank.Keeper,
-	oraclesKeeper oracles.Keeper, supplyKeeper supply.Keeper) Keeper {
+	oraclesKeeper oracles.Keeper, supplyKeeper supply.Keeper, didKeeper did.Keeper) Keeper {
 
 	return Keeper{
 		cdc:           cdc,
@@ -29,23 +31,31 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankKeeper bank.Keeper,
 		bankKeeper:    bankKeeper,
 		oraclesKeeper: oraclesKeeper,
 		supplyKeeper:  supplyKeeper,
+		didKeeper:     didKeeper,
 	}
 }
 
-func (k Keeper) Send(ctx sdk.Context, fromDid, toDid types2.Did, amount sdk.Coins) error {
-	fromAddress := types2.DidToAddr(fromDid)
-	toAddress := types2.DidToAddr(toDid)
-
-	err := k.bankKeeper.SendCoins(ctx, fromAddress, toAddress, amount)
+func (k Keeper) Send(ctx sdk.Context, fromDid, toDidOrAddr string, amount sdk.Coins) error {
+	//from address
+	fromDidDoc, err := k.didKeeper.GetDidDoc(ctx, fromDid)
 	if err != nil {
+		return err
+	}
+	fromAddress := fromDidDoc.Address()
+
+	toAddress, err := k.stringToAddr(ctx, toDidOrAddr)
+	if err != nil {
+		return err
+	}
+
+	if err := k.bankKeeper.SendCoins(ctx, fromAddress, toAddress, amount); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (k Keeper) OracleTransfer(ctx sdk.Context, fromDid, toDid, oracleDid types2.Did, amount sdk.Coins) error {
-
+func (k Keeper) OracleTransfer(ctx sdk.Context, fromDid exported.Did, toDidOrAddr string, oracleDid exported.Did, amount sdk.Coins) error {
 	// Check if oracle exists
 	if !k.oraclesKeeper.OracleExists(ctx, oracleDid) {
 		return x.IntErr("oracle specified is not a registered oracle")
@@ -68,11 +78,14 @@ func (k Keeper) OracleTransfer(ctx sdk.Context, fromDid, toDid, oracleDid types2
 	}
 
 	// Perform send
-	return k.Send(ctx, fromDid, toDid, amount)
+	return k.Send(ctx, fromDid, toDidOrAddr, amount)
 }
+func (k Keeper) OracleMint(ctx sdk.Context, oracleDid exported.Did, toDidOrAddr string, amount sdk.Coins) error {
 
-func (k Keeper) OracleMint(ctx sdk.Context, oracleDid, toDid types2.Did, amount sdk.Coins) error {
-	toAddress := types2.DidToAddr(toDid)
+	toAddress, err := k.stringToAddr(ctx, toDidOrAddr)
+	if err != nil {
+		return err
+	}
 
 	// Check if oracle exists
 	if !k.oraclesKeeper.OracleExists(ctx, oracleDid) {
@@ -96,23 +109,25 @@ func (k Keeper) OracleMint(ctx sdk.Context, oracleDid, toDid types2.Did, amount 
 	}
 
 	// Mint coins to module account
-	err := k.supplyKeeper.MintCoins(ctx, types.ModuleName, amount)
-	if err != nil {
+	if err := k.supplyKeeper.MintCoins(ctx, types.ModuleName, amount); err != nil {
 		return err
 	}
 
 	// Send minted tokens to recipient
-	err = k.supplyKeeper.SendCoinsFromModuleToAccount(ctx,
-		types.ModuleName, toAddress, amount)
-	if err != nil {
+	if err = k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, toAddress, amount); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (k Keeper) OracleBurn(ctx sdk.Context, oracleDid, fromDid types2.Did, amount sdk.Coins) error {
-	fromAddress := types2.DidToAddr(fromDid)
+func (k Keeper) OracleBurn(ctx sdk.Context, oracleDid, fromDid exported.Did, amount sdk.Coins) error {
+	// Get from address
+	fromDidDoc, err := k.didKeeper.GetDidDoc(ctx, fromDid)
+	if err != nil {
+		return err
+	}
+	fromAddress := fromDidDoc.Address()
 
 	// Check if oracle exists
 	if !k.oraclesKeeper.OracleExists(ctx, oracleDid) {
@@ -136,17 +151,34 @@ func (k Keeper) OracleBurn(ctx sdk.Context, oracleDid, fromDid types2.Did, amoun
 	}
 
 	// Take tokens to burn from account
-	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx,
-		fromAddress, types.ModuleName, amount)
-	if err != nil {
+	if err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx,
+		fromAddress, types.ModuleName, amount); err != nil {
 		return err
 	}
 
 	// Burn coins from module account
-	err = k.supplyKeeper.BurnCoins(ctx, types.ModuleName, amount)
-	if err != nil {
+	if err = k.supplyKeeper.BurnCoins(ctx, types.ModuleName, amount); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (k Keeper) stringToAddr(ctx sdk.Context, longaddress string) (sdk.AccAddress, error) {
+	// Get to address
+	var toAddress sdk.AccAddress
+	if exported.IsValidDid(longaddress) {
+		toDidDoc, err := k.didKeeper.GetDidDoc(ctx, longaddress)
+		if err != nil {
+			return nil, err
+		}
+		toAddress = toDidDoc.Address()
+	} else {
+		parsedAddr, err := sdk.AccAddressFromBech32(longaddress)
+		if err != nil {
+			return nil, x.IntErr(err.Error())
+		}
+		toAddress = parsedAddr
+	}
+	return toAddress, nil
 }

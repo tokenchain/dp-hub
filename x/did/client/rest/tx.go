@@ -3,16 +3,16 @@ package rest
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/types/rest"
-	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"net/http"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/gorilla/mux"
 
+	"github.com/tokenchain/ixo-blockchain/x/dap"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/dap"
 )
 
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
@@ -20,6 +20,14 @@ func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc("/credential", addCredentialRequestHandler(cliCtx)).Methods("POST")
 }
 
+func writeHeadf(w http.ResponseWriter, code int, format string, i ...interface{}) {
+	w.WriteHeader(code)
+	_, _ = w.Write([]byte(fmt.Sprintf(format, i...)))
+}
+func writeHead(w http.ResponseWriter, code int, txt string) {
+	w.WriteHeader(code)
+	_, _ = w.Write([]byte(txt))
+}
 func createDidRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -28,10 +36,9 @@ func createDidRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		mode := r.URL.Query().Get("mode")
 		cliCtx = cliCtx.WithBroadcastMode(mode)
 
-		sovrinDid, err := types2.UnmarshalSovrinDid(didDocParam)
+		sovrinDid, err := exported.UnmarshalDxpDid(didDocParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
@@ -39,8 +46,7 @@ func createDidRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -60,15 +66,13 @@ func addCredentialRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		_, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
 			keeper.QueryDidDoc, did), nil)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte("The did is not found"))
+			writeHead(w, http.StatusBadRequest, "The did is not found")
 			return
 		}
 
-		sovrinDid, err := types2.UnmarshalSovrinDid(didDocParam)
+		sovrinDid, err := exported.UnmarshalDxpDid(didDocParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
@@ -81,8 +85,7 @@ func addCredentialRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 

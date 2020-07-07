@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/cli"
-	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/oracles/internal/types"
 )
 
@@ -26,7 +26,7 @@ func AddGenesisOracleCmd(ctx *server.Context, cdc *codec.Codec,
 			config := ctx.Config
 			config.SetRoot(viper.GetString(cli.HomeFlag))
 
-			oracleDid := types2.Did(args[0])
+			oracleDid := exported.Did(args[0])
 			if len(oracleDid) == 0 {
 				return fmt.Errorf("oracle did cannot be empty")
 			}
@@ -38,7 +38,7 @@ func AddGenesisOracleCmd(ctx *server.Context, cdc *codec.Codec,
 			}
 
 			// Check that oracle DID is valid
-			if !types2.IsValidDid(oracleDid) {
+			if !exported.IsValidDid(oracleDid) {
 				return fmt.Errorf("oracle did is invalid")
 			}
 

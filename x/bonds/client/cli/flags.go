@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
 	flag "github.com/spf13/pflag"
+	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
 )
 
 const (

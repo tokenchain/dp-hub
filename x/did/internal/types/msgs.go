@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -35,7 +36,7 @@ func (msg *MsgAddDid) UnmarshalJSON(bytes []byte) error {
 	}
 
 	if msg2.DidDoc.Credentials == nil {
-		msg2.DidDoc.Credentials = []DidCredential{}
+		msg2.DidDoc.Credentials = []exported.DidCredential{}
 	}
 
 	*msg = msg2
@@ -50,7 +51,7 @@ func NewMsgAddDid(did string, publicKey string) MsgAddDid {
 
 func (msg MsgAddDid) Type() string            { return TypeMsgAddDid }
 func (msg MsgAddDid) Route() string           { return RouterKey }
-func (msg MsgAddDid) GetSignerDid() types.Did { return msg.DidDoc.Did }
+func (msg MsgAddDid) GetSignerDid() exported.Did { return msg.DidDoc.Did }
 func (msg MsgAddDid) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
@@ -72,7 +73,7 @@ func (msg MsgAddDid) ValidateBasic() error {
 	}
 
 	// Check that DID valid
-	if !types.IsValidDid(msg.DidDoc.Did) {
+	if !exported.IsValidDid(msg.DidDoc.Did) {
 		return er.Wrap(x.ErrorInvalidDidE, "did is invalid")
 	}
 
@@ -92,15 +93,15 @@ func (msg MsgAddDid) String() string {
 }
 
 type MsgAddCredential struct {
-	DidCredential DidCredential `json:"credential" yaml:"credential"`
+	DidCredential exported.DidCredential `json:"credential" yaml:"credential"`
 }
 
 func NewMsgAddCredential(did string, credType []string, issuer string, issued string) MsgAddCredential {
-	didCredential := DidCredential{
+	didCredential := exported.DidCredential{
 		CredType: credType,
 		Issuer:   issuer,
 		Issued:   issued,
-		Claim: Claim{
+		Claim: exported.Claim{
 			Id:           did,
 			KYCValidated: true,
 		},
@@ -112,7 +113,7 @@ func NewMsgAddCredential(did string, credType []string, issuer string, issued st
 }
 func (msg MsgAddCredential) Type() string            { return TypeMsgAddCredential }
 func (msg MsgAddCredential) Route() string           { return RouterKey }
-func (msg MsgAddCredential) GetSignerDid() types.Did { return msg.DidCredential.Issuer }
+func (msg MsgAddCredential) GetSignerDid() exported.Did { return msg.DidCredential.Issuer }
 func (msg MsgAddCredential) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
@@ -128,7 +129,7 @@ func (msg MsgAddCredential) ValidateBasic() error {
 		return er.Wrap(x.ErrorInvalidIssuer, "issuer should not be empty")
 	}
 	// Check that DID valid
-	if !types.IsValidDid(msg.DidCredential.Issuer) {
+	if !exported.IsValidDid(msg.DidCredential.Issuer) {
 		return er.Wrap(x.ErrorInvalidDidE, "issuer id is invalid")
 	}
 	return nil

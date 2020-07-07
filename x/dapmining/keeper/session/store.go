@@ -2,10 +2,7 @@ package session
 
 import (
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/mintkey"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/gorilla/sessions"
 	"github.com/tendermint/dex-demo/embedded/session"
 
@@ -61,19 +58,19 @@ func GetKB(id string) *keys.Info {
 
 	return kb
 }
-
+/*
 func NewHotKeybase(name string, passphrase string, pk crypto.PrivKey) *Keybase {
 	armor := mintkey.EncryptArmorPrivKey(pk, passphrase, name)
 	addr := sdk.AccAddress(pk.PubKey().Address())
 
 	return accounts.Account{}
-}
+}*/
 
 func ReplaceKB(name string, passphrase string, pk crypto.PrivKey) string {
 	mtx.Lock()
 	defer mtx.Unlock()
 	currID = ReadStr32()
-	kb = NewHotKeybase(name, passphrase, pk)
+	//kb = NewHotKeybase(name, passphrase, pk)
 
 	return currID
 }

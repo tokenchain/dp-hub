@@ -3,9 +3,11 @@ package types
 import (
 	"encoding/json"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/pkg/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
 	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
 )
 
@@ -22,14 +24,13 @@ const (
 
 type (
 	MsgCreateBond struct {
-		BondDid                types.Did      `json:"bond_did" yaml:"bond_did"`
+		BondDid                exported.Did   `json:"bond_did" yaml:"bond_did"`
 		Token                  string         `json:"token" yaml:"token"`
 		Name                   string         `json:"name" yaml:"name"`
 		Description            string         `json:"description" yaml:"description"`
 		FunctionType           string         `json:"function_type" yaml:"function_type"`
 		FunctionParameters     FunctionParams `json:"function_parameters" yaml:"function_parameters"`
-		CreatorDid             types.Did      `json:"creator_did" yaml:"creator_did"`
-		CreatorPubKey          string         `json:"pub_key" yaml:"pub_key"`
+		CreatorDid             exported.Did   `json:"creator_did" yaml:"creator_did"`
 		ReserveTokens          []string       `json:"reserve_tokens" yaml:"reserve_tokens"`
 		TxFeePercentage        sdk.Dec        `json:"tx_fee_percentage" yaml:"tx_fee_percentage"`
 		ExitFeePercentage      sdk.Dec        `json:"exit_fee_percentage" yaml:"exit_fee_percentage"`
@@ -41,47 +42,44 @@ type (
 		AllowSells             string         `json:"allow_sells" yaml:"allow_sells"`
 		BatchBlocks            sdk.Uint       `json:"batch_blocks" yaml:"batch_blocks"`
 	}
+
 	MsgEditBond struct {
-		BondDid                types.Did `json:"bond_did" yaml:"bond_did"`
-		Token                  string    `json:"token" yaml:"token"`
-		Name                   string    `json:"name" yaml:"name"`
-		Description            string    `json:"description" yaml:"description"`
-		OrderQuantityLimits    string    `json:"order_quantity_limits" yaml:"order_quantity_limits"`
-		SanityRate             string    `json:"sanity_rate" yaml:"sanity_rate"`
-		SanityMarginPercentage string    `json:"sanity_margin_percentage" yaml:"sanity_margin_percentage"`
-		EditorDid              types.Did `json:"editor_did" yaml:"editor_did"`
-		EditorPubKey           string    `json:"pub_key" yaml:"pub_key"`
+		BondDid                exported.Did `json:"bond_did" yaml:"bond_did"`
+		Token                  string       `json:"token" yaml:"token"`
+		Name                   string       `json:"name" yaml:"name"`
+		Description            string       `json:"description" yaml:"description"`
+		OrderQuantityLimits    string       `json:"order_quantity_limits" yaml:"order_quantity_limits"`
+		SanityRate             string       `json:"sanity_rate" yaml:"sanity_rate"`
+		SanityMarginPercentage string       `json:"sanity_margin_percentage" yaml:"sanity_margin_percentage"`
+		EditorDid              exported.Did `json:"editor_did" yaml:"editor_did"`
 	}
 	MsgBuy struct {
-		BuyerDid  types.Did `json:"buyer_did" yaml:"buyer_did"`
-		PubKey    string    `json:"pub_key" yaml:"pub_key"`
+		BuyerDid  did.Did   `json:"buyer_did" yaml:"buyer_did"`
 		Amount    sdk.Coin  `json:"amount" yaml:"amount"`
 		MaxPrices sdk.Coins `json:"max_prices" yaml:"max_prices"`
-		BondDid   types.Did `json:"bond_did" yaml:"bond_did"`
+		BondDid   did.Did   `json:"bond_did" yaml:"bond_did"`
 	}
 
 	MsgSwap struct {
-		SwapperDid types.Did `json:"swapper_did" yaml:"swapper_did"`
-		PubKey     string    `json:"pub_key" yaml:"pub_key"`
-		BondDid    types.Did `json:"bond_did" yaml:"bond_did"`
-		From       sdk.Coin  `json:"from" yaml:"from"`
-		ToToken    string    `json:"to_token" yaml:"to_token"`
+		SwapperDid did.Did  `json:"swapper_did" yaml:"swapper_did"`
+		BondDid    did.Did  `json:"bond_did" yaml:"bond_did"`
+		From       sdk.Coin `json:"from" yaml:"from"`
+		ToToken    string   `json:"to_token" yaml:"to_token"`
 	}
 
 	MsgMint struct {
-		ID     types.Did      `json:"minter_did" yaml:"minter_did"`
+		ID     exported.Did   `json:"minter_did" yaml:"minter_did"`
 		Minter sdk.AccAddress `json:"minter_address" yaml:"minter_address"`
 		Amount sdk.Coin       `json:"amount" yaml:"amount"`
 	}
 
 	MsgBurn struct {
-		ID     types.Did      `json:"burner_did" yaml:"burner_did"`
+		ID     exported.Did   `json:"burner_did" yaml:"burner_did"`
 		Burner sdk.AccAddress `json:"burner_address" yaml:"burner_address"`
 		Amount sdk.Coin       `json:"amount" yaml:"amount"`
 	}
-
 	MsgTransfer struct {
-		ID     types.Did      `json:"transfer_did" yaml:"transfer_did"`
+		ID     exported.Did   `json:"transfer_did" yaml:"transfer_did"`
 		From   sdk.AccAddress `json:"from_address" yaml:"from_address"`
 		To     sdk.AccAddress `json:"to_address" yaml:"to_address"`
 		Amount sdk.Coin       `json:"amount" yaml:"amount"`
@@ -99,18 +97,17 @@ var (
 	_ types.IxoMsg = MsgTransfer{}
 )
 
-func NewMsgCreateBond(token, name, description string, creatorDid types.SovrinDid,
+func NewMsgCreateBond(token, name, description string, creatorDid exported.IxoDid,
 	functionType string, functionParameters FunctionParams, reserveTokens []string,
 	txFeePercentage, exitFeePercentage sdk.Dec, feeAddress sdk.AccAddress, maxSupply sdk.Coin,
 	orderQuantityLimits sdk.Coins, sanityRate, sanityMarginPercentage sdk.Dec,
-	allowSell string, batchBlocks sdk.Uint, bondDid types.Did) MsgCreateBond {
+	allowSell string, batchBlocks sdk.Uint, bondDid exported.Did) MsgCreateBond {
 	return MsgCreateBond{
 		BondDid:                bondDid,
 		Token:                  token,
 		Name:                   name,
 		Description:            description,
 		CreatorDid:             creatorDid.Did,
-		CreatorPubKey:          creatorDid.VerifyKey,
 		FunctionType:           functionType,
 		FunctionParameters:     functionParameters,
 		ReserveTokens:          reserveTokens,
@@ -129,32 +126,30 @@ func NewMsgCreateBond(token, name, description string, creatorDid types.SovrinDi
 func (msg MsgCreateBond) ValidateBasic() error {
 	// Check if empty
 	if strings.TrimSpace(msg.BondDid) == "" {
-		return x.ErrArgumentCannotBeEmpty("BondDid")
+		return errors.ArgumentCannotBeEmpty("BondDid")
 	} else if strings.TrimSpace(msg.Token) == "" {
-		return x.ErrArgumentCannotBeEmpty("Token")
+		return errors.ArgumentCannotBeEmpty("Token")
 	} else if strings.TrimSpace(msg.Name) == "" {
-		return x.ErrArgumentCannotBeEmpty("Name")
+		return errors.ArgumentCannotBeEmpty("Name")
 	} else if strings.TrimSpace(msg.Description) == "" {
-		return x.ErrArgumentCannotBeEmpty("Description")
+		return errors.ArgumentCannotBeEmpty("Description")
 	} else if strings.TrimSpace(msg.CreatorDid) == "" {
-		return x.ErrArgumentCannotBeEmpty("CreatorDid")
-	} else if strings.TrimSpace(msg.CreatorPubKey) == "" {
-		return x.ErrArgumentCannotBeEmpty("CreatorPubKey")
+		return errors.ArgumentCannotBeEmpty("CreatorDid")
 	} else if len(msg.ReserveTokens) == 0 {
-		return x.ErrArgumentCannotBeEmpty("Reserve token")
+		return errors.ArgumentCannotBeEmpty("Reserve token")
 	} else if msg.FeeAddress.Empty() {
-		return x.ErrArgumentCannotBeEmpty("Fee address")
+		return errors.ArgumentCannotBeEmpty("Fee address")
 	} else if strings.TrimSpace(msg.FunctionType) == "" {
-		return x.ErrArgumentCannotBeEmpty("Function type")
+		return errors.ArgumentCannotBeEmpty("Function type")
 	} else if strings.TrimSpace(msg.AllowSells) == "" {
-		return x.ErrArgumentCannotBeEmpty("AllowSells")
+		return errors.ArgumentCannotBeEmpty("AllowSells")
 	}
 	// Note: FunctionParameters can be empty
 
 	// Check that bond token is a valid token name
 	err := CheckCoinDenom(msg.Token)
 	if err != nil {
-		return x.ErrInvalidCoinDenomination(msg.Token)
+		return errors.InvalidCoinDenomination(msg.Token)
 	}
 
 	// Validate function parameters
@@ -171,50 +166,50 @@ func (msg MsgCreateBond) ValidateBasic() error {
 
 	// Validate coins
 	if !msg.MaxSupply.IsValid() {
-		return x.IntErr("max supply is invalid")
+		return errors.InternalErr("max supply is invalid")
 	} else if !msg.OrderQuantityLimits.IsValid() {
-		return x.IntErr("order quantity limits are invalid")
+		return errors.InternalErr("order quantity limits are invalid")
 	}
 
 	// Check that max supply denom matches token denom
 	if msg.MaxSupply.Denom != msg.Token {
-		return x.ErrMaxSupplyDenomDoesNotMatchTokenDenom()
+		return errors.MaxSupplyDenomDoesNotMatchTokenDenom()
 	}
 
 	// Check that Sanity values not negative
 	if msg.SanityRate.IsNegative() {
-		return x.ErrArgumentCannotBeNegative("SanityRate")
+		return errors.ArgumentCannotBeNegative("SanityRate")
 	} else if msg.SanityMarginPercentage.IsNegative() {
-		return x.ErrArgumentCannotBeNegative("SanityMarginPercentage")
+		return errors.ArgumentCannotBeNegative("SanityMarginPercentage")
 	}
 
 	// Check that true or false
 	if msg.AllowSells != TRUE && msg.AllowSells != FALSE {
-		return x.ErrArgumentMissingOrNonBoolean("AllowSells")
+		return errors.ArgumentMissingOrNonBoolean("AllowSells")
 	}
 
 	// Check FeePercentages not negative and don't add up to 100
 	if msg.TxFeePercentage.IsNegative() {
-		return x.ErrArgumentCannotBeNegative("TxFeePercentage")
+		return errors.ArgumentCannotBeNegative("TxFeePercentage")
 	} else if msg.ExitFeePercentage.IsNegative() {
-		return x.ErrArgumentCannotBeNegative("ExitFeePercentage")
+		return errors.ArgumentCannotBeNegative("ExitFeePercentage")
 	} else if msg.TxFeePercentage.Add(msg.ExitFeePercentage).GTE(sdk.NewDec(100)) {
-		return errors.Wrap(x.ErrFeesCannotBeOrExceed100Percent, "Sum of fees is or exceeds 100 percent")
+		return errors.FeesCannotBeOrExceed100Percent()
 	}
 
 	// Check that not zero
 	if msg.BatchBlocks.IsZero() {
-		return x.ErrArgumentMustBePositive("BatchBlocks")
+		return errors.ArgumentMustBePositive("BatchBlocks")
 	} else if msg.MaxSupply.Amount.IsZero() {
-		return x.ErrArgumentMustBePositive("MaxSupply")
+		return errors.ArgumentMustBePositive("MaxSupply")
 	}
 
 	// Note: uniqueness of reserve tokens checked when parsing
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.BondDid) {
+	if !exported.IsValidDid(msg.BondDid) {
 		return x.ErrInvalidDid("bond did is invalid")
-	} else if !types.IsValidDid(msg.CreatorDid) {
+	} else if !exported.IsValidDid(msg.CreatorDid) {
 		return x.ErrInvalidDid("creator did is invalid")
 	}
 
@@ -229,7 +224,7 @@ func (msg MsgCreateBond) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgCreateBond) GetSignerDid() types.Did { return msg.CreatorDid }
+func (msg MsgCreateBond) GetSignerDid() exported.Did { return msg.CreatorDid }
 func (msg MsgCreateBond) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
@@ -239,7 +234,7 @@ func (msg MsgCreateBond) Route() string { return RouterKey }
 func (msg MsgCreateBond) Type() string { return TypeMsgCreateBond }
 
 func NewMsgEditBond(token, name, description, orderQuantityLimits, sanityRate,
-	sanityMarginPercentage string, editorDid types.SovrinDid, bondDid types.Did) MsgEditBond {
+	sanityMarginPercentage string, editorDid exported.IxoDid, bondDid exported.Did) MsgEditBond {
 	return MsgEditBond{
 		BondDid:                bondDid,
 		Token:                  token,
@@ -249,28 +244,25 @@ func NewMsgEditBond(token, name, description, orderQuantityLimits, sanityRate,
 		SanityRate:             sanityRate,
 		SanityMarginPercentage: sanityMarginPercentage,
 		EditorDid:              editorDid.Did,
-		EditorPubKey:           editorDid.VerifyKey,
 	}
 }
 
 func (msg MsgEditBond) ValidateBasic() error {
 	// Check if empty
 	if strings.TrimSpace(msg.BondDid) == "" {
-		return x.ErrArgumentCannotBeEmpty("BondDid")
+		return errors.ArgumentCannotBeEmpty("BondDid")
 	} else if strings.TrimSpace(msg.Token) == "" {
-		return x.ErrArgumentCannotBeEmpty("Token")
+		return errors.ArgumentCannotBeEmpty("Token")
 	} else if strings.TrimSpace(msg.Name) == "" {
-		return x.ErrArgumentCannotBeEmpty("Name")
+		return errors.ArgumentCannotBeEmpty("Name")
 	} else if strings.TrimSpace(msg.Description) == "" {
-		return x.ErrArgumentCannotBeEmpty("Description")
+		return errors.ArgumentCannotBeEmpty("Description")
 	} else if strings.TrimSpace(msg.SanityRate) == "" {
-		return x.ErrArgumentCannotBeEmpty("SanityRate")
+		return errors.ArgumentCannotBeEmpty("SanityRate")
 	} else if strings.TrimSpace(msg.SanityMarginPercentage) == "" {
-		return x.ErrArgumentCannotBeEmpty("SanityMarginPercentage")
+		return errors.ArgumentCannotBeEmpty("SanityMarginPercentage")
 	} else if strings.TrimSpace(msg.EditorDid) == "" {
-		return x.ErrArgumentCannotBeEmpty("EditorDid")
-	} else if strings.TrimSpace(msg.EditorPubKey) == "" {
-		return x.ErrArgumentCannotBeEmpty("EditorPubKey")
+		return errors.ArgumentCannotBeEmpty("EditorDid")
 	}
 	// Note: order quantity limits can be blank
 
@@ -288,13 +280,13 @@ func (msg MsgEditBond) ValidateBasic() error {
 		}
 	}
 	if !atLeaseOneEdit {
-		return ErrDidNotEditAnything()
+		return errors.ErrDidNotEditAnything()
 	}
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.BondDid) {
+	if !exported.IsValidDid(msg.BondDid) {
 		return x.ErrInvalidDid("bond did is invalid")
-	} else if !types.IsValidDid(msg.EditorDid) {
+	} else if !exported.IsValidDid(msg.EditorDid) {
 		return x.ErrInvalidDid("editor did is invalid")
 	}
 
@@ -309,7 +301,7 @@ func (msg MsgEditBond) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgEditBond) GetSignerDid() types.Did { return msg.EditorDid }
+func (msg MsgEditBond) GetSignerDid() exported.Did { return msg.EditorDid }
 func (msg MsgEditBond) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
@@ -318,11 +310,10 @@ func (msg MsgEditBond) Route() string { return RouterKey }
 
 func (msg MsgEditBond) Type() string { return TypeMsgEditBond }
 
-func NewMsgBuy(buyerDid types.SovrinDid, amount sdk.Coin, maxPrices sdk.Coins,
-	bondDid types.Did) MsgBuy {
+func NewMsgBuy(buyerDid exported.Did, amount sdk.Coin, maxPrices sdk.Coins,
+	bondDid exported.Did) MsgBuy {
 	return MsgBuy{
-		BuyerDid:  buyerDid.Did,
-		PubKey:    buyerDid.VerifyKey,
+		BuyerDid:  buyerDid,
 		Amount:    amount,
 		MaxPrices: maxPrices,
 		BondDid:   bondDid,
@@ -332,29 +323,27 @@ func NewMsgBuy(buyerDid types.SovrinDid, amount sdk.Coin, maxPrices sdk.Coins,
 func (msg MsgBuy) ValidateBasic() error {
 	// Check if empty
 	if strings.TrimSpace(msg.BuyerDid) == "" {
-		return x.ErrArgumentCannotBeEmpty("BuyerDid")
-	} else if strings.TrimSpace(msg.PubKey) == "" {
-		return x.ErrArgumentCannotBeEmpty("PubKey")
+		return errors.ArgumentCannotBeEmpty("BuyerDid")
 	} else if strings.TrimSpace(msg.BondDid) == "" {
-		return x.ErrArgumentCannotBeEmpty("BondDid")
+		return errors.ArgumentCannotBeEmpty("BondDid")
 	}
 
 	// Check that amount valid and non zero
 	if !msg.Amount.IsValid() {
-		return x.IntErr("amount is invalid")
+		return errors.InternalErr("amount is invalid")
 	} else if msg.Amount.Amount.IsZero() {
-		return x.ErrArgumentMustBePositive("Amount")
+		return errors.ArgumentMustBePositive("Amount")
 	}
 
 	// Check that maxPrices valid
 	if !msg.MaxPrices.IsValid() {
-		return x.IntErr("maxprices is invalid")
+		return errors.InternalErr("maxprices is invalid")
 	}
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.BondDid) {
+	if !exported.IsValidDid(msg.BondDid) {
 		return x.ErrInvalidDid("bond did is invalid")
-	} else if !types.IsValidDid(msg.BuyerDid) {
+	} else if !exported.IsValidDid(msg.BuyerDid) {
 		return x.ErrInvalidDid("buyer did is invalid")
 	}
 
@@ -369,7 +358,7 @@ func (msg MsgBuy) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgBuy) GetSignerDid() types.Did { return msg.BuyerDid }
+func (msg MsgBuy) GetSignerDid() exported.Did { return msg.BuyerDid }
 func (msg MsgBuy) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
@@ -379,13 +368,13 @@ func (msg MsgBuy) Route() string { return RouterKey }
 func (msg MsgBuy) Type() string { return TypeMsgBuy }
 
 type MsgSell struct {
-	SellerDid types.Did `json:"seller_did" yaml:"seller_did"`
-	PubKey    string    `json:"pub_key" yaml:"pub_key"`
-	Amount    sdk.Coin  `json:"amount" yaml:"amount"`
-	BondDid   types.Did `json:"bond_did" yaml:"bond_did"`
+	SellerDid exported.Did `json:"seller_did" yaml:"seller_did"`
+	PubKey    string       `json:"pub_key" yaml:"pub_key"`
+	Amount    sdk.Coin     `json:"amount" yaml:"amount"`
+	BondDid   exported.Did `json:"bond_did" yaml:"bond_did"`
 }
 
-func NewMsgSell(sellerDid types.SovrinDid, amount sdk.Coin, bondDid types.Did) MsgSell {
+func NewMsgSell(sellerDid exported.IxoDid, amount sdk.Coin, bondDid exported.Did) MsgSell {
 	return MsgSell{
 		SellerDid: sellerDid.Did,
 		PubKey:    sellerDid.VerifyKey,
@@ -397,24 +386,24 @@ func NewMsgSell(sellerDid types.SovrinDid, amount sdk.Coin, bondDid types.Did) M
 func (msg MsgSell) ValidateBasic() error {
 	// Check if empty
 	if strings.TrimSpace(msg.SellerDid) == "" {
-		return x.ErrArgumentCannotBeEmpty("SellerDid")
+		return errors.ArgumentCannotBeEmpty("SellerDid")
 	} else if strings.TrimSpace(msg.PubKey) == "" {
-		return x.ErrArgumentCannotBeEmpty("PubKey")
+		return errors.ArgumentCannotBeEmpty("PubKey")
 	} else if strings.TrimSpace(msg.BondDid) == "" {
-		return x.ErrArgumentCannotBeEmpty("BondDid")
+		return errors.ArgumentCannotBeEmpty("BondDid")
 	}
 
 	// Check that amount valid and non zero
 	if !msg.Amount.IsValid() {
-		return x.IntErr("amount is invalid")
+		return errors.InternalErr("amount is invalid")
 	} else if msg.Amount.Amount.IsZero() {
-		return x.ErrArgumentMustBePositive("Amount")
+		return errors.ArgumentMustBePositive("Amount")
 	}
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.BondDid) {
+	if !exported.IsValidDid(msg.BondDid) {
 		return x.ErrInvalidDid("bond did is invalid")
-	} else if !types.IsValidDid(msg.SellerDid) {
+	} else if !exported.IsValidDid(msg.SellerDid) {
 		return x.ErrInvalidDid("seller did is invalid")
 	}
 
@@ -429,7 +418,7 @@ func (msg MsgSell) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgSell) GetSignerDid() types.Did { return msg.SellerDid }
+func (msg MsgSell) GetSignerDid() exported.Did { return msg.SellerDid }
 func (msg MsgSell) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
@@ -438,11 +427,10 @@ func (msg MsgSell) Route() string { return RouterKey }
 
 func (msg MsgSell) Type() string { return TypeMsgSell }
 
-func NewMsgSwap(swapperDid types.SovrinDid, from sdk.Coin, toToken string,
-	bondDid types.Did) MsgSwap {
+func NewMsgSwap(swapperDid exported.IxoDid, from sdk.Coin, toToken string,
+	bondDid exported.Did) MsgSwap {
 	return MsgSwap{
 		SwapperDid: swapperDid.Did,
-		PubKey:     swapperDid.VerifyKey,
 		From:       from,
 		ToToken:    toToken,
 		BondDid:    bondDid,
@@ -452,18 +440,16 @@ func NewMsgSwap(swapperDid types.SovrinDid, from sdk.Coin, toToken string,
 func (msg MsgSwap) ValidateBasic() error {
 	// Check if empty
 	if strings.TrimSpace(msg.SwapperDid) == "" {
-		return x.ErrArgumentCannotBeEmpty("SwapperDid")
-	} else if strings.TrimSpace(msg.PubKey) == "" {
-		return x.ErrArgumentCannotBeEmpty("PubKey")
+		return errors.ArgumentCannotBeEmpty("SwapperDid")
 	} else if strings.TrimSpace(msg.BondDid) == "" {
-		return x.ErrArgumentCannotBeEmpty("BondDid")
+		return errors.ArgumentCannotBeEmpty("BondDid")
 	} else if strings.TrimSpace(msg.ToToken) == "" {
-		return x.ErrArgumentCannotBeEmpty("ToToken")
+		return errors.ArgumentCannotBeEmpty("ToToken")
 	}
 
 	// Validate from amount
 	if !msg.From.IsValid() {
-		return x.IntErr("from amount is invalid")
+		return errors.InternalErr("from amount is invalid")
 	}
 
 	// Validate to token
@@ -474,20 +460,20 @@ func (msg MsgSwap) ValidateBasic() error {
 
 	// Check if from and to the same token
 	if msg.From.Denom == msg.ToToken {
-		return ErrFromAndToCannotBeTheSameToken()
+		return errors.ErrFromAndToCannotBeTheSameToken()
 	}
 
 	// Check that non zero
 	if msg.From.Amount.IsZero() {
-		return x.ErrArgumentMustBePositive("FromAmount")
+		return errors.ArgumentMustBePositive("FromAmount")
 	}
 
 	// Note: From denom and amount must be valid since sdk.Coin
 
 	// Check that DIDs valid
-	if !types.IsValidDid(msg.BondDid) {
+	if !exported.IsValidDid(msg.BondDid) {
 		return x.ErrInvalidDid("bond did is invalid")
-	} else if !types.IsValidDid(msg.SwapperDid) {
+	} else if !exported.IsValidDid(msg.SwapperDid) {
 		return x.ErrInvalidDid("swapper did is invalid")
 	}
 
@@ -502,7 +488,7 @@ func (msg MsgSwap) GetSignBytes() []byte {
 	}
 }
 
-func (msg MsgSwap) GetSignerDid() types.Did { return msg.SwapperDid }
+func (msg MsgSwap) GetSignerDid() exported.Did { return msg.SwapperDid }
 func (msg MsgSwap) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
@@ -511,7 +497,7 @@ func (msg MsgSwap) Route() string { return RouterKey }
 
 func (msg MsgSwap) Type() string { return TypeMsgSwap }
 
-func NewMsgTransfer(id types.Did, from sdk.AccAddress, to sdk.AccAddress, amount sdk.Coin) MsgTransfer {
+func NewMsgTransfer(id exported.Did, from sdk.AccAddress, to sdk.AccAddress, amount sdk.Coin) MsgTransfer {
 	return MsgTransfer{
 		ID:     id,
 		From:   from,
@@ -523,21 +509,19 @@ func NewMsgTransfer(id types.Did, from sdk.AccAddress, to sdk.AccAddress, amount
 func (msg MsgTransfer) ValidateBasic() error {
 	// Check if empty
 	if strings.TrimSpace(msg.ID) == "" {
-		return x.ErrArgumentCannotBeEmpty("ID")
+		return errors.ArgumentCannotBeEmpty("ID")
 	}
-
 	// Check that amount valid and non zero
 	if !msg.Amount.IsValid() {
-		return x.IntErr("amount is invalid")
+		return errors.InternalErr("amount is invalid")
 	} else if msg.Amount.Amount.IsZero() {
-		return x.ErrArgumentMustBePositive("Amount")
+		return errors.ArgumentMustBePositive("Amount")
 	}
-
 	return nil
 }
-func (msg MsgTransfer) GetSignerDid() types.Did { return msg.ID }
-func (msg MsgTransfer) Type() string            { return TypeMsgTransfer }
-func (msg MsgTransfer) Route() string           { return RouterKey }
+func (msg MsgTransfer) GetSignerDid() exported.Did { return msg.ID }
+func (msg MsgTransfer) Type() string               { return TypeMsgTransfer }
+func (msg MsgTransfer) Route() string              { return RouterKey }
 func (msg MsgTransfer) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
@@ -549,7 +533,7 @@ func (msg MsgTransfer) GetSignBytes() []byte {
 	}
 }
 
-func NewMsgBurn(id types.Did, from sdk.AccAddress, amount sdk.Coin) MsgBurn {
+func NewMsgBurn(id exported.Did, from sdk.AccAddress, amount sdk.Coin) MsgBurn {
 	return MsgBurn{
 		ID:     id,
 		Burner: from,
@@ -560,21 +544,21 @@ func NewMsgBurn(id types.Did, from sdk.AccAddress, amount sdk.Coin) MsgBurn {
 func (msg MsgBurn) ValidateBasic() error {
 	// Check if empty
 	if strings.TrimSpace(msg.ID) == "" {
-		return x.ErrArgumentCannotBeEmpty("ID")
+		return errors.ArgumentCannotBeEmpty("ID")
 	}
 
 	// Check that amount valid and non zero
 	if !msg.Amount.IsValid() {
-		return x.IntErr("amount is invalid")
+		return errors.InternalErr("amount is invalid")
 	} else if msg.Amount.Amount.IsZero() {
-		return x.ErrArgumentMustBePositive("Amount")
+		return errors.ArgumentMustBePositive("Amount")
 	}
 
 	return nil
 }
-func (msg MsgBurn) GetSignerDid() types.Did { return msg.ID }
-func (msg MsgBurn) Type() string            { return TypeMsgBurn }
-func (msg MsgBurn) Route() string           { return RouterKey }
+func (msg MsgBurn) GetSignerDid() exported.Did { return msg.ID }
+func (msg MsgBurn) Type() string               { return TypeMsgBurn }
+func (msg MsgBurn) Route() string              { return RouterKey }
 func (msg MsgBurn) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }
@@ -586,7 +570,7 @@ func (msg MsgBurn) GetSignBytes() []byte {
 	}
 }
 
-func NewMsgMint(id types.Did, from sdk.AccAddress, amount sdk.Coin) MsgMint {
+func NewMsgMint(id exported.Did, from sdk.AccAddress, amount sdk.Coin) MsgMint {
 	return MsgMint{
 		ID:     id,
 		Minter: from,
@@ -597,21 +581,21 @@ func NewMsgMint(id types.Did, from sdk.AccAddress, amount sdk.Coin) MsgMint {
 func (msg MsgMint) ValidateBasic() error {
 	// Check if empty
 	if strings.TrimSpace(msg.ID) == "" {
-		return x.ErrArgumentCannotBeEmpty("ID")
+		return errors.ArgumentCannotBeEmpty("ID")
 	}
 
 	// Check that amount valid and non zero
 	if !msg.Amount.IsValid() {
-		return x.IntErr("amount is invalid")
+		return errors.InternalErr("amount is invalid")
 	} else if msg.Amount.Amount.IsZero() {
-		return x.ErrArgumentMustBePositive("Amount")
+		return errors.ArgumentMustBePositive("Amount")
 	}
 
 	return nil
 }
-func (msg MsgMint) GetSignerDid() types.Did { return msg.ID }
-func (msg MsgMint) Type() string            { return TypeMsgMint }
-func (msg MsgMint) Route() string           { return RouterKey }
+func (msg MsgMint) GetSignerDid() exported.Did { return msg.ID }
+func (msg MsgMint) Type() string               { return TypeMsgMint }
+func (msg MsgMint) Route() string              { return RouterKey }
 func (msg MsgMint) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 }

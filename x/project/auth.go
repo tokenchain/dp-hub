@@ -4,22 +4,27 @@ import (
 	"fmt"
 	"github.com/btcsuite/btcutil/base58"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	er "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/dap"
 	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
+	"time"
 )
 
+/*
 func GetPubKeyGetter(keeper Keeper, didKeeper did.Keeper) dap.PubKeyGetter {
-	return func(ctx sdk.Context, msg types.IxoMsg) ([32]byte, error) {
+	return func(ctx sdk.Context, msg dap.IxoMsg) (crypto.PubKey, error) {
 
 		// Get signer PubKey
-		var pubKey [32]byte
+		var pubKey crypto.PubKey
 		switch msg := msg.(type) {
 		case MsgCreateProject:
 			copy(pubKey[:], base58.Decode(msg.GetPubKey()))
@@ -64,31 +69,66 @@ func GetPubKeyGetter(keeper Keeper, didKeeper did.Keeper) dap.PubKeyGetter {
 		}
 		return pubKey, nil
 	}
+}*/
+
+func GetPubKeyGetter(keeper Keeper, didKeeper did.Keeper) dap.PubKeyGetter {
+	return func(ctx sdk.Context, msg dap.IxoMsg) (pubKey crypto.PubKey, res error) {
+
+		// Get signer PubKey
+		var pubKeyEd25519 ed25519.PubKeyEd25519
+		switch msg := msg.(type) {
+		case MsgCreateProject:
+			copy(pubKeyEd25519[:], base58.Decode(msg.GetPubKey()))
+		case MsgWithdrawFunds:
+			signerDid := msg.GetSignerDid()
+			signerDoc, _ := didKeeper.GetDidDoc(ctx, signerDid)
+			if signerDoc == nil {
+				return pubKey, Unauthorized("signer did not found")
+			}
+			copy(pubKeyEd25519[:], base58.Decode(signerDoc.GetPubKey()))
+		default:
+			// For the remaining messages, the project is the signer
+			projectDoc, err := keeper.GetProjectDoc(ctx, msg.GetSignerDid())
+			if err != nil {
+				return pubKey, IntErr("project did not found")
+			}
+			copy(pubKeyEd25519[:], base58.Decode(projectDoc.GetPubKey()))
+		}
+		return pubKeyEd25519, nil
+	}
+}
+
+func Unauthorized(m string) error {
+	return errors.Wrap(errors.ErrUnauthorized, m)
+}
+
+func IntErr(m string) error {
+	return errors.Wrap(errors.ErrPanic, m)
 }
 
 // Identical to Cosmos DeductFees function, but tokens sent to project account
-func deductProjectFundingFees(bankKeeper bank.Keeper, ctx sdk.Context, acc exported.Account, projectDid types.Did, fees sdk.Coins) error {
+func deductProjectFundingFees(bankKeeper bank.Keeper, ctx sdk.Context, acc exported.Account, projectDid did.Did, fees sdk.Coins) error {
 	blockTime := ctx.BlockHeader().Time
 	coins := acc.GetCoins()
 
 	if !fees.IsValid() {
-		return er.Wrapf(er.ErrInsufficientFee, "invalid fee amount: %s", fees)
+		return errors.Wrapf(errors.ErrInsufficientFee, "invalid fee amount: %s", fees)
 	}
 
 	// verify the account has enough funds to pay for fees
 	_, hasNeg := coins.SafeSub(fees)
 	if hasNeg {
-		return er.Wrapf(er.ErrInsufficientFunds, "insufficient funds to pay for fees; %s < %s", coins, fees)
+		return errors.Wrapf(errors.ErrInsufficientFunds, "insufficient funds to pay for fees; %s < %s", coins, fees)
 	}
 
 	// Validate the account has enough "spendable" coins as this will cover cases
 	// such as vesting accounts.
 	spendableCoins := acc.SpendableCoins(blockTime)
 	if _, hasNeg := spendableCoins.SafeSub(fees); hasNeg {
-		return er.Wrapf(er.ErrInsufficientFunds, "insufficient funds to pay for fees; %s < %s", spendableCoins, fees)
+		return errors.Wrapf(errors.ErrInsufficientFunds, "insufficient funds to pay for fees; %s < %s", spendableCoins, fees)
 	}
 
-	projectAddr := types.DidToAddr(projectDid)
+	projectAddr := dap.DidToAddr(projectDid)
 	err := bankKeeper.SendCoins(ctx, acc.GetAddress(), projectAddr, fees)
 	if err != nil {
 		return err
@@ -108,17 +148,18 @@ func getProjectCreationSignBytes(chainID string, ixoTx types.IxoTx, acc exported
 		chainID, accNum, acc.GetSequence(), ixoTx.Fee, ixoTx.Msgs, ixoTx.Memo,
 	)
 }
-
 func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
-	bk bank.Keeper, pubKeyGetter dap.PubKeyGetter) sdk.AnteHandler {
+	bk bank.Keeper, didKeeper did.Keeper,
+	pubKeyGetter types.PubKeyGetter) sdk.AnteHandler {
+	//} func xNewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper, bk bank.Keeper) sdk.AnteHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, res error) {
 
 		if addr := sk.GetModuleAddress(auth.FeeCollectorName); addr == nil {
 			panic(fmt.Sprintf("%s module account has not been set", auth.FeeCollectorName))
 		}
-
+		// var _ sdk.Tx = dap.IxoTx{}
 		// all transactions must be of type ixo.IxoTx
-		ixoTx, ok := tx.(types.IxoTx)
+		ixoTx, ok := tx.(dap.IxoTx)
 		if !ok {
 			// Set a gas meter with limit 0 as to prevent an infinite gas meter attack
 			// during runTx.
@@ -137,9 +178,17 @@ func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
 
 		newCtx.GasMeter().ConsumeGas(params.TxSizeCostPerByte*sdk.Gas(len(newCtx.TxBytes())), "txSize")
 
-		if res := dap.ValidateMemo(types.IxoTx{Memo: ixoTx.Memo}, params); res != nil {
-			return newCtx, res
+		// require that long memos get rejected
+		vmd := ante.NewValidateMemoDecorator(ak)
+		antehandler := sdk.ChainAnteDecorators(vmd)
+		_, err := antehandler(ctx, tx, false)
+		if err != nil {
+			return newCtx, err
 		}
+		/*
+			if res := tx.ValidateMemo(dap.IxoTx{Memo: ixoTx.Memo}, params); res != nil {
+				return newCtx, res
+			}*/
 
 		// message must be of type MsgCreateProject
 		msg, ok := ixoTx.GetMsgs()[0].(MsgCreateProject)
@@ -187,12 +236,11 @@ func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
 			feePayerAcc = ak.GetAccount(newCtx, feePayerAcc.GetAddress())
 		}
 
-		// Get pubKey
-		pubKey, res := pubKeyGetter(ctx, msg)
+		// Get project pubKey
+		/*projectPubKey, res := pubKeyGetter(ctx, msg)
 		if res != nil {
 			return newCtx, res
-		}
-
+		}*/
 		// Fetch signer account (project itself); create if it does not exist
 		signerAcc, res = auth.GetSignerAcc(ctx, ak, signerAddr)
 		if res != nil {
@@ -201,10 +249,13 @@ func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
 		}
 
 		// check signature, return account with incremented nonce
-		ixoSig := ixoTx.GetSignatures()[0]
+
+		// check signature, return account with incremented nonce
+		//ixoSig := auth.StdSignature{PubKey: projectPubKey, Signature: ixoTx.GetSignatures()[0].SignatureValue[:]}
+		ixoSig := dap.NewSignature(time.Now(), ixoTx.GetSignatures()[0].SignatureValue)
 		isGenesis := ctx.BlockHeight() == 0
 		signBytes := getProjectCreationSignBytes(newCtx.ChainID(), ixoTx, signerAcc, isGenesis)
-		signerAcc, res = dap.ProcessSig(newCtx, signerAcc, signBytes, pubKey, ixoSig, simulate, params)
+		signerAcc, res = dap.ProcessSig(signerAcc, ixoSig, signBytes, simulate)
 		if res != nil {
 			return newCtx, res
 		}

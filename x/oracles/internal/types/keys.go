@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
 const (
@@ -15,6 +15,6 @@ var (
 	OracleKey = []byte{0x00}
 )
 
-func GetOraclePrefixKey(did types.Did) []byte {
+func GetOraclePrefixKey(did exported.Did) []byte {
 	return append(OracleKey, []byte(did)...)
 }

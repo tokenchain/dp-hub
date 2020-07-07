@@ -39,8 +39,13 @@ var (
 )
 
 type (
-	Keeper       = keeper.Keeper
-	Bond         = types.Bond
-	CodeType     = x.CodeType
-	GenesisState = types.GenesisState
+	Keeper        = keeper.Keeper
+	Bond          = types.Bond
+	CodeType      = x.CodeType
+	MsgCreateBond = types.MsgCreateBond
+	MsgEditBond   = types.MsgEditBond
+	MsgBuy        = types.MsgBuy
+	MsgSell       = types.MsgSell
+	MsgSwap       = types.MsgSwap
+	GenesisState  = types.GenesisState
 )

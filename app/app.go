@@ -29,11 +29,10 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"github.com/tokenchain/ixo-blockchain/x/bonddoc"
 	"github.com/tokenchain/ixo-blockchain/x/bonds"
-	"github.com/tokenchain/ixo-blockchain/x/did"
 	dap "github.com/tokenchain/ixo-blockchain/x/dap"
 	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/nameservice"
 	"github.com/tokenchain/ixo-blockchain/x/oracles"
 	"github.com/tokenchain/ixo-blockchain/x/payments"
@@ -75,7 +74,7 @@ var (
 		did.AppModuleBasic{},
 		payments.AppModuleBasic{},
 		project.AppModuleBasic{},
-		bonddoc.AppModuleBasic{},
+		
 		bonds.AppModuleBasic{},
 		treasury.AppModuleBasic{},
 		oracles.AppModuleBasic{},
@@ -133,17 +132,17 @@ type DpApp struct {
 	didKeeper          did.Keeper
 	paymentsKeeper     payments.Keeper
 	projectKeeper      project.Keeper
-	bonddocKeeper      bonddoc.Keeper
-	bondsKeeper        bonds.Keeper
-	oraclesKeeper      oracles.Keeper
-	treasuryKeeper     treasury.Keeper
+	//bonddocKeeper      bonddoc.Keeper
+	bondsKeeper    bonds.Keeper
+	oraclesKeeper  oracles.Keeper
+	treasuryKeeper treasury.Keeper
 	//nsKeeper           nameservice.Keeper
 
-/*
-	AssetKeeper  asset.Keeper
-	MarketKeeper market.Keeper
-	OrderKeeper  order.Keeper
-	ExecKeeper   execution.Keeper*/
+	/*
+		AssetKeeper  asset.Keeper
+		MarketKeeper market.Keeper
+		OrderKeeper  order.Keeper
+		ExecKeeper   execution.Keeper*/
 
 	mm *module.Manager
 	sm *module.SimulationManager // simulation manager
@@ -165,8 +164,9 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		supply.StoreKey, distribution.StoreKey, slashing.StoreKey,
 		params.StoreKey, gov.StoreKey, evidence.StoreKey, upgrade.StoreKey,
 
-		did.StoreKey, mint.StoreKey, project.StoreKey, bonds.StoreKey, bonddoc.StoreKey, treasury.StoreKey,
-		oracles.StoreKey)
+		did.StoreKey, mint.StoreKey, project.StoreKey, bonds.StoreKey,
+		//bonddoc.StoreKey,
+		treasury.StoreKey, oracles.StoreKey)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
@@ -241,10 +241,10 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	app.didKeeper = did.NewKeeper(app.cdc, keys[did.StoreKey])
 	app.paymentsKeeper = payments.NewKeeper(app.cdc, keys[payments.StoreKey], app.subspaces[payments.ModuleName], app.bankKeeper, paymentsReservedIdPrefixes)
 	app.projectKeeper = project.NewKeeper(app.cdc, keys[project.StoreKey], app.subspaces[project.ModuleName], app.accountKeeper, app.paymentsKeeper)
-	app.bonddocKeeper = bonddoc.NewKeeper(app.cdc, keys[bonddoc.StoreKey])
+	//app.bonddocKeeper = bonddoc.NewKeeper(app.cdc, keys[bonddoc.StoreKey])
 	app.bondsKeeper = bonds.NewKeeper(app.bankKeeper, app.supplyKeeper, app.accountKeeper, app.stakingKeeper, keys[bonds.StoreKey], app.cdc)
 	app.oraclesKeeper = oracles.NewKeeper(app.cdc, keys[oracles.StoreKey])
-	app.treasuryKeeper = treasury.NewKeeper(app.cdc, keys[treasury.StoreKey], app.bankKeeper, app.oraclesKeeper, app.supplyKeeper)
+	app.treasuryKeeper = treasury.NewKeeper(app.cdc, keys[treasury.StoreKey], app.bankKeeper, app.oraclesKeeper, app.supplyKeeper, app.didKeeper)
 	//app.nsKeeper = nameservice.NewKeeper(app.cdc, keys[nameservice.StoreKey], app.bankKeeper)
 
 	app.mm = module.NewManager(
@@ -265,7 +265,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		did.NewAppModule(app.didKeeper),
 		payments.NewAppModule(app.paymentsKeeper, app.bankKeeper),
 		project.NewAppModule(app.projectKeeper, app.paymentsKeeper, app.bankKeeper),
-		bonddoc.NewAppModule(app.bonddocKeeper),
+		//bonddoc.NewAppModule(app.bonddocKeeper),
 		bonds.NewAppModule(app.bondsKeeper, app.accountKeeper),
 		treasury.NewAppModule(app.treasuryKeeper),
 		oracles.NewAppModule(app.oraclesKeeper),
@@ -301,7 +301,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		did.ModuleName,
 		project.ModuleName,
 		payments.ModuleName,
-		bonddoc.ModuleName,
+		//bonddoc.ModuleName,
 		bonds.ModuleName,
 		treasury.ModuleName,
 		// nameservice.ModuleName,
@@ -545,20 +545,23 @@ func (app *DpApp) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList []stri
 }
 
 func initAnteHandler(app *DpApp) sdk.AnteHandler {
+
+	defaultPubKeyGetter := dap.NewDefaultPubKeyGetter(app.didKeeper)
 	didPubKeyGetter := did.GetPubKeyGetter(app.didKeeper)
 	projectPubKeyGetter := project.GetPubKeyGetter(app.projectKeeper, app.didKeeper)
-	bonddocPubKeyGetter := bonddoc.GetPubKeyGetter(app.bonddocKeeper)
-	bondsPubKeyGetter := bonds.GetPubKeyGetter(app.bondsKeeper, app.didKeeper)
-	treasuryPubKeyGetter := treasury.GetPubKeyGetter(app.didKeeper)
-	paymentsPubKeyGetter := payments.GetPubKeyGetter(app.didKeeper)
-	cosmosAnteHandler := auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer)
-	didAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, didPubKeyGetter)
-	projectAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, projectPubKeyGetter)
-	bonddocAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, bonddocPubKeyGetter)
-	bondsAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, bondsPubKeyGetter)
-	treasuryAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, treasuryPubKeyGetter)
-	//feesAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, paymentsPubKeyGetter)
-	paymentsAnteHandler := dap.NewAnteHandler(app.accountKeeper, app.supplyKeeper, paymentsPubKeyGetter)
+
+	defaultIxoAnteHandler := dap.NewDefaultAnteHandler(
+		app.accountKeeper, app.supplyKeeper, defaultPubKeyGetter)
+	didAnteHandler := dap.NewDefaultAnteHandler(
+		app.accountKeeper, app.supplyKeeper, didPubKeyGetter)
+	projectAnteHandler := dap.NewDefaultAnteHandler(
+		app.accountKeeper, app.supplyKeeper, projectPubKeyGetter)
+	cosmosAnteHandler := auth.NewAnteHandler(
+		app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer)
+
+	projectCreationAnteHandler := project.NewProjectCreationAnteHandler(
+		app.accountKeeper, app.supplyKeeper, app.bankKeeper,
+		app.didKeeper, projectPubKeyGetter)
 
 	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (_ sdk.Context, _ error) {
 		msg := tx.GetMsgs()[0]
@@ -566,15 +569,18 @@ func initAnteHandler(app *DpApp) sdk.AnteHandler {
 		case did.RouterKey:
 			return didAnteHandler(ctx, tx, simulate)
 		case project.RouterKey:
-			return projectAnteHandler(ctx, tx, simulate)
-		case bonddoc.RouterKey:
-			return bonddocAnteHandler(ctx, tx, simulate)
+			switch msg.Type() {
+			case project.TypeMsgCreateProject:
+				return projectCreationAnteHandler(ctx, tx, simulate)
+			default:
+				return projectAnteHandler(ctx, tx, simulate)
+			}
 		case bonds.RouterKey:
-			return bondsAnteHandler(ctx, tx, simulate)
+			return defaultIxoAnteHandler(ctx, tx, simulate)
 		case treasury.RouterKey:
-			return treasuryAnteHandler(ctx, tx, simulate)
+			return defaultIxoAnteHandler(ctx, tx, simulate)
 		case payments.RouterKey:
-			return paymentsAnteHandler(ctx, tx, simulate)
+			return defaultIxoAnteHandler(ctx, tx, simulate)
 		default:
 			return cosmosAnteHandler(ctx, tx, simulate)
 		}

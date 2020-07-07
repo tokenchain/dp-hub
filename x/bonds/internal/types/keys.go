@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
 const (
@@ -37,15 +37,15 @@ var (
 	BondDidsKeyPrefix    = []byte{0x03} // key for bond DIDs
 )
 
-func GetBondKey(bondDid types.Did) []byte {
+func GetBondKey(bondDid exported.Did) []byte {
 	return append(BondsKeyPrefix, []byte(bondDid)...)
 }
 
-func GetBatchKey(bondDid types.Did) []byte {
+func GetBatchKey(bondDid exported.Did) []byte {
 	return append(BatchesKeyPrefix, []byte(bondDid)...)
 }
 
-func GetLastBatchKey(bondDid types.Did) []byte {
+func GetLastBatchKey(bondDid exported.Did) []byte {
 	return append(LastBatchesKeyPrefix, []byte(bondDid)...)
 }
 

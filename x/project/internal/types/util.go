@@ -2,11 +2,12 @@ package types
 
 import (
 	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+
 	"strings"
 )
 
-func NewMsgCreateProject(senderDid types.Did, projectDoc ProjectDoc, projectDid types.SovrinDid) MsgCreateProject {
+func NewMsgCreateProject(senderDid exported.Did, projectDoc ProjectDoc, projectDid exported.IxoDid) MsgCreateProject {
 	return MsgCreateProject{
 		TxHash:     "",
 		SenderDid:  senderDid,
@@ -16,7 +17,7 @@ func NewMsgCreateProject(senderDid types.Did, projectDoc ProjectDoc, projectDid 
 	}
 }
 
-func NewMsgUpdateProjectStatus(senderDid types.Did, updateProjectStatusDoc UpdateProjectStatusDoc, projectDid types.SovrinDid) MsgUpdateProjectStatus {
+func NewMsgUpdateProjectStatus(senderDid exported.Did, updateProjectStatusDoc UpdateProjectStatusDoc, projectDid exported.IxoDid) MsgUpdateProjectStatus {
 	return MsgUpdateProjectStatus{
 		TxHash:     "",
 		SenderDid:  senderDid,
@@ -25,7 +26,7 @@ func NewMsgUpdateProjectStatus(senderDid types.Did, updateProjectStatusDoc Updat
 	}
 }
 
-func NewMsgCreateAgent(txHash string, senderDid types.Did, createAgentDoc CreateAgentDoc, projectDid types.SovrinDid) MsgCreateAgent {
+func NewMsgCreateAgent(txHash string, senderDid exported.Did, createAgentDoc CreateAgentDoc, projectDid exported.IxoDid) MsgCreateAgent {
 	return MsgCreateAgent{
 		ProjectDid: projectDid.Did,
 		TxHash:     txHash,
@@ -34,7 +35,7 @@ func NewMsgCreateAgent(txHash string, senderDid types.Did, createAgentDoc Create
 	}
 }
 
-func NewMsgUpdateAgent(txHash string, senderDid types.Did, updateAgentDoc UpdateAgentDoc, projectDid types.SovrinDid) MsgUpdateAgent {
+func NewMsgUpdateAgent(txHash string, senderDid exported.Did, updateAgentDoc UpdateAgentDoc, projectDid exported.IxoDid) MsgUpdateAgent {
 	return MsgUpdateAgent{
 		ProjectDid: projectDid.Did,
 		TxHash:     txHash,
@@ -43,7 +44,7 @@ func NewMsgUpdateAgent(txHash string, senderDid types.Did, updateAgentDoc Update
 	}
 }
 
-func NewMsgCreateClaim(txHash string, senderDid types.Did, createClaimDoc CreateClaimDoc, projectDid types.SovrinDid) MsgCreateClaim {
+func NewMsgCreateClaim(txHash string, senderDid exported.Did, createClaimDoc CreateClaimDoc, projectDid exported.IxoDid) MsgCreateClaim {
 	return MsgCreateClaim{
 		ProjectDid: projectDid.Did,
 		TxHash:     txHash,
@@ -52,7 +53,7 @@ func NewMsgCreateClaim(txHash string, senderDid types.Did, createClaimDoc Create
 	}
 }
 
-func NewMsgCreateEvaluation(txHash string, senderDid types.Did, createEvaluationDoc CreateEvaluationDoc, projectDid types.SovrinDid) MsgCreateEvaluation {
+func NewMsgCreateEvaluation(txHash string, senderDid exported.Did, createEvaluationDoc CreateEvaluationDoc, projectDid exported.IxoDid) MsgCreateEvaluation {
 	return MsgCreateEvaluation{
 		ProjectDid: projectDid.Did,
 		TxHash:     txHash,
@@ -61,7 +62,7 @@ func NewMsgCreateEvaluation(txHash string, senderDid types.Did, createEvaluation
 	}
 }
 
-func NewMsgWithdrawFunds(senderDid types.Did, data WithdrawFundsDoc) MsgWithdrawFunds {
+func NewMsgWithdrawFunds(senderDid exported.Did, data WithdrawFundsDoc) MsgWithdrawFunds {
 	return MsgWithdrawFunds{
 		SenderDid: senderDid,
 		Data:      data,

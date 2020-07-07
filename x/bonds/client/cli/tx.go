@@ -9,11 +9,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/tokenchain/ixo-blockchain/x"
 	client2 "github.com/tokenchain/ixo-blockchain/x/bonds/client"
+	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
 	"github.com/tokenchain/ixo-blockchain/x/dap"
 	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
 )
 
@@ -72,13 +73,13 @@ func GetCmdCreateBond(cdc *codec.Codec) *cobra.Command {
 			// Parse tx fee percentage
 			txFeePercentage, err := sdk.NewDecFromStr(_txFeePercentage)
 			if err != nil {
-				return x.ErrArgumentMissingOrNonFloat("tx fee percentage")
+				return errors.ArgumentMissingOrNonFloat("tx fee percentage")
 			}
 
 			// Parse exit fee percentage
 			exitFeePercentage, err := sdk.NewDecFromStr(_exitFeePercentage)
 			if err != nil {
-				return x.ErrArgumentMissingOrNonFloat("exit fee percentage")
+				return errors.ArgumentMissingOrNonFloat("exit fee percentage")
 			}
 
 			// Parse fee address
@@ -114,17 +115,17 @@ func GetCmdCreateBond(cdc *codec.Codec) *cobra.Command {
 			// Parse batch blocks
 			batchBlocks, err := sdk.ParseUint(_batchBlocks)
 			if err != nil {
-				return x.ErrArgumentMissingOrNonUInteger("max batch blocks")
+				return errors.ArgumentMissingOrNonUInteger("max batch blocks")
 			}
 
 			// Parse creator's sovrin DID
-			creatorDid, err := types2.UnmarshalSovrinDid(_creatorDid)
+			creatorDid, err := exported.UnmarshalDxpDid(_creatorDid)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(creatorDid.Did))
+				WithFromAddress(creatorDid.Address())
 
 			msg := types.NewMsgCreateBond(_token, _name, _description,
 				creatorDid, _functionType, functionParams, reserveTokens,
@@ -175,15 +176,14 @@ func GetCmdEditBond(cdc *codec.Codec) *cobra.Command {
 			_editorDid := viper.GetString(FlagEditorDid)
 			//_maxSupply := viper.GetString(FlagMaxSupply)
 
-
 			// Parse editor's sovrin DID
-			editorDid, err := types2.UnmarshalSovrinDid(_editorDid)
+			editorDid, err := exported.UnmarshalDxpDid(_editorDid)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(editorDid.Did))
+				WithFromAddress(editorDid.Address())
 
 			msg := types.NewMsgEditBond(
 				_token, _name, _description, _orderQuantityLimits, _sanityRate,
@@ -223,15 +223,15 @@ func GetCmdBuy(cdc *codec.Codec) *cobra.Command {
 			}
 
 			// Parse buyer's sovrin DID
-			buyerDid, err := types2.UnmarshalSovrinDid(args[3])
+			buyerDid, err := exported.UnmarshalDxpDid(args[3])
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(buyerDid.Did))
+				WithFromAddress(buyerDid.Address())
 
-			msg := types.NewMsgBuy(buyerDid, bondCoinWithAmount, maxPrices, args[2])
+			msg := types.NewMsgBuy(buyerDid.Did, bondCoinWithAmount, maxPrices, args[2])
 
 			return dap.SignAndBroadcastTxCli(cliCtx, msg, buyerDid)
 		},
@@ -252,13 +252,13 @@ func GetCmdSell(cdc *codec.Codec) *cobra.Command {
 			}
 
 			// Parse seller's sovrin DID
-			sellerDid, err := types2.UnmarshalSovrinDid(args[2])
+			sellerDid, err := exported.UnmarshalDxpDid(args[2])
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sellerDid.Did))
+				WithFromAddress(sellerDid.Address())
 
 			msg := types.NewMsgSell(sellerDid, bondCoinWithAmount, args[1])
 
@@ -284,7 +284,7 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 			}
 
 			// Parse swapper's sovrin DID
-			swapperDid, err := types2.UnmarshalSovrinDid(args[4])
+			swapperDid, err := exported.UnmarshalDxpDid(args[4])
 			if err != nil {
 				return err
 			}

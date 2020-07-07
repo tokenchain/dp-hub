@@ -15,7 +15,7 @@ import (
 	"github.com/tendermint/tendermint/libs/bech32"
 	"github.com/tokenchain/ixo-blockchain/app"
 	cli2 "github.com/tokenchain/ixo-blockchain/client/cli"
-	client2 "github.com/tokenchain/ixo-blockchain/x/dapmining/client"
+	rest2 "github.com/tokenchain/ixo-blockchain/x/dapmining/client/rest"
 	"github.com/tomasen/realip"
 	"io"
 	"log"
@@ -105,7 +105,7 @@ func main() {
 	}
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),
-		client2.ServeCommand(cdc, registerRoutes),
+		rest2.ServeCommand(cdc, registerRoutes),
 		keys.Commands(),
 		flags.LineBreak,
 		version.Cmd,
@@ -114,7 +114,7 @@ func main() {
 }
 
 // registerRoutes registers the routes from the different modules for the LCD.
-func registerRoutes(rs *client2.RestServer) {
+func registerRoutes(rs *rest2.RestServer) {
 	rs.Mux.HandleFunc("/claim", CoinDistriHanlder(rs.CliCtx)).Methods("POST")
 }
 

@@ -2,6 +2,7 @@ package did
 
 import (
 	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 )
@@ -17,9 +18,16 @@ const (
 type (
 	Keeper       = keeper.Keeper
 	GenesisState = types.GenesisState
+	Did          = exported.Did
+	DidDoc       = exported.DidDoc
+	IxoDid       = exported.IxoDid
+
+	MsgAddDid        = types.MsgAddDid
+	MsgAddCredential = types.MsgAddCredential
 )
 
 var (
+
 	// function aliases
 	NewKeeper     = keeper.NewKeeper
 	NewQuerier    = keeper.NewQuerier
@@ -28,6 +36,7 @@ var (
 	NewGenesisState     = types.NewGenesisState
 	DefaultGenesisState = types.DefaultGenesisState
 	ValidateGenesis     = types.ValidateGenesis
+	UnmarshalIxoDid     = types.UnmarshalIxoDid
 
 	// variable aliases
 	ModuleCdc = types.ModuleCdc

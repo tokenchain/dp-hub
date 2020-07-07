@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
 const (
@@ -18,14 +18,14 @@ var (
 	WithdrawalKey = []byte{0x03}
 )
 
-func GetProjectPrefixKey(did types.Did) []byte {
+func GetProjectPrefixKey(did exported.Did) []byte {
 	return append(ProjectKey, []byte(did)...)
 }
 
-func GetAccountPrefixKey(did types.Did) []byte {
+func GetAccountPrefixKey(did exported.Did) []byte {
 	return append(AccountKey, []byte(did)...)
 }
 
-func GetWithdrawalPrefixKey(did types.Did) []byte {
+func GetWithdrawalPrefixKey(did exported.Did) []byte {
 	return append(WithdrawalKey, []byte(did)...)
 }

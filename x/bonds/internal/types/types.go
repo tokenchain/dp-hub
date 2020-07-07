@@ -2,8 +2,8 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	ro "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
 )
 
 const (
@@ -18,12 +18,12 @@ func CheckReserveTokenNames(resTokens []string, token string) error {
 	for _, r := range resTokens {
 		// Check if same as main token
 		if r == token {
-			return x.ErrBondTokenCannotAlsoBeReserveToken()
+			return errors.BondTokenCannotAlsoBeReserveToken()
 		}
 
 		// Check if duplicate
 		if _, ok := uniqueReserveTokens[r]; ok {
-			return ro.Wrap(x.ErrDuplicateReserveToken, "")
+			return errors.DuplicateReserveToken()
 		} else {
 			uniqueReserveTokens[r] = ""
 		}
@@ -41,12 +41,12 @@ func CheckNoOfReserveTokens(resTokens []string, fnType string) error {
 	// Come up with number of expected reserve tokens
 	expectedNoOfTokens, ok := NoOfReserveTokensForFunctionType[fnType]
 	if !ok {
-		return ro.Wrap(x.ErrUnrecognizedFunctionType, "")
+		return errors.UnrecognizedFunctionType()
 	}
 
 	// Check that number of reserve tokens is correct (if expecting a specific number of tokens)
 	if expectedNoOfTokens != AnyNumberOfReserveTokens && len(resTokens) != expectedNoOfTokens {
-		return x.ErrIncorrectNumberOfReserveTokens(expectedNoOfTokens)
+		return errors.ErrIncorrectNumberOfReserveTokens(expectedNoOfTokens)
 	}
 
 	return nil
@@ -57,7 +57,7 @@ func CheckCoinDenom(denom string) (err error) {
 	if err2 != nil {
 		return x.IntErr(err2.Error())
 	} else if denom != coin.Denom {
-		return x.ErrInvalidCoinDenomination(denom)
+		return errors.InvalidCoinDenomination(denom)
 	}
 	return nil
 }
@@ -65,7 +65,15 @@ func CheckCoinDenom(denom string) (err error) {
 func GetRequiredParamsForFunctionType(fnType string) (fnParams []string, err error) {
 	expectedParams, ok := RequiredParamsForFunctionType[fnType]
 	if !ok {
-		return nil, ro.Wrap(x.ErrUnrecognizedFunctionType, "")
+		return nil, errors.UnrecognizedFunctionType()
 	}
 	return expectedParams, nil
+}
+
+func GetExceptionsForFunctionType(fnType string) (restrictions FunctionParamRestrictions, err error) {
+	restrictions, ok := ExtraParameterRestrictions[fnType]
+	if !ok {
+		return nil, errors.UnrecognizedFunctionType()
+	}
+	return restrictions, nil
 }

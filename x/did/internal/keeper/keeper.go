@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	er "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
-	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 )
@@ -22,7 +22,7 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey) Keeper {
 	}
 }
 
-func (k Keeper) GetDidDoc(ctx sdk.Context, did types2.Did) (types2.DidDoc, error) {
+func (k Keeper) GetDidDoc(ctx sdk.Context, did exported.Did) (exported.DidDoc, error) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetDidPrefixKey(did)
 	bz := store.Get(key)
@@ -36,7 +36,7 @@ func (k Keeper) GetDidDoc(ctx sdk.Context, did types2.Did) (types2.DidDoc, error
 	return didDoc, nil
 }
 
-func (k Keeper) SetDidDoc(ctx sdk.Context, did types2.DidDoc) (err error) {
+func (k Keeper) SetDidDoc(ctx sdk.Context, did exported.DidDoc) (err error) {
 	existedDidDoc, err := k.GetDidDoc(ctx, did.GetDid())
 	if existedDidDoc != nil {
 		return er.Wrap(x.ErrorInvalidDidE, "Did already exists")
@@ -46,13 +46,13 @@ func (k Keeper) SetDidDoc(ctx sdk.Context, did types2.DidDoc) (err error) {
 	return nil
 }
 
-func (k Keeper) AddDidDoc(ctx sdk.Context, did types2.DidDoc) {
+func (k Keeper) AddDidDoc(ctx sdk.Context, did exported.DidDoc) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetDidPrefixKey(did.GetDid())
 	store.Set(key, k.cdc.MustMarshalBinaryLengthPrefixed(did))
 }
 
-func (k Keeper) AddCredentials(ctx sdk.Context, did types2.Did, credential types.DidCredential) (err error) {
+func (k Keeper) AddCredentials(ctx sdk.Context, did exported.Did, credential exported.DidCredential) (err error) {
 	existedDid, err := k.GetDidDoc(ctx, did)
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func (k Keeper) AddCredentials(ctx sdk.Context, did types2.Did, credential types
 	return nil
 }
 
-func (k Keeper) GetAllDidDocs(ctx sdk.Context) (didDocs []types2.DidDoc) {
+func (k Keeper) GetAllDidDocs(ctx sdk.Context) (didDocs []exported.DidDoc) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.DidKey)
 	defer iterator.Close()
@@ -86,7 +86,7 @@ func (k Keeper) GetAllDidDocs(ctx sdk.Context) (didDocs []types2.DidDoc) {
 	return didDocs
 }
 
-func (k Keeper) GetAddDids(ctx sdk.Context) (dids []types2.Did) {
+func (k Keeper) GetAddDids(ctx sdk.Context) (dids []exported.Did) {
 	didDocs := k.GetAllDidDocs(ctx)
 	for _, did := range didDocs {
 		dids = append(dids, did.GetDid())

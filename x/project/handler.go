@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/tokenchain/ixo-blockchain/x"
 	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 
 	"github.com/tokenchain/ixo-blockchain/x/payments"
 )
@@ -25,8 +26,6 @@ func NewHandler(k Keeper, fk payments.Keeper, bk bank.Keeper) sdk.Handler {
 		switch msg := msg.(type) {
 		case MsgCreateProject:
 			return handleMsgCreateProject(ctx, k, msg)
-		case MsgUpdateProjectStatus:
-			return handleMsgUpdateProjectStatus(ctx, k, bk, msg)
 		case MsgCreateAgent:
 			return handleMsgCreateAgent(ctx, k, bk, msg)
 		case MsgUpdateAgent:
@@ -37,6 +36,8 @@ func NewHandler(k Keeper, fk payments.Keeper, bk bank.Keeper) sdk.Handler {
 			return handleMsgCreateEvaluation(ctx, k, fk, bk, msg)
 		case MsgWithdrawFunds:
 			return handleMsgWithdrawFunds(ctx, k, bk, msg)
+		case MsgUpdateProjectStatus:
+			return handleMsgUpdateProjectStatus(ctx, k, bk, msg)
 		default:
 			return nil, x.UnknownRequest("No match for message type.")
 		}
@@ -112,7 +113,7 @@ func handleMsgUpdateProjectStatus(ctx sdk.Context, k Keeper, bk bank.Keeper,
 	return result, err
 }
 
-func payoutFees(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid types2.Did) (*sdk.Result, error) {
+func payoutFees(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid exported.Did) (*sdk.Result, error) {
 	var allevents []sdk.Event
 
 	event, err := payAllFeesToAddress(ctx, k, bk, projectDid, IxoAccountPayFeesId, IxoAccountFeesId)
@@ -146,7 +147,7 @@ func payoutFees(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid types2.Did
 	return &sdk.Result{Events: allevents}, err
 }
 
-func payAllFeesToAddress(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid types2.Did,
+func payAllFeesToAddress(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid exported.Did,
 	sendingAddress InternalAccountID, receivingAddress InternalAccountID) (sdk.Events, error) {
 	feesToPay := getIxoAmount(ctx, k, bk, projectDid, sendingAddress)
 
@@ -167,7 +168,7 @@ func payAllFeesToAddress(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid t
 	return sdk.Events{}, bk.SendCoins(ctx, sendingAccount, receivingAccount, sdk.Coins{feesToPay})
 }
 
-func getIxoAmount(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid types2.Did, accountID InternalAccountID) sdk.Coin {
+func getIxoAmount(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid exported.Did, accountID InternalAccountID) sdk.Coin {
 	found := checkAccountInProjectAccounts(ctx, k, projectDid, accountID)
 	if found {
 		accAddr, _ := getAccountInProjectAccounts(ctx, k, projectDid, accountID)
@@ -278,8 +279,8 @@ func handleMsgWithdrawFunds(ctx sdk.Context, k Keeper, bk bank.Keeper,
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
-func payoutAndRecon(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid types2.Did,
-	fromAccountId InternalAccountID, recipientDid types2.Did, amount sdk.Coin) error {
+func payoutAndRecon(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid exported.Did,
+	fromAccountId InternalAccountID, recipientDid exported.Did, amount sdk.Coin) error {
 
 	ixoBalance := getIxoAmount(ctx, k, bk, projectDid, fromAccountId)
 	if ixoBalance.IsLT(amount) {
@@ -305,7 +306,7 @@ func payoutAndRecon(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid types2
 	return nil
 }
 
-func getProjectDoc(ctx sdk.Context, k Keeper, projectDid types2.Did) (StoredProjectDoc, error) {
+func getProjectDoc(ctx sdk.Context, k Keeper, projectDid exported.Did) (StoredProjectDoc, error) {
 	ixoProjectDoc, err := k.GetProjectDoc(ctx, projectDid)
 	if err != nil {
 		return nil, err
@@ -314,7 +315,7 @@ func getProjectDoc(ctx sdk.Context, k Keeper, projectDid types2.Did) (StoredProj
 	return ixoProjectDoc.(StoredProjectDoc), nil
 }
 
-func processFees(ctx sdk.Context, k Keeper, fk payments.Keeper, bk bank.Keeper, feeType payments.FeeType, projectDid types2.Did) error {
+func processFees(ctx sdk.Context, k Keeper, fk payments.Keeper, bk bank.Keeper, feeType payments.FeeType, projectDid exported.Did) error {
 	projectAddr, _ := getProjectAccount(ctx, k, projectDid)
 
 	validatingNodeSetAddr, err := getAccountInProjectAccounts(ctx, k, projectDid, ValidatingNodeSetAccountFeesId)
@@ -357,7 +358,7 @@ func processFees(ctx sdk.Context, k Keeper, fk payments.Keeper, bk bank.Keeper, 
 }
 
 func processEvaluatorPay(ctx sdk.Context, k Keeper, fk payments.Keeper,
-	bk bank.Keeper, projectDid, senderDid types2.Did, evaluatorPay int64) error {
+	bk bank.Keeper, projectDid, senderDid exported.Did, evaluatorPay int64) error {
 
 	if evaluatorPay == 0 {
 		return nil
@@ -403,7 +404,7 @@ func processEvaluatorPay(ctx sdk.Context, k Keeper, fk payments.Keeper,
 	return nil
 }
 
-func checkAccountInProjectAccounts(ctx sdk.Context, k Keeper, projectDid types2.Did,
+func checkAccountInProjectAccounts(ctx sdk.Context, k Keeper, projectDid exported.Did,
 	accountId InternalAccountID) bool {
 	accMap := k.GetAccountMap(ctx, projectDid)
 	_, found := accMap[accountId]
@@ -411,8 +412,8 @@ func checkAccountInProjectAccounts(ctx sdk.Context, k Keeper, projectDid types2.
 	return found
 }
 
-func addProjectWithdrawalTransaction(ctx sdk.Context, k Keeper, projectDid types2.Did,
-	actionID [32]byte, recipientDid types2.Did, amount sdk.Coin) {
+func addProjectWithdrawalTransaction(ctx sdk.Context, k Keeper, projectDid exported.Did,
+	actionID [32]byte, recipientDid exported.Did, amount sdk.Coin) {
 	actionIDStr := "0x" + hex.EncodeToString(actionID[:])
 
 	withdrawalInfo := WithdrawalInfo{
@@ -425,7 +426,7 @@ func addProjectWithdrawalTransaction(ctx sdk.Context, k Keeper, projectDid types
 	k.AddProjectWithdrawalTransaction(ctx, projectDid, withdrawalInfo)
 }
 
-func createAccountInProjectAccounts(ctx sdk.Context, k Keeper, projectDid types2.Did, accountId InternalAccountID) (sdk.AccAddress, error) {
+func createAccountInProjectAccounts(ctx sdk.Context, k Keeper, projectDid exported.Did, accountId InternalAccountID) (sdk.AccAddress, error) {
 	acc, err := k.CreateNewAccount(ctx, projectDid, accountId)
 	if err != nil {
 		return nil, err
@@ -436,7 +437,7 @@ func createAccountInProjectAccounts(ctx sdk.Context, k Keeper, projectDid types2
 	return acc.GetAddress(), nil
 }
 
-func getAccountInProjectAccounts(ctx sdk.Context, k Keeper, projectDid types2.Did,
+func getAccountInProjectAccounts(ctx sdk.Context, k Keeper, projectDid exported.Did,
 	accountId InternalAccountID) (sdk.AccAddress, error) {
 	accMap := k.GetAccountMap(ctx, projectDid)
 
@@ -448,6 +449,6 @@ func getAccountInProjectAccounts(ctx sdk.Context, k Keeper, projectDid types2.Di
 	}
 }
 
-func getProjectAccount(ctx sdk.Context, k Keeper, projectDid types2.Did) (sdk.AccAddress, error) {
+func getProjectAccount(ctx sdk.Context, k Keeper, projectDid exported.Did) (sdk.AccAddress, error) {
 	return getAccountInProjectAccounts(ctx, k, projectDid, InternalAccountID(projectDid))
 }

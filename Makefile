@@ -81,7 +81,7 @@ else
 endif
 	$(update_check)
 
-buildlinux: go.sum
+linux: go.sum
 	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/dpd ./cmd/dpd
 	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli ./cmd/dpcli
 	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/dpfaucet ./cmd/dpfaucet
@@ -95,7 +95,12 @@ sign-release:
 	if test -n "$(GPG_SIGNING_KEY)"; then \
 	  gpg --default-key $(GPG_SIGNING_KEY) -a \
 	      -o SHA256SUMS.sign -b SHA256SUMS; \
-	fi; 
+	fi;
+
+lint: go.sum
+	go run ./cmd/dpd
+	go run ./cmd/dpcli
+
 
 ########################################
 ### Tools & dependencies

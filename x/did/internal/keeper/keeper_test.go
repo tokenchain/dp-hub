@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,7 +11,7 @@ import (
 
 func TestKeeper(t *testing.T) {
 	ctx, k, cdc := CreateTestInput()
-	cdc.RegisterInterface((*types2.DidDoc)(nil), nil)
+	cdc.RegisterInterface((*did.DidDoc)(nil), nil)
 	_, err := k.GetDidDoc(ctx, types.EmptyDid)
 	require.NotNil(t, err)
 

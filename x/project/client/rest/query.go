@@ -3,7 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
-	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -34,12 +34,11 @@ func queryProjectDocRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		vars := mux.Vars(r)
 		didAddr := vars["did"]
 
-		key := types2.Did(didAddr)
+		key := exported.Did(didAddr)
 		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
 			keeper.QueryProjectDoc, key), nil)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(fmt.Sprintf("Could't query did. Error: %s", err.Error())))
+			writeHeadf(w, http.StatusInternalServerError, "Could't query did. Error: %s", err.Error())
 			return
 		}
 
@@ -65,8 +64,7 @@ func queryProjectAccountsRequestHandler(cliCtx context.CLIContext) http.HandlerF
 		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s",
 			types.QuerierRoute, keeper.QueryProjectAccounts, projectDid), nil)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(fmt.Sprintf("Could't query did. Error: %s", err.Error())))
+			writeHeadf(w, http.StatusInternalServerError, "Could't query did. Error: %s", err.Error())
 			return
 		}
 
@@ -78,8 +76,7 @@ func queryProjectAccountsRequestHandler(cliCtx context.CLIContext) http.HandlerF
 		var f interface{}
 		err = json.Unmarshal(res, &f)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(fmt.Sprintf("Could't parse query result. Result: %s. Error: %s", res, err.Error())))
+			writeHeadf(w, http.StatusInternalServerError, "Could't parse query result. Result: %s. Error: %s", res, err.Error())
 			return
 		}
 
@@ -99,8 +96,7 @@ func queryProjectTxsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s",
 			types.QuerierRoute, keeper.QueryProjectTx, projectDid), nil)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(fmt.Sprintf("Could't query did. Error: %s", err.Error())))
+			writeHeadf(w, http.StatusInternalServerError, "Could't query did. Error: %s", err.Error())
 			return
 		}
 
@@ -124,15 +120,13 @@ func queryParamsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		bz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.QuerierRoute,
 			keeper.QueryParams), nil)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(fmt.Sprintf("Couldn't get query data %s", err.Error())))
+			writeHeadf(w, http.StatusInternalServerError, "Couldn't get query data %s", err.Error())
 			return
 		}
 
 		var params types.Params
 		if err := cliCtx.Codec.UnmarshalJSON(bz, &params); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(fmt.Sprintf("Couldn't Unmarshal data %s", err.Error())))
+			writeHeadf(w, http.StatusInternalServerError, "Couldn't Unmarshal data %s. ", err.Error())
 			return
 		}
 

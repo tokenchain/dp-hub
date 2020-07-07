@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 	"github.com/tokenchain/ixo-blockchain/x/dap"
-	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
+	exported "github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -39,7 +39,7 @@ func GetCmdCreatePaymentTemplate(cdc *codec.Codec) *cobra.Command {
 			templateJsonStr := args[0]
 			sovrinDidStr := args[1]
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := exported.UnmarshalDxpDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
@@ -51,9 +51,9 @@ func GetCmdCreatePaymentTemplate(cdc *codec.Codec) *cobra.Command {
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(sovrinDid.Address())
 
-			msg := types.NewMsgCreatePaymentTemplate(template, sovrinDid)
+			msg := types.NewMsgCreatePaymentTemplate(template, sovrinDid.Did)
 
 			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
@@ -89,17 +89,17 @@ func GetCmdCreatePaymentContract(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := exported.UnmarshalDxpDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(sovrinDid.Address())
 
 			msg := types.NewMsgCreatePaymentContract(
 				templateIdStr, contractIdStr, payerAddr,
-				canDeauthorise, discountId, sovrinDid)
+				canDeauthorise, discountId, sovrinDid.Did)
 
 			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
@@ -124,7 +124,7 @@ func GetCmdCreateSubscription(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := exported.UnmarshalDxpDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
@@ -136,10 +136,10 @@ func GetCmdCreateSubscription(cdc *codec.Codec) *cobra.Command {
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(sovrinDid.Address())
 
 			msg := types.NewMsgCreateSubscription(subIdStr,
-				contractIdStr, maxPeriods, period, sovrinDid)
+				contractIdStr, maxPeriods, period, sovrinDid.Did)
 
 			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
@@ -162,16 +162,16 @@ func GetCmdSetPaymentContractAuthorisation(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err2 := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err2 := exported.UnmarshalDxpDid(sovrinDidStr)
 			if err2 != nil {
 				return err2
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(sovrinDid.Address())
 
 			msg := types.NewMsgSetPaymentContractAuthorisation(
-				contractIdStr, authorised, sovrinDid)
+				contractIdStr, authorised, sovrinDid.Did)
 
 			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
@@ -200,16 +200,16 @@ func GetCmdGrantPaymentDiscount(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := exported.UnmarshalDxpDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(sovrinDid.Address())
 
 			msg := types.NewMsgGrantDiscount(
-				contractIdStr, discountId, recipientAddr, sovrinDid)
+				contractIdStr, discountId, recipientAddr, sovrinDid.Did)
 
 			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
@@ -231,16 +231,16 @@ func GetCmdRevokePaymentDiscount(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := exported.UnmarshalDxpDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(sovrinDid.Address())
 
 			msg := types.NewMsgRevokeDiscount(
-				contractIdStr, holderAddr, sovrinDid)
+				contractIdStr, holderAddr, sovrinDid.Did)
 
 			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
@@ -256,15 +256,15 @@ func GetCmdEffectPayment(cdc *codec.Codec) *cobra.Command {
 			contractIdStr := args[0]
 			sovrinDidStr := args[1]
 
-			sovrinDid, err := types2.UnmarshalSovrinDid(sovrinDidStr)
+			sovrinDid, err := exported.UnmarshalDxpDid(sovrinDidStr)
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(sovrinDid.Did))
+				WithFromAddress(sovrinDid.Address())
 
-			msg := types.NewMsgEffectPayment(contractIdStr, sovrinDid)
+			msg := types.NewMsgEffectPayment(contractIdStr, sovrinDid.Did)
 
 			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},

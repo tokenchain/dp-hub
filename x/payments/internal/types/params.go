@@ -64,7 +64,7 @@ func NewParams(ixoFactor, initiationFeeAmount, initiationNodeFeePercentage,
 func DefaultParams() Params {
 	return Params{
 		IxoFactor:                            sdk.OneDec(),                                             // 1
-		InitiationFeeAmount:                  sdk.NewDec(500).Mul(types.IxoDecimals),                // 500 * 1e3 = 500000
+		InitiationFeeAmount:                  sdk.NewDec(500).Mul(types.IxoDecimals),                   // 500 * 1e3 = 500000
 		InitiationNodeFeePercentage:          sdk.ZeroDec(),                                            // 0
 		ClaimFeeAmount:                       sdk.NewDec(6).Quo(sdk.NewDec(10)).Mul(types.IxoDecimals), // 0.6 * 1e3 = 600
 		EvaluationFeeAmount:                  sdk.NewDec(4).Quo(sdk.NewDec(10)).Mul(types.IxoDecimals), // 0.4 * 1e3 = 400

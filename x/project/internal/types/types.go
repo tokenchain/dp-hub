@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	did "github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -14,14 +14,14 @@ type (
 	ProjectStatusTransitionMap map[ProjectStatus][]ProjectStatus
 )
 
-func (id InternalAccountID) ToAddressKey(projectDid types.Did) string {
+func (id InternalAccountID) ToAddressKey(projectDid did.Did) string {
 	return projectDid + "/" + string(id)
 }
 
 type StoredProjectDoc interface {
 	GetEvaluatorPay() int64
-	GetProjectDid() types.Did
-	GetSenderDid() types.Did
+	GetProjectDid() did.Did
+	GetSenderDid() did.Did
 	GetPubKey() string
 	GetStatus() ProjectStatus
 	SetStatus(status ProjectStatus)
@@ -61,10 +61,10 @@ func (next ProjectStatus) IsValidProgressionFrom(prev ProjectStatus) bool {
 }
 
 type WithdrawalInfo struct {
-	ActionID     string    `json:"actionID" yaml:"actionID"`
-	ProjectDid   types.Did `json:"projectDid" yaml:"projectDid"`
-	RecipientDid types.Did `json:"recipientDid" yaml:"recipientDid"`
-	Amount       sdk.Coin  `json:"amount" yaml:"amount"`
+	ActionID     string   `json:"actionID" yaml:"actionID"`
+	ProjectDid   did.Did  `json:"projectDid" yaml:"projectDid"`
+	RecipientDid did.Did  `json:"recipientDid" yaml:"recipientDid"`
+	Amount       sdk.Coin `json:"amount" yaml:"amount"`
 }
 
 type UpdateProjectStatusDoc struct {
@@ -96,8 +96,8 @@ func (pd ProjectDoc) GetEvaluatorPay() int64 {
 }
 
 type CreateAgentDoc struct {
-	AgentDid types.Did `json:"did" yaml:"did"`
-	Role     string    `json:"role" yaml:"role"`
+	AgentDid did.Did `json:"did" yaml:"did"`
+	Role     string  `json:"role" yaml:"role"`
 }
 
 type AgentStatus = string
@@ -109,7 +109,7 @@ const (
 )
 
 type UpdateAgentDoc struct {
-	Did    types.Did   `json:"did" yaml:"did"`
+	Did    did.Did     `json:"did" yaml:"did"`
 	Status AgentStatus `json:"status" yaml:"status"`
 	Role   string      `json:"role" yaml:"role"`
 }
@@ -132,8 +132,8 @@ type CreateEvaluationDoc struct {
 }
 
 type WithdrawFundsDoc struct {
-	ProjectDid   types.Did `json:"projectDid" yaml:"projectDid"`
-	RecipientDid types.Did `json:"recipientDid" yaml:"recipientDid"`
-	Amount       sdk.Int   `json:"amount" yaml:"amount"`
-	IsRefund     bool      `json:"isRefund" yaml:"isRefund"`
+	ProjectDid   did.Did `json:"projectDid" yaml:"projectDid"`
+	RecipientDid did.Did `json:"recipientDid" yaml:"recipientDid"`
+	Amount       sdk.Int `json:"amount" yaml:"amount"`
+	IsRefund     bool    `json:"isRefund" yaml:"isRefund"`
 }

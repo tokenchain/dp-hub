@@ -2,7 +2,7 @@ package client
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
 	"strings"
 )
@@ -22,7 +22,7 @@ func paramsListToMap(paramValuePairs []string) (paramsFieldMap map[string]string
 		// Split each "a:1" into ["a","1"]
 		pvArray := strings.SplitN(pv, ":", 2)
 		if len(pvArray) != 2 {
-			return nil, x.ErrInvalidFunctionParameter(pv)
+			return nil, errors.InvalidFunctionParameter(pv)
 		}
 		paramsFieldMap[pvArray[0]] = pvArray[1]
 	}
@@ -33,7 +33,7 @@ func paramsMapToObj(paramsFieldMap map[string]string) (functionParams types.Func
 	for p, v := range paramsFieldMap {
 		vInt, ok := sdk.NewIntFromString(v)
 		if !ok {
-			return nil, x.ErrArgumentMissingOrNonInteger( p)
+			return nil, errors.ArgumentMissingOrNonInteger(p)
 		} else {
 			functionParams = append(functionParams, types.NewFunctionParam(p, vInt))
 		}
@@ -65,7 +65,7 @@ func ParseTwoPartCoin(amount, denom string) (coin sdk.Coin, err error) {
 	if err != nil {
 		return sdk.Coin{}, err
 	} else if denom != coin.Denom {
-		return sdk.Coin{}, x.ErrInvalidCoinDenomination(denom)
+		return sdk.Coin{}, errors.InvalidCoinDenomination(denom)
 	}
 	return coin, nil
 }
