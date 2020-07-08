@@ -23,10 +23,7 @@ func GetCmdAddDidDoc(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-
-			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(sovrinDid.Address())
-
+			cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(sovrinDid.Address())
 			msg := types.NewMsgAddDid(sovrinDid.Did, sovrinDid.VerifyKey)
 			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},

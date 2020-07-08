@@ -261,8 +261,7 @@ func GetCmdEffectPayment(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(sovrinDid.Address())
+			cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(sovrinDid.Address())
 
 			msg := types.NewMsgEffectPayment(contractIdStr, sovrinDid.Did)
 

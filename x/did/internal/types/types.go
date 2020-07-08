@@ -57,6 +57,10 @@ func (dd BaseDidDoc) Address() sdk.AccAddress {
 	return exported.VerifyKeyToAddr(dd.GetPubKey())
 }
 
+func (dd BaseDidDoc) AddressUnverified() sdk.AccAddress {
+	return exported.UnverifiedToAddr(dd.GetPubKey())
+}
+
 type Credential struct{}
 
 func fromJsonString(jsonIxoDid string) (exported.IxoDid, error) {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -29,6 +30,22 @@ func RegisterTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc("/txs", BroadcastTxRequest(cliCtx)).Methods("POST")
 	r.HandleFunc("/sign_data", SignDataRequest(cliCtx)).Methods("POST")
 }
+
+type (
+	SignDataReq struct {
+		Msg    string `json:"msg" yaml:"msg"`
+		PubKey string `json:"pub_key" yaml:"pub_key"`
+	}
+
+	SignDataResponse struct {
+		SignBytes string      `json:"sign_bytes" yaml:"sign_bytes"`
+		Fee       auth.StdFee `json:"fee" yaml:"fee"`
+	}
+	BroadcastReq struct {
+		Tx   string `json:"tx" yaml:"tx"`
+		Mode string `json:"mode" yaml:"mode"`
+	}
+)
 
 func QueryTxRequestHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -114,11 +131,6 @@ func QueryTxsRequestHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-type BroadcastReq struct {
-	Tx   string `json:"tx" yaml:"tx"`
-	Mode string `json:"mode" yaml:"mode"`
-}
-
 func BroadcastTxRequest(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req BroadcastReq
@@ -157,15 +169,6 @@ func BroadcastTxRequest(cliCtx context.CLIContext) http.HandlerFunc {
 
 		rest.PostProcessResponseBare(w, cliCtx, res)
 	}
-}
-
-type SignDataReq struct {
-	Msg string `json:"msg" yaml:"msg"`
-}
-
-type SignDataResponse struct {
-	SignBytes string      `json:"sign_bytes" yaml:"sign_bytes"`
-	Fee       auth.StdFee `json:"fee" yaml:"fee"`
 }
 
 func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
@@ -213,7 +216,8 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 				project.MsgCreateProjectFee)
 		default:
 			// Deduce and set signer address
-			signerAddress := types.DidToAddr(ixoMsg.GetSignerDid())
+			//signerAddress := types.DidToAddr(ixoMsg.GetSignerDid())
+			signerAddress := exported.VerifyKeyToAddr(req.PubKey)
 			cliCtx = cliCtx.WithFromAddress(signerAddress)
 
 			//	reader := bufio.NewReader(cmd.InOrStdin())

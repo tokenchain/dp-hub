@@ -13,7 +13,6 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
 	"github.com/tokenchain/ixo-blockchain/x/dap"
-	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
 )
@@ -289,8 +288,7 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(types2.DidToAddr(swapperDid.Did))
+			cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(swapperDid.Address())
 
 			msg := types.NewMsgSwap(swapperDid, from, args[2], args[3])
 

@@ -74,7 +74,7 @@ var (
 		did.AppModuleBasic{},
 		payments.AppModuleBasic{},
 		project.AppModuleBasic{},
-		
+
 		bonds.AppModuleBasic{},
 		treasury.AppModuleBasic{},
 		oracles.AppModuleBasic{},
