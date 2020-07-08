@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"github.com/tokenchain/ixo-blockchain/x/dap"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"time"
@@ -42,16 +43,22 @@ func GetCmdAddCredential(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-
+			fmt.Println("Confirmed its a valid did document... ")
 			t := time.Now()
 			issued := t.Format(time.RFC3339)
-
 			credTypes := []string{"Credential", "ProofOfKYC"}
-
 			cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(sovrinDid.Address())
 
 			msg := types.NewMsgAddCredential(didAddr, credTypes, sovrinDid.Did, issued)
 			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
+	}
+}
+
+func GetCmdDidGenerate(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "generate-did-doc",
+		Short: "Query all DID documents",
+		RunE: exported.RunMnemonicCmd,
 	}
 }

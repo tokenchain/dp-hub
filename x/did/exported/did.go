@@ -25,6 +25,7 @@ type (
 		String() string
 		AddressUnverified() sdk.AccAddress
 		Address() sdk.AccAddress
+		DidAddress() string
 		MarshaDid() ([]byte, error)
 	}
 	Claim struct {
@@ -81,7 +82,9 @@ func (id IxoDid) AddressUnverified() sdk.AccAddress {
 func (id IxoDid) Address() sdk.AccAddress {
 	return VerifyKeyToAddr(id.VerifyKey)
 }
-
+func (id IxoDid) DidAddress() string {
+	return id.Did
+}
 func (id IxoDid) String() string {
 	output, err := json.MarshalIndent(id, "", "  ")
 	if err != nil {

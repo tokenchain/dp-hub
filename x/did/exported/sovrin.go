@@ -1,18 +1,26 @@
 package exported
 
 import (
+	"bufio"
 	"bytes"
 	cryptoRand "crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/client/input"
+	"github.com/spf13/cobra"
 	"io"
 
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/cosmos/go-bip39"
 	"golang.org/x/crypto/ed25519"
 	naclBox "golang.org/x/crypto/nacl/box"
+)
+
+const (
+	flagUserEntropy     = "unsafe-entropy"
+	mnemonicEntropySize = 256
 )
 
 type SovrinSecret struct {
@@ -52,32 +60,30 @@ func GenerateMnemonic() string {
 	return mnemonicWords
 }
 
-func fromJsonString(jsonSovrinDid string) (SovrinDid, error) {
-	var did SovrinDid
+func fromJsonString(jsonSovrinDid string) (IxoDid, error) {
+	var did IxoDid
 	err := json.Unmarshal([]byte(jsonSovrinDid), &did)
 	if err != nil {
 		err := fmt.Errorf("Could not unmarshal did into struct. Error: %s", err.Error())
-		return SovrinDid{}, err
+		return IxoDid{}, err
 	}
 
 	return did, nil
 }
 
-func UnmarshalSovrinDid(jsonSovrinDid string) (SovrinDid, error) {
-	return fromJsonString(jsonSovrinDid)
-}
-
-func FromMnemonic(mnemonic string) SovrinDid {
+func mnemonicToDid(mnemonic string) IxoDid {
 	seed := sha256.New()
 	seed.Write([]byte(mnemonic))
-
 	var seed32 [32]byte
 	copy(seed32[:], seed.Sum(nil)[:32])
-
-	return FromSeed(seed32)
+	return fromSeedToDid(seed32)
 }
 
-func FromSeed(seed [32]byte) SovrinDid {
+func dxpDidAddress(document string) string {
+	return fmt.Sprintf("did:dxp:%s", document)
+}
+
+func fromSeedToDid(seed [32]byte) IxoDid {
 
 	publicKeyBytes, privateKeyBytes, err := ed25519.GenerateKey(bytes.NewReader(seed[0:32]))
 	if err != nil {
@@ -89,12 +95,12 @@ func FromSeed(seed [32]byte) SovrinDid {
 	signKey := base58.Encode(privateKey[:32])
 	keyPairPublicKey, keyPairPrivateKey, err := naclBox.GenerateKey(bytes.NewReader(privateKey[:]))
 
-	sovDid := SovrinDid{
-		Did:                 base58.Encode(publicKey[:16]),
+	sovDid := IxoDid{
+		Did:                 dxpDidAddress(base58.Encode(publicKey[:16])),
 		VerifyKey:           base58.Encode(publicKey),
 		EncryptionPublicKey: base58.Encode(keyPairPublicKey[:]),
 
-		Secret: SovrinSecret{
+		Secret: Secret{
 			Seed:                 hex.EncodeToString(seed[0:32]),
 			SignKey:              signKey,
 			EncryptionPrivateKey: base58.Encode(keyPairPrivateKey[:]),
@@ -104,14 +110,16 @@ func FromSeed(seed [32]byte) SovrinDid {
 	return sovDid
 }
 
-func Gen() SovrinDid {
+/*
+func Gen() IxoDid {
 	var seed [32]byte
 	if _, err := io.ReadFull(cryptoRand.Reader, seed[:]); err != nil {
 		panic(err)
 	}
-	return FromSeed(seed)
+	did, _ := fromJsonString(seed)
+	return did
 }
-
+*/
 func SignMessage(message []byte, signKey string, verifyKey string) []byte {
 	// Force the length to 64
 	privateKey := make([]byte, ed25519.PrivateKeySize)
@@ -148,4 +156,57 @@ func GetKeyPairFromSignKey(signKey string) ([32]byte, [32]byte) {
 		panic(err)
 	}
 	return *publicKey, *privateKey
+}
+
+func RunMnemonicCmd(cmd *cobra.Command, args []string) error {
+	flags := cmd.Flags()
+	userEntropy, _ := flags.GetBool(flagUserEntropy)
+	var entropySeed []byte
+	if userEntropy {
+		// prompt the user to enter some entropy
+		buf := bufio.NewReader(cmd.InOrStdin())
+		inputEntropy, err := input.GetString("> WARNING: Generate at least 256-bits of entropy and enter the results here:", buf)
+		if err != nil {
+			return err
+		}
+		if len(inputEntropy) < 43 {
+			return fmt.Errorf("256-bits is 43 characters in Base-64, and 100 in Base-6. You entered %v, and probably want more", len(inputEntropy))
+		}
+		conf, err := input.GetConfirmation(fmt.Sprintf("> Input length: %d", len(inputEntropy)), buf)
+		if err != nil {
+			return err
+		}
+		if !conf {
+			return nil
+		}
+
+		// hash input entropy to get entropy seed
+		hashedEntropy := sha256.Sum256([]byte(inputEntropy))
+		entropySeed = hashedEntropy[:]
+	} else {
+		// read entropy seed straight from crypto.Rand
+		var err error
+		entropySeed, err = bip39.NewEntropy(mnemonicEntropySize)
+		if err != nil {
+			return err
+		}
+	}
+
+	mnemonic, err := bip39.NewMnemonic(entropySeed)
+	if err != nil {
+		return err
+	}
+	//	cmd.Println(mnemonic)
+	cmd.Println("======= The passphrase please keep in the secured place:")
+	cmd.Println(mnemonic)
+	cmd.Println("===========================================================================================")
+	did_document := mnemonicToDid(mnemonic)
+
+	cmd.Println("======= DID account address")
+	cmd.Println(did_document.DidAddress())
+
+	cmd.Println("======= generated a new DID document with the above passphrase")
+	cmd.Println(did_document.String())
+
+	return nil
 }

@@ -68,7 +68,6 @@ SHOWTIMECMD :=  date "+%Y/%m/%d H:%M:%S"
 all: lint install
 OS=linux
 
-
 build: go.sum
 ifeq ($(OS),Windows_NT)
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpd.exe ./cmd/dpd
@@ -79,7 +78,6 @@ else
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli ./cmd/dpcli
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpfaucet ./cmd/dpfaucet
 endif
-	$(update_check)
 
 linux: go.sum
 	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/dpd ./cmd/dpd
@@ -101,6 +99,8 @@ lint: go.sum
 	go run ./cmd/dpd
 	go run ./cmd/dpcli
 
+update-git: go.sum
+	$(update_check)
 
 ########################################
 ### Tools & dependencies
