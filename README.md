@@ -12,18 +12,26 @@ This is the official repository for the Internet of Impact Relayer Hub (DP Hub)
 - Guide for setting up a Relayer on the Darkpool Test Network: [here](https://github.com/tokenchain/docs/blob/master/developer-tools/test-networks/join-a-test-network.md)
 - Modules specification: look into `x/<module>/spec`
 
-## Scripts
+### Other documentations
+- [Whitepaper](https://github.com/tokenchain/dp-hub/blob/master/doc/whitepaper.md)
+- [Chinese Developer Guide](https://github.com/tokenchain/dp-hub/blob/master/doc/commands.md)
+
+
+### Scripts
 Quick-start:
+
+
 ```bash
 cd ./scripts/
-bash clean_build.sh && bash run_with_some_data.sh  # Option 1
-bash clean_build.sh && bash run_with_all_data.sh   # Option 2
+sh installnewchain.sh
+sh clean_build.sh && bash run_with_some_data.sh  # Option 1
+sh clean_build.sh && bash run_with_all_data.sh   # Option 2
 ```
 
 To run without resetting data:
 ```bash
 cd ./scripts/
-bash run_only.sh
+sh run_only.sh
 ```
 
 (Optional) Once the chain has started, run one of the following:
@@ -31,17 +39,17 @@ bash run_only.sh
 Add more data and activity:
 ```bash
 cd ./scripts/
-bash add_dummy_testnet_data.sh
+sh add_dummy_testnet_data.sh
 ```
 
 Demos:
 ```bash
 cd ./scripts
-bash demo_bonds.sh              # Option 1
-bash demo_bonds_swapper.sh      # Option 2
-bash demo_project.sh            # Option 3
-bash demo_tx_broadcast_rest.sh  # Option 4
-bash demo_tx_broadcast_rpc.sh   # Option 5
+sh demo_bonds.sh              # Option 1
+sh demo_bonds_swapper.sh      # Option 2
+sh demo_project.sh            # Option 3
+sh demo_tx_broadcast_rest.sh  # Option 4
+sh demo_tx_broadcast_rpc.sh   # Option 5
 ```
 
 Nginx setup
@@ -100,7 +108,3 @@ server {
 
 #### API Doc
 Please find the api document to be located at `*:1317/swagger-ui/` at the LCD.
-
-#### Other documentations
-- [Whitepaper](https://github.com/tokenchain/dp-hub/blob/master/whitepaper.md)
-- [Chinese Developer Guide](https://github.com/twjang/gaia/blob/d26d6eddcf8dbb87ed101f69419e3b79cdb568c6/docs/translations/cn/gaiacli.md)

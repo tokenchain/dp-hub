@@ -48,8 +48,7 @@ func GetCmdAddCredential(cdc *codec.Codec) *cobra.Command {
 
 			credTypes := []string{"Credential", "ProofOfKYC"}
 
-			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(sovrinDid.Address())
+			cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(sovrinDid.Address())
 
 			msg := types.NewMsgAddCredential(didAddr, credTypes, sovrinDid.Did, issued)
 			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
