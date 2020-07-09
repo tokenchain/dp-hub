@@ -20,12 +20,10 @@ type DidKeeper interface {
 
 func NewDefaultPubKeyGetter(didKeeper DidKeeper) PubKeyGetter {
 	return func(ctx sdk.Context, msg IxoMsg) (pubKey crypto.PubKey, res error) {
-
 		signerDidDoc, err := didKeeper.GetDidDoc(ctx, msg.GetSignerDid())
 		if err != nil {
 			return pubKey, err
 		}
-
 		var pubKeyRaw ed25519tm.PubKeyEd25519
 		copy(pubKeyRaw[:], base58.Decode(signerDidDoc.GetPubKey()))
 		return pubKeyRaw, nil

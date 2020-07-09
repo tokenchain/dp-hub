@@ -255,7 +255,7 @@ func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
 		ixoSig := dap.NewSignature(time.Now(), ixoTx.GetSignatures()[0].SignatureValue)
 		isGenesis := ctx.BlockHeight() == 0
 		signBytes := getProjectCreationSignBytes(newCtx.ChainID(), ixoTx, signerAcc, isGenesis)
-		signerAcc, res = dap.ProcessSig(signerAcc, ixoSig, signBytes, simulate)
+		signerAcc, res = dap.ProcessSig(ctx, signerAcc, ixoSig, signBytes, simulate, ak.GetParams(ctx))
 		if res != nil {
 			return newCtx, res
 		}

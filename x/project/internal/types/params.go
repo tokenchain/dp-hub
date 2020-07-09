@@ -35,7 +35,7 @@ func NewParams(projectMinimumInitialFunding sdk.Int, ixoDid exported.Did) Params
 // default project module parameters
 func DefaultParams() Params {
 	return Params{
-		IxoDid:                       exported.Did(""), // blank
+		IxoDid:                       exported.Did("N/A"), // blank
 		ProjectMinimumInitialFunding: sdk.OneInt(),     // 1
 	}
 }

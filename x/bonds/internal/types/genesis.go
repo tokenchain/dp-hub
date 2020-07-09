@@ -3,6 +3,7 @@ package types
 type GenesisState struct {
 	Bonds   []Bond  `json:"bonds" yaml:"bonds"`
 	Batches []Batch `json:"batches" yaml:"batches"`
+	Params  Params  `json:"params" yaml:"params"`
 }
 
 func NewGenesisState(bonds []Bond, batches []Batch) GenesisState {
@@ -14,15 +15,17 @@ func NewGenesisState(bonds []Bond, batches []Batch) GenesisState {
 
 //noinspection GoUnusedParameter
 func ValidateGenesis(data GenesisState) error {
-	return nil
+	return ValidateParams(data.Params)
 }
 
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
-		Bonds:   nil,
-		Batches: nil,
+		Bonds:   []Bond{},
+		Batches: []Batch{},
+		Params:  DefaultParams(),
 	}
 }
+
 /*
 func NewBondDollar() Bond {
 	return NewBond(

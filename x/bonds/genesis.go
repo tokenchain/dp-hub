@@ -38,9 +38,10 @@ func ExportGenesis(ctx sdk.Context, k Keeper) GenesisState {
 		bonds = append(bonds, bond)
 		batches = append(batches, batch)
 	}
-
+	params_ := k.GetParams(ctx)
 	return GenesisState{
 		Bonds:   bonds,
 		Batches: batches,
+		Params:  params_,
 	}
 }

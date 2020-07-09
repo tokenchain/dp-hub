@@ -12,7 +12,6 @@ import (
 
 func GetPubKeyGetter(keeper Keeper) types.PubKeyGetter {
 	return func(ctx sdk.Context, msg dap.IxoMsg) (pubKey crypto.PubKey, res error) {
-
 		// Get signer PubKey
 		var pubKeyEd25519 ed25519.PubKeyEd25519
 		switch msg := msg.(type) {
@@ -26,6 +25,7 @@ func GetPubKeyGetter(keeper Keeper) types.PubKeyGetter {
 			}
 			copy(pubKeyEd25519[:], base58.Decode(didDoc.GetPubKey()))
 		}
+
 		return pubKeyEd25519, nil
 	}
 }

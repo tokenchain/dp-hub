@@ -27,7 +27,7 @@ var (
 	ProcessSig                       = types.ProcessSig
 	SignAndBroadcastTxCli            = types.SignAndBroadcastTxCli
 	SignAndBroadcastTxRest           = types.SignAndBroadcastTxRest
-	ProcessPubKey                    = types.ProcessPubKey
+
 
 	// Types
 	IxoDecimals = types.IxoDecimals

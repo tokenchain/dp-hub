@@ -63,6 +63,7 @@ func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 		cli.GetCmdAddDidDoc(cdc),
 		cli.GetCmdAddCredential(cdc),
 		cli.GetCmdDidGenerate(cdc),
+		cli.GetCmdAccDidGenerate(cdc),
 	)...)
 
 	return didTxCmd

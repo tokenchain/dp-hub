@@ -72,22 +72,20 @@ build: go.sum
 ifeq ($(OS),Windows_NT)
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpd.exe ./cmd/dpd
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli.exe ./cmd/dpcli
-	go build -mod=readonly $(BUILD_FLAGS) -o build/dpfaucet.exe ./cmd/dpfaucet
+
 else
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpd ./cmd/dpd
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli ./cmd/dpcli
-	go build -mod=readonly $(BUILD_FLAGS) -o build/dpfaucet ./cmd/dpfaucet
+
 endif
 
 linux: go.sum
 	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/dpd ./cmd/dpd
 	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli ./cmd/dpcli
-	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/dpfaucet ./cmd/dpfaucet
 
 install: go.sum
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/dpd
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/dpcli
-	go install -mod=readonly $(BUILD_FLAGS) ./cmd/dpfaucet
 
 sign-release:
 	if test -n "$(GPG_SIGNING_KEY)"; then \
@@ -98,6 +96,20 @@ sign-release:
 lint: go.sum
 	go run ./cmd/dpd
 	go run ./cmd/dpcli
+
+build-faucet: go.sum
+ifeq ($(OS),Windows_NT)
+	go build -mod=readonly $(BUILD_FLAGS) -o build/dpfaucet.exe ./cmd/dpfaucet
+
+	else
+	go build -mod=readonly $(BUILD_FLAGS) -o build/dpfaucet ./cmd/dpfaucet
+endif
+
+install-faucet: go.sum
+	go install -mod=readonly $(BUILD_FLAGS) ./cmd/dpfaucet
+
+linux-faucet: go.sum
+	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/dpfaucet ./cmd/dpfaucet
 
 update-git: go.sum
 	$(update_check)

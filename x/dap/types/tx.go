@@ -26,20 +26,25 @@ func DidToAddr(did exported.Did) sdk.AccAddress {
 	return StringToAddr(did)
 }
 
-type IxoTx struct {
-	sdk.Tx
-	Msgs       []sdk.Msg      `json:"payload" yaml:"payload"`
-	Fee        auth.StdFee    `json:"fee" yaml:"fee"`
-	Signatures []IxoSignature `json:"signatures" yaml:"signatures"`
-	Memo       string         `json:"memo" yaml:"memo"`
-}
+type (
+	IxoMsg interface {
+		sdk.Msg
+		GetSignerDid() exported.Did
+	}
+	IxoSignature struct {
+		SignatureValue [ed25519SignatureLen]byte `json:"signatureValue" yaml:"signatureValue"`
+		Created        time.Time                 `json:"created" yaml:"created"`
+	}
+	IxoTx struct {
+		sdk.Tx
+		Msgs       []sdk.Msg      `json:"payload" yaml:"payload"`
+		Fee        auth.StdFee    `json:"fee" yaml:"fee"`
+		Signatures []IxoSignature `json:"signatures" yaml:"signatures"`
+		Memo       string         `json:"memo" yaml:"memo"`
+	}
+)
 
 //var _ sdk.Tx = IxoTx{}
-
-type IxoSignature struct {
-	SignatureValue [ed25519SignatureLen]byte `json:"signatureValue" yaml:"signatureValue"`
-	Created        time.Time                 `json:"created" yaml:"created"`
-}
 
 // MarshalYAML returns the YAML representation of the signature.
 func (is IxoSignature) MarshalYAML() (interface{}, error) {
@@ -60,11 +65,6 @@ func (is IxoSignature) MarshalYAML() (interface{}, error) {
 	}
 
 	return string(bz), err
-}
-
-type IxoMsg interface {
-	sdk.Msg
-	GetSignerDid() exported.Did
 }
 
 func NewSignature(created time.Time, signature [ed25519SignatureLen]byte) IxoSignature {
@@ -105,14 +105,14 @@ func (tx IxoTx) ValidateBasic() error {
 	// Signatures validation
 	var ixoSigs = tx.GetSignatures()
 	if len(ixoSigs) == 0 {
-		return errors.Wrap(errors.ErrNoSignatures, "no signers")
+		return errors.Wrap(errors.ErrNoSignatures, "no signers. dxp")
 	}
 	if len(ixoSigs) != 1 {
-		return errors.Wrap(errors.ErrUnauthorized, "there can only be one signer")
+		return errors.Wrap(errors.ErrUnauthorized, "there can only be one signer. dxp")
 	}
 	// Messages validation
 	if len(tx.Msgs) != 1 {
-		return errors.Wrap(errors.ErrUnauthorized, "there can only be one message")
+		return errors.Wrap(errors.ErrUnauthorized, "there can only be one message. dxp")
 	}
 
 	return nil

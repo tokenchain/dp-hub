@@ -1,26 +1,20 @@
 package exported
 
 import (
-	"bufio"
 	"bytes"
 	cryptoRand "crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/client/input"
-	"github.com/spf13/cobra"
-	"io"
-
 	"github.com/btcsuite/btcutil/base58"
+	"github.com/cosmos/cosmos-sdk/crypto/keys"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/go-bip39"
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/ed25519"
 	naclBox "golang.org/x/crypto/nacl/box"
-)
-
-const (
-	flagUserEntropy     = "unsafe-entropy"
-	mnemonicEntropySize = 256
+	"io"
 )
 
 type SovrinSecret struct {
@@ -78,7 +72,9 @@ func mnemonicToDid(mnemonic string) IxoDid {
 	copy(seed32[:], seed.Sum(nil)[:32])
 	return fromSeedToDid(seed32)
 }
-
+func MnToDid(mnemonic string) IxoDid {
+	return mnemonicToDid(mnemonic)
+}
 func dxpDidAddress(document string) string {
 	return fmt.Sprintf("did:dxp:%s", document)
 }
@@ -158,55 +154,22 @@ func GetKeyPairFromSignKey(signKey string) ([32]byte, [32]byte) {
 	return *publicKey, *privateKey
 }
 
-func RunMnemonicCmd(cmd *cobra.Command, args []string) error {
-	flags := cmd.Flags()
-	userEntropy, _ := flags.GetBool(flagUserEntropy)
-	var entropySeed []byte
-	if userEntropy {
-		// prompt the user to enter some entropy
-		buf := bufio.NewReader(cmd.InOrStdin())
-		inputEntropy, err := input.GetString("> WARNING: Generate at least 256-bits of entropy and enter the results here:", buf)
-		if err != nil {
-			return err
-		}
-		if len(inputEntropy) < 43 {
-			return fmt.Errorf("256-bits is 43 characters in Base-64, and 100 in Base-6. You entered %v, and probably want more", len(inputEntropy))
-		}
-		conf, err := input.GetConfirmation(fmt.Sprintf("> Input length: %d", len(inputEntropy)), buf)
-		if err != nil {
-			return err
-		}
-		if !conf {
-			return nil
-		}
-
-		// hash input entropy to get entropy seed
-		hashedEntropy := sha256.Sum256([]byte(inputEntropy))
-		entropySeed = hashedEntropy[:]
-	} else {
-		// read entropy seed straight from crypto.Rand
-		var err error
-		entropySeed, err = bip39.NewEntropy(mnemonicEntropySize)
-		if err != nil {
-			return err
-		}
+func AddAccount(kb keys.Keybase, name string, pubkey string) error {
+	_, err := kb.Get(name)
+	if err == nil {
+		//account exist
+		return errors.Wrap(nil, "account exist")
 	}
+	pk, err := sdk.GetPubKeyFromBech32(sdk.Bech32PubKeyTypeAccPub, pubkey)
+	if err != nil {
+		//account exist
+		return err
+	}
+	algo := keys.Ed25519
 
-	mnemonic, err := bip39.NewMnemonic(entropySeed)
+	_, err = kb.CreateOffline(name, pk, algo)
 	if err != nil {
 		return err
 	}
-	//	cmd.Println(mnemonic)
-	cmd.Println("======= The passphrase please keep in the secured place:")
-	cmd.Println(mnemonic)
-	cmd.Println("===========================================================================================")
-	did_document := mnemonicToDid(mnemonic)
-
-	cmd.Println("======= DID account address")
-	cmd.Println(did_document.DidAddress())
-
-	cmd.Println("======= generated a new DID document with the above passphrase")
-	cmd.Println(did_document.String())
-
 	return nil
 }

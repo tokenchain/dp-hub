@@ -8,6 +8,17 @@ import (
 	exporteddid "github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
+// GetParams returns the total set of bonds parameters.
+func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
+	k.paramSpace.GetParamSet(ctx, &params)
+	return params
+}
+
+// SetParams sets the total set of bonds parameters.
+func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
+	k.paramSpace.SetParamSet(ctx, &params)
+}
+
 func (k Keeper) GetBondIterator(ctx sdk.Context) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
 	return sdk.KVStorePrefixIterator(store, types.BondsKeyPrefix)

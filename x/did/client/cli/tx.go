@@ -59,6 +59,14 @@ func GetCmdDidGenerate(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "generate-did-doc",
 		Short: "Query all DID documents",
-		RunE: exported.RunMnemonicCmd,
+		RunE:  RunMnemonicCmd,
+	}
+}
+
+func GetCmdAccDidGenerate(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "generate-did-acc [name]",
+		Short: "Query all DID documents",
+		RunE:  RunAccMnemonicCmd(cdc),
 	}
 }
