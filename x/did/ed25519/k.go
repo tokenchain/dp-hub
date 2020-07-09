@@ -5,7 +5,9 @@ import (
 	"crypto"
 	cryptorand "crypto/rand"
 	"crypto/sha512"
-	"errors"
+	"crypto/subtle"
+	"fmt"
+	tmCrypto "github.com/tendermint/tendermint/crypto"
 	"io"
 	"strconv"
 )
@@ -32,21 +34,68 @@ func (priv PrivateKey) Seed() []byte {
 	return seed
 }
 
-// Sign signs the given message with priv.
-// Ed25519 performs two passes over messages to be signed and therefore cannot
-// handle pre-hashed messages. Thus opts.HashFunc() must return zero to
-// indicate the message hasn't been hashed. This can be achieved by passing
-// crypto.Hash(0) as the value for opts.
-func (priv PrivateKey) Sign(rand io.Reader, message []byte, opts crypto.SignerOpts) (signature []byte, err error) {
-	if opts.HashFunc() != crypto.Hash(0) {
-		return nil, errors.New("ed25519: cannot sign hashed message")
+// PubKeyFromBytes unmarshals public key bytes and returns a PubKey
+func PubKeyFromBytes(pubKeyBytes []byte) (pubKey tmCrypto.PubKey, err error) {
+	err = ModuleCdc.UnmarshalBinaryBare(pubKeyBytes, &pubKey)
+	return
+}
+func (privKey PrivateKey) Bytes() []byte {
+	return ModuleCdc.MustMarshalBinaryBare(privKey)
+	//return []byte(privKey[:])
+}
+func (privKey PrivateKey) Sign(msg []byte) ([]byte, error) {
+	signatureBytes := Sign(privKey[:], msg)
+	return signatureBytes, nil
+	//return nil, nil
+}
+func (privKey PrivateKey) Equals(other tmCrypto.PrivKey) bool {
+	if otherEd, ok := other.(PrivateKey); ok {
+		return subtle.ConstantTimeCompare(privKey[:], otherEd[:]) == 1
 	}
-
-	return Sign(priv, message), nil
+	return false
 }
 
-// Sign signs the message with privateKey and returns a signature. It will
-// panic if len(privateKey) is not PrivateKeySize.
+func (privKey PrivateKey) PrivKey() tmCrypto.PrivKey {
+	key, err := PrivKeyFromBytes(privKey.Bytes())
+	if err != nil {
+		panic("cannot decode binary bare to crypto")
+	}
+	return key
+}
+func (privKey PrivateKey) String() string {
+	return fmt.Sprintf("PrivateKey{%s}", string(privKey))
+}
+
+// PubKey gets the corresponding public key from the private key.
+func (privKey PrivateKey) PubKey() tmCrypto.PubKey {
+	privKeyBytes := make([]byte, PrivateKeySize)
+	//var privKeyBytes [PrivateKeySize]byte
+	copy(privKeyBytes, privKey)
+	//privKeyBytes := [PrivateKeySize]byte(privKey)
+	initialized := false
+	// If the latter 32 bytes of the privkey are all zero, compute the pubkey
+	// otherwise privkey is initialized and we can use the cached value inside
+	// of the private key.
+	println(fmt.Sprintf("===== the cap is now: %d", cap(privKeyBytes)))
+	for _, v := range privKeyBytes[32:] {
+		if v != 0 {
+			initialized = true
+			break
+		}
+	}
+
+	println("=============")
+	println(privKey.String())
+
+	if !initialized {
+		panic("Expected PrivKeyEd25519dp to include concatenated pubkey bytes")
+	}
+
+	var pubkeyBytes [PubKeyEd25519Size]byte
+	copy(pubkeyBytes[:], privKey[32:])
+	return PubKeyEd25519dp(pubkeyBytes)
+}
+
 func Sign(privateKey PrivateKey, message []byte) []byte {
 	if l := len(privateKey); l != PrivateKeySize {
 		panic("ed25519: bad private key length: " + strconv.Itoa(l))
@@ -159,6 +208,7 @@ func GenerateKey(rand io.Reader) (PublicKey, PrivateKey, error) {
 
 	return publicKey, privateKey, nil
 }
+
 // NewKeyFromSeed calculates a private key from a seed. It will panic if
 // len(seed) is not SeedSize. This function is provided for interoperability
 // with RFC 8032. RFC 8032's private keys correspond to seeds in this

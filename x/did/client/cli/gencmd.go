@@ -2,19 +2,25 @@ package cli
 
 import (
 	"bufio"
+	"github.com/tokenchain/ixo-blockchain/x/did/ed25519"
+
 	"crypto/sha256"
+
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/input"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/go-bip39"
 	"github.com/spf13/cobra"
-	"github.com/tokenchain/ixo-blockchain/x/did/ed25519"
+	"github.com/spf13/viper"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+	"io"
 )
 
 const (
+	flagDryRun          = "dry-run"
 	flagUserEntropy     = "unsafe-entropy"
 	mnemonicEntropySize = 256
 )
@@ -76,12 +82,24 @@ func RunMnemonicCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+func getKeybase(transient bool, buf io.Reader) (keys.Keybase, error) {
+	if transient {
+		return keys.NewInMemory(), nil
+	}
+	return keys.NewKeyring(sdk.KeyringServiceName(), viper.GetString(flags.FlagKeyringBackend), viper.GetString(flags.FlagHome), buf)
+}
+
 func RunAccMnemonicCmd(cdc *codec.Codec) CommandDo {
 	return func(cmd *cobra.Command, args []string) error {
+		inBuf := bufio.NewReader(cmd.InOrStdin())
+
 		flags := cmd.Flags()
-		cliCtx := context.NewCLIContext().WithCodec(cdc)
+		//cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 		userEntropy, _ := flags.GetBool(flagUserEntropy)
+		isDryRun, _ := flags.GetBool(flagDryRun)
+		kb, err := getKeybase(isDryRun, inBuf)
+
 		var entropySeed []byte
 		if userEntropy {
 			// prompt the user to enter some entropy
@@ -112,15 +130,20 @@ func RunAccMnemonicCmd(cdc *codec.Codec) CommandDo {
 				return err
 			}
 		}
-
-		privKey := ed25519.NewKeyFromSeed(entropySeed)
-		EDprivKey := ed25519.PrivKeyToEdPrivateKey(privKey)
+		//cmd.Println("========Seed====================================================")
+		//cmd.Println(string(entropySeed))
+		private_key := ed25519.NewKeyFromSeed(entropySeed)
+		var privKeyEd ed25519.PrivateKey
+		//cmd.Println("========Private Key====================================================")
+		//cmd.Println(string(private_key))
+		copy(privKeyEd[:], private_key)
+		//privKey :=NewKeyFromSeed(entropySeed)
+		//EDprivKey := PrivKeyToEdPrivateKey(privKey)
 		name := args[0]
-		info, err := cliCtx.Keybase.CreateOffline(name, EDprivKey.PubKey(), keys.Ed25519)
+		info, err := kb.CreateOffline(name, privKeyEd.PubKey(), keys.Ed25519)
 		if err != nil {
 			return err
 		}
-
 		mnemonic, err := bip39.NewMnemonic(entropySeed)
 		if err != nil {
 			return err
@@ -144,7 +167,7 @@ func RunAccMnemonicCmd(cdc *codec.Codec) CommandDo {
 		cmd.Println(info.GetPath())
 
 		cmd.Println("=======🔑 Private key. Its an important private key! ")
-		cmd.Println(EDprivKey.String())
+		cmd.Println(privKeyEd.String())
 		cmd.Println("===========================================================================================")
 
 		cmd.Println("=======🔑 The passphrase please keep in the secured place. Its an important private key! ")

@@ -9,6 +9,7 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgAddDid{}, "did/AddDid", nil)
 	cdc.RegisterConcrete(MsgAddCredential{}, "did/AddCredential", nil)
 	cdc.RegisterInterface((*exported.DidDoc)(nil), nil)
+	cdc.RegisterInterface((*exported.IdpDid)(nil), nil)
 	// TODO: https://github.com/tokenchain/ixo-blockchain/issues/76
 	cdc.RegisterConcrete(BaseDidDoc{}, "did/BaseDidDoc", nil)
 	//cdc.RegisterConcrete(DidCredential{}, "did/DidCredential", nil)
