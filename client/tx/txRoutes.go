@@ -212,8 +212,7 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 		var stdSignMsg auth.StdSignMsg
 		switch ixoMsg.Type() {
 		case project.TypeMsgCreateProject:
-			stdSignMsg = ixoMsg.(project.MsgCreateProject).ToStdSignMsg(
-				project.MsgCreateProjectFee)
+			stdSignMsg = ixoMsg.(project.MsgCreateProject).ToStdSignMsg(project.MsgCreateProjectFee)
 		default:
 			// Deduce and set signer address
 			//signerAddress := types.DidToAddr(ixoMsg.GetSignerDid())

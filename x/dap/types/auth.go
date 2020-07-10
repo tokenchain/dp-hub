@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/btcsuite/btcutil/base58"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/input"
@@ -289,16 +288,13 @@ func proccessPublicKey(acc sdkexported.Account, sig IxoSignature, simulate bool)
 	return pubKey, nil
 }
 
+// sign transactions new and make publishing
 func signAndBroadcast(ctx context.CLIContext, msg auth.StdSignMsg, ixoDid exported.IxoDid) (sdk.TxResponse, error) {
 	if len(msg.Msgs) != 1 {
 		panic("expected one message")
 	}
-
-	var privKey ed25519tm.PrivKeyEd25519
-	copy(privKey[:], base58.Decode(ixoDid.Secret.SignKey))
-	copy(privKey[32:], base58.Decode(ixoDid.VerifyKey))
-
-	signature := SignIxoMessage(msg.Bytes(), privKey)
+	privKey := exported.RecoverDidEd25519ToPrivateKey(ixoDid)
+	signature := SignIxoMessageEd25519(msg.Bytes(), privKey)
 	tx := NewIxoTxSingleMsg(msg.Msgs[0], msg.Fee, signature, msg.Memo)
 
 	bz, err := ctx.Codec.MarshalJSON(tx)
@@ -488,11 +484,17 @@ func SignAndBroadcastTxFromStdSignMsg(cliCtx context.CLIContext,
 	return signAndBroadcast(cliCtx, msg, ixoDid)
 }
 
-func SignIxoMessage(signBytes []byte, privKey [ed25519.PrivateKeySize]byte) IxoSignature {
+func SignIxoMessageEd25519(signBytes []byte, privKey [ed25519.PrivateKeySize]byte) IxoSignature {
 	signatureBytes := ed25519.Sign(&privKey, signBytes)
 	return NewSignature(time.Now(), *signatureBytes)
 }
 
+/*
+func SignIxoMessageSecp256k1(signBytes []byte, privKey [32]byte) IxoSignature {
+	signatureBytes := ed25519.Sign(&privKey, signBytes)
+	return NewSignature(time.Now(), *signatureBytes)
+}
+*/
 func SignAndBroadcastTxCli(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid exported.IxoDid) error {
 
 	bldr := auth.NewTxBuilderFromCLI(cliCtx.Input).
@@ -552,13 +554,13 @@ func SignAndBroadcastTxCli(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid exp
 	if err != nil {
 		return err
 	}
-
+	println("sign 5 ---- ")
 	// Sign and broadcast
 	res, err := signAndBroadcast(cliCtx, stdSignMsg, sovrinDid)
 	if err != nil {
 		return err
 	}
-
+	println("sign 6 ---- ")
 	fmt.Println(res.String())
 	fmt.Printf("Committed at block %d. Hash: %s\n", res.Height, res.TxHash)
 	return nil

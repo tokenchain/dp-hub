@@ -3,15 +3,12 @@ package ed25519
 import (
 	"bytes"
 	"fmt"
-
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"io"
 )
 
 const (
-	PrivKeyAminoName = "darkpool/PrivKeyEd25519dp"
-	PubKeyAminoName  = "darkpool/PubKeyEd25519dp"
 	// PublicKeySize is the size, in bytes, of public keys as used in this package.
 	PublicKeySize = 32
 	// PrivateKeySize is the size, in bytes, of private keys as used in this package.
@@ -86,13 +83,6 @@ func genPrivKey(rand io.Reader) PrivateKey {
 	return privKeyEd
 }
 
-// genPrivKey generates a new ed25519 private key using the provided reader.
-func PrivKeyToEdPrivateKeyccccc(privKey PrivateKey) PrivateKey {
-	var privKeyEd PrivateKey
-	copy(privKeyEd[:], privKey)
-	return privKeyEd
-}
-
 // GenPrivKeyFromSecret hashes the secret with SHA2, and uses
 // that 32 byte output to create the private key.
 // NOTE: secret should be the output of a KDF like bcrypt,
@@ -104,3 +94,24 @@ func GenPrivKeyFromSecret(secret []byte) PrivateKey {
 	copy(privKeyEd[:], privKey)
 	return privKeyEd
 }
+
+
+
+// StdPrivKeyGen is the default PrivKeyGen function in the keybase.
+// For now, it only supports Secp256k1
+/*
+func StdPrivKeyGen(bz []byte, algo SigningAlgo) (tmcrypto.PrivKey, error) {
+	if algo == Secp256k1 {
+		return SecpPrivKeyGen(bz), nil
+	}
+	return nil, ErrUnsupportedSigningAlgo
+}*/
+
+// SecpPrivKeyGen generates a secp256k1 private key from the given bytes
+/*
+func SecpPrivKeyGen(bz []byte) tmcrypto.PrivKey {
+	var bzArr [32]byte
+	copy(bzArr[:], bz)
+	return secp256k1.PrivKeySecp256k1(bzArr)
+}
+*/

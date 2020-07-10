@@ -3,10 +3,7 @@ package exported
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/btcsuite/btcutil/base58"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 )
 
 var _ IdpDid = IxoDid{}
@@ -111,7 +108,7 @@ func fromJsonStringDp(jsonSovrinDid string) (IxoDid, error) {
 	}
 	return did, nil
 }
-
+/*
 func VerifyKeyToAddr(verifyKey string) sdk.AccAddress {
 	var pubKey ed25519.PubKeyEd25519
 	copy(pubKey[:], base58.Decode(verifyKey))
@@ -124,3 +121,4 @@ func UnverifiedToAddr(ver string) sdk.AccAddress {
 func UnmarshalDxpDid(jsonSovrinDid string) (IxoDid, error) {
 	return fromJsonStringDp(jsonSovrinDid)
 }
+*/

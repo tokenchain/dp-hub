@@ -10,10 +10,8 @@ import (
 )
 
 func SignIxoMessage(signBytes []byte, privKey [64]byte) types.IxoSignature {
-
 	signatureBytes := ed25519.Sign(&privKey, signBytes)
 	signature := *signatureBytes
-
 	return types.NewSignature(time.Now(), signature)
 }
 

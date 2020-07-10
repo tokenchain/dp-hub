@@ -2,7 +2,7 @@ package ed25519
 
 import "encoding/binary"
 
-// This code is a port of the public domain, “ref10” implementation of ed25519
+// This code is a port of the public domain, "ref10" implementation of ed25519
 // from SUPERCOP.
 
 // FieldElement represents an element of the field GF(2^255 - 19).  An element
@@ -368,7 +368,7 @@ func FeCombine(h *FieldElement, h0, h1, h2, h3, h4, h5, h6, h7, h8, h9 int64) {
 // 10 of them are 2-way parallelizable and vectorizable.
 // Can get away with 11 carries, but then data flow is much deeper.
 //
-// With tighter constraints on inputs, can squeeze carries into int32.
+// With tighter constraints on inputs can squeeze carries into int32.
 func FeMul(h, f, g *FieldElement) {
 	f0 := int64(f[0])
 	f1 := int64(f[1])
@@ -923,8 +923,7 @@ func GeDoubleScalarMultVartime(r *ProjectiveGroupElement, a *[32]byte, A *Extend
 	}
 }
 
-// equal returns 1 if b == c and 0 otherwise, assuming that b and c are
-// non-negative.
+// equal returns 1 if b == c and 0 otherwise.
 func equal(b, c int32) int32 {
 	x := uint32(b ^ c)
 	x--
