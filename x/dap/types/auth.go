@@ -12,13 +12,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/input"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	sdkexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/spf13/viper"
 	"github.com/tendermint/ed25519"
 	"github.com/tendermint/tendermint/crypto"
@@ -27,7 +24,6 @@ import (
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"os"
-	"runtime/debug"
 	"time"
 )
 
@@ -53,6 +49,62 @@ func init() {
 type PubKeyGetter func(ctx sdk.Context, msg IxoMsg) (crypto.PubKey, error)
 type SigVerificationGasConsumer func(meter sdk.GasMeter, sig []byte, pubkey crypto.PubKey, params types.Params) error
 
+/*
+
+
+
+used by modules:
+did
+project
+bonds
+
+
+
+*/
+
+func DefaultSigVerificationGasConsumer(meter sdk.GasMeter, sig []byte, pubkey crypto.PubKey, params types.Params, ) error {
+	switch pubkey := pubkey.(type) {
+	case ed25519tm.PubKeyEd25519:
+		meter.ConsumeGas(params.SigVerifyCostED25519, "ante verify: ed25519")
+		return InvalidPubKey("ED25519 public keys are unsupported")
+
+	case secp256k1.PubKeySecp256k1:
+		meter.ConsumeGas(params.SigVerifyCostSecp256k1, "ante verify: secp256k1")
+		return nil
+
+	case multisig.PubKeyMultisigThreshold:
+		var multisignature multisig.Multisignature
+		codec.Cdc.MustUnmarshalBinaryBare(sig, &multisignature)
+		ConsumeMultisignatureVerificationGas(meter, multisignature, pubkey, params)
+		return nil
+
+	default:
+		return InvalidPubKeyf("unrecognized public key type: %T", pubkey)
+	}
+}
+
+/*
+
+
+
+
+store := ctx.KVStore(capKey)
+txTest := tx.(txTest)
+
+if txTest.FailOnAnte {
+return newCtx, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "ante handler failure")
+}
+
+_, err = incrementingCounter(t, store, storeKey, txTest.Counter)
+if err != nil {
+return newCtx, err
+}
+
+return newCtx, nil
+
+
+
+*/
 func consumeSimSigGas(gasmeter sdk.GasMeter, pubkey crypto.PubKey, sig IxoSignature, params auth.Params) {
 	simSig := IxoSignature{}
 	if binary.Size(sig.SignatureValue) == 0 {
@@ -108,70 +160,11 @@ func ProcessSig(ctx sdk.Context, acc sdkexported.Account, sig IxoSignature, sign
 	return acc, err
 }
 
-func getSignBytes(chainID string, ixoTx IxoTx, acc sdkexported.Account, genesis bool) []byte {
-	var accNum uint64
-	if !genesis {
-		accNum = acc.GetAccountNumber()
-	}
-
-	return auth.StdSignBytes(
-		chainID, accNum, acc.GetSequence(), ixoTx.Fee, ixoTx.Msgs, ixoTx.Memo,
-	)
-}
-
-/**
-used by modules:
-did
-project
-bonds
-*/
 /*
-store := ctx.KVStore(capKey)
-txTest := tx.(txTest)
-
-if txTest.FailOnAnte {
-return newCtx, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "ante handler failure")
-}
-
-_, err = incrementingCounter(t, store, storeKey, txTest.Counter)
-if err != nil {
-return newCtx, err
-}
-
-return newCtx, nil*/
-
-func DefaultSigVerificationGasConsumer(
-	meter sdk.GasMeter, sig []byte, pubkey crypto.PubKey, params types.Params,
-) error {
-	switch pubkey := pubkey.(type) {
-	case ed25519tm.PubKeyEd25519:
-		meter.ConsumeGas(params.SigVerifyCostED25519, "ante verify: ed25519")
-		return errors.Wrap(errors.ErrInvalidPubKey, "ED25519 public keys are unsupported")
-
-	case secp256k1.PubKeySecp256k1:
-		meter.ConsumeGas(params.SigVerifyCostSecp256k1, "ante verify: secp256k1")
-		return nil
-
-	case multisig.PubKeyMultisigThreshold:
-		var multisignature multisig.Multisignature
-		codec.Cdc.MustUnmarshalBinaryBare(sig, &multisignature)
-
-		ConsumeMultisignatureVerificationGas(meter, multisignature, pubkey, params)
-		return nil
-
-	default:
-		return errors.Wrapf(errors.ErrInvalidPubKey, "unrecognized public key type: %T", pubkey)
-	}
-}
-
-func NewDefaultAnteHandlerBad(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGetter PubKeyGetter) sdk.AnteHandler {
-	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
-		// NOTE: GasWanted should be returned by the AnteHandler. GasUsed is
-		// determined by the GasMeter. We need access to the context to get the gas
-		// meter so we initialize upfront.
-		var gasWanted uint64
-		//var result *sdk.Result
-		//var gInfo sdk.GasInfo
+func NewDefaultAnteHandler(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGetter PubKeyGetter) sdk.AnteHandler {
+	return func(
+		ctx sdk.Context, tx sdk.Tx, simulate bool,
+	) (newCtx sdk.Context, res sdk.Result, abort bool) {
 
 		if addr := sk.GetModuleAddress(auth.FeeCollectorName); addr == nil {
 			panic(fmt.Sprintf("%s module account has not been set", auth.FeeCollectorName))
@@ -183,7 +176,7 @@ func NewDefaultAnteHandlerBad(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGet
 			// Set a gas meter with limit 0 as to prevent an infinite gas meter attack
 			// during runTx.
 			newCtx = auth.SetGasMeter(simulate, ctx, 0)
-			return newCtx, IntErr("tx must be dxp dedicated type IxoTx")
+			return newCtx, sdk.ErrInternal("tx must be ixo.IxoTx").Result(), true
 		}
 
 		params := ak.GetParams(ctx)
@@ -192,92 +185,71 @@ func NewDefaultAnteHandlerBad(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGet
 		// if this is a CheckTx. This is only for local mempool purposes, and thus
 		// is only ran on check tx.
 		if ctx.IsCheckTx() && !simulate {
-			// Set high gas price so standard test fee fails
-			/*gasPrice := sdk.NewDecCoinFromDec(NativeToken, sdk.NewDec(2000).Quo(IxoDecimals))
-			highGasPrice := []sdk.DecCoin{gasPrice}*/
-			ctx = ctx.WithMinGasPrices(ctx.MinGasPrices())
-			mfd := ante.NewMempoolFeeDecorator()
-			antehandler := sdk.ChainAnteDecorators(mfd)
-			_, err := antehandler(ctx, tx, false)
-			if err != nil {
-				return newCtx, IntErr("Decorator should have errored on too low fee for local gasPrice")
+			res := auth.EnsureSufficientMempoolFees(ctx, ixoTx.Fee)
+			if !res.IsOK() {
+				return newCtx, res, true
 			}
 		}
-		//setting gas to high up
+
 		newCtx = auth.SetGasMeter(simulate, ctx, ixoTx.Fee.Gas)
 
-		// ser= sdkerrors.ResponseDeliverTx(err, gInfo.GasWanted, gInfo.GasUsed)
 		// AnteHandlers must have their own defer/recover in order for the BaseApp
 		// to know how much gas was used! This is because the GasMeter is created in
 		// the AnteHandler, but if it panics the context won't be set properly in
 		// runTx's recover call.
-
 		defer func() {
 			if r := recover(); r != nil {
 				switch rType := r.(type) {
 				case sdk.ErrorOutOfGas:
-					err = errors.Wrap(
-						errors.ErrOutOfGas, fmt.Sprintf(
-							"out of gas in location: %v; gasWanted: %d, gasUsed: %d",
-							rType.Descriptor, gasWanted, ctx.GasMeter().GasConsumed(),
-						),
+					log := fmt.Sprintf(
+						"out of gas in location: %v; gasWanted: %d, gasUsed: %d",
+						rType.Descriptor, ixoTx.Fee.Gas, newCtx.GasMeter().GasConsumed(),
 					)
+					res = sdk.ErrOutOfGas(log).Result()
 
+					res.GasWanted = ixoTx.Fee.Gas
+					res.GasUsed = newCtx.GasMeter().GasConsumed()
+					abort = true
 				default:
-					err = errors.Wrap(
-						errors.ErrPanic, fmt.Sprintf(
-							"recovered: %v\nstack:\n%v", r, string(debug.Stack()),
-						),
-					)
+					panic(r)
 				}
-
-				//	result = nil
 			}
-
-			//	gInfo = sdk.GasInfo{GasWanted: gasWanted, GasUsed: ctx.GasMeter().GasConsumed()}
 		}()
 
 		if err := tx.ValidateBasic(); err != nil {
-			return newCtx, err
+			return newCtx, err.Result(), true
 		}
-		estimatedGas := params.TxSizeCostPerByte * sdk.Gas(len(newCtx.TxBytes()))
-		/*	ctx.BlockGasMeter().ConsumeGas(
-			ctx.GasMeter().GasConsumedToLimit(), "block gas meter",
-		)*/
-		newCtx.GasMeter().ConsumeGas(estimatedGas, "txSize")
-		/*
-			if res := auth.ValidateMemo(auth.StdTx{Memo: ixoTx.Memo}, params); res != nil {
-				return newCtx, res
-			}*/
+
+		newCtx.GasMeter().ConsumeGas(params.TxSizeCostPerByte*sdk.Gas(len(newCtx.TxBytes())), "txSize")
+
+		if res := auth.ValidateMemo(auth.StdTx{Memo: ixoTx.Memo}, params); !res.IsOK() {
+			return newCtx, res, true
+		}
 
 		// all messages must be of type IxoMsg
 		msg, ok := ixoTx.GetMsgs()[0].(IxoMsg)
 		if !ok {
-			//gInfo = sdk.GasInfo{}
-			return newCtx, IntErr("msg must be ixo.IxoMsg. dxp")
+			return newCtx, sdk.ErrInternal("msg must be ixo.IxoMsg").Result(), true
 		}
 
 		// Get pubKey
-		pubKey, err := pubKeyGetter(ctx, msg)
-		if err != nil {
-			return newCtx, err
+		pubKey, res := pubKeyGetter(ctx, msg)
+		if !res.IsOK() {
+			return newCtx, res, true
 		}
 
 		// fetch first (and only) signer, who's going to pay the fees
 		signerAddr := sdk.AccAddress(pubKey.Address())
-		println(fmt.Sprintf("--- the keys %s", string(signerAddr)))
-		println(fmt.Sprintf("--- the pub key got %s", string(pubKey.Address().String())))
-		signerAcc, err := auth.GetSignerAcc(newCtx, ak, signerAddr)
-		if err != nil {
-			return newCtx, err
+		signerAcc, res := auth.GetSignerAcc(newCtx, ak, signerAddr)
+		if !res.IsOK() {
+			return newCtx, res, true
 		}
-		println(fmt.Sprintf("found account and getting this pubkey %s", signerAcc.GetPubKey().Address().String()))
 
 		// deduct the fees
 		if !ixoTx.Fee.Amount.IsZero() {
-			err = auth.DeductFees(sk, newCtx, signerAcc, ixoTx.Fee.Amount)
-			if err != nil {
-				return newCtx, err
+			res = auth.DeductFees(sk, newCtx, signerAcc, ixoTx.Fee.Amount)
+			if !res.IsOK() {
+				return newCtx, res, true
 			}
 
 			// reload the account as fees have been deducted
@@ -285,21 +257,21 @@ func NewDefaultAnteHandlerBad(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGet
 		}
 
 		// check signature, return account with incremented nonce
-		//ixoSig := auth.StdSignature{PubKey: pubKey, Signature: ixoTx.GetSignatures()[0].SignatureValue[:]}
-		ixoSig := NewSignature(time.Now(), ixoTx.GetSignatures()[0].SignatureValue)
+		ixoSig := auth.StdSignature{PubKey: pubKey, Signature: ixoTx.GetSignatures()[0].SignatureValue[:]}
 		isGenesis := ctx.BlockHeight() == 0
 		signBytes := getSignBytes(newCtx.ChainID(), ixoTx, signerAcc, isGenesis)
-		signerAcc, err = ProcessSig(newCtx, signerAcc, ixoSig, signBytes, simulate, params)
-		if err != nil {
-			return newCtx, err
+		signerAcc, res = ProcessSig(newCtx, signerAcc, ixoSig, signBytes, simulate, params)
+		if !res.IsOK() {
+			return newCtx, res, true
 		}
 
 		ak.SetAccount(newCtx, signerAcc)
-		//res = sdk.Result{}
 
-		return newCtx, nil // continue...
+		return newCtx, sdk.Result{GasWanted: ixoTx.Fee.Gas}, false // continue...
 	}
 }
+
+*/
 
 func proccessPublicKey(acc sdkexported.Account, sig IxoSignature, simulate bool) (crypto.PubKey, error) {
 	// If pubkey is not known for account, set it from the types.StdSignature.

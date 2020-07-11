@@ -31,7 +31,9 @@ func ErrJsonMars(m string) error {
 func InvalidPubKey(m string) error {
 	return errors.Wrapf(errors.ErrInvalidPubKey, "PubKey error %s", m)
 }
-
+func InvalidPubKeyf(format string, a ...interface{}) error {
+	return errors.Wrapf(errors.ErrInvalidPubKey, format, a)
+}
 func ErrInvalidBasicMsg(msg string) error {
 	errMsg := fmt.Sprintf("invalid basic message %s", msg)
 	return errors.Wrap(x.ErrInvalidBasicMsg, errMsg)

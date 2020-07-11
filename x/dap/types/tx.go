@@ -7,6 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
@@ -15,9 +16,12 @@ import (
 )
 
 var (
-	maxGasWanted = uint64((1 << 63) - 1)
+	maxGasWanted         = uint64((1 << 63) - 1)
+	_            TxActor = (*IxoTx)(nil)
+	_            sdk.Tx  = (*IxoTx)(nil)
 )
 
+// GetSignBytes returns the signBytes of the tx for a given signer
 func StringToAddr(str string) sdk.AccAddress {
 	return sdk.AccAddress(crypto.AddressHash([]byte(str)))
 }
@@ -42,9 +46,19 @@ type (
 		Signatures []IxoSignature `json:"signatures" yaml:"signatures"`
 		Memo       string         `json:"memo" yaml:"memo"`
 	}
+	TxActor interface {
+		GetMsgs() []sdk.Msg
+		GetMemo() string
+		ValidateBasic() error
+		String() string
+		GetGas() uint64
+		GetFee() sdk.Coins
+		FeePayer() sdk.AccAddress
+		GetSignBytes(ctx sdk.Context, acc authexported.Account) []byte
+		GetSigner() sdk.AccAddress
+		GetSignatures() []IxoSignature
+	}
 )
-
-//var _ sdk.Tx = IxoTx{}
 
 // MarshalYAML returns the YAML representation of the signature.
 func (is IxoSignature) MarshalYAML() (interface{}, error) {
@@ -117,10 +131,6 @@ func (tx IxoTx) ValidateBasic() error {
 
 	return nil
 }
-func (tx IxoTx) GetSignatures() []IxoSignature {
-	return tx.Signatures
-}
-
 func (tx IxoTx) String() string {
 	output, err := json.MarshalIndent(tx, "", "  ")
 	if err != nil {
@@ -128,12 +138,37 @@ func (tx IxoTx) String() string {
 	}
 	return fmt.Sprintf("%v", string(output))
 }
-
+func (tx IxoTx) GetGas() uint64 {
+	return tx.Fee.Gas
+}
+func (tx IxoTx) GetFee() sdk.Coins {
+	return tx.Fee.Amount
+}
+func (tx IxoTx) FeePayer() sdk.AccAddress {
+	return tx.GetSigner()
+}
+func (tx IxoTx) GetSignBytes(ctx sdk.Context, acc authexported.Account) []byte {
+	genesis := ctx.BlockHeight() == 0
+	chainID := ctx.ChainID()
+	var accNum uint64
+	if !genesis {
+		accNum = acc.GetAccountNumber()
+	}
+	return auth.StdSignBytes(
+		chainID, accNum, acc.GetSequence(), tx.Fee, tx.Msgs, tx.Memo,
+	)
+}
 func (tx IxoTx) GetSigner() sdk.AccAddress {
 	return tx.GetMsgs()[0].GetSigners()[0]
 }
+func (tx IxoTx) GetSignatures() []IxoSignature {
+	return tx.Signatures
+}
 
-var _ sdk.Tx = (*IxoTx)(nil)
+/*
+GetGas() uint64
+GetFee() sdk.Coins
+FeePayer() sdk.AccAddress*/
 
 func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 	return func(txBytes []byte) (sdk.Tx, error) {

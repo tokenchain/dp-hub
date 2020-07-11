@@ -9,6 +9,7 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+	"time"
 )
 
 // DidKeeper defines the did contract that must be fulfilled throughout the ixo module
@@ -132,25 +133,39 @@ func NewSigVerificationDecorator(ak auth.AccountKeeper, p PubKeyGetter) SigVerif
 		SigVerification: NewSigVerification(ak, p),
 	}
 }
-func (sv SigVerificationDecorator) getSignature(ctx sdk.Context, tx sdk.Tx) {
-	sv.signature = sv.tx.GetSignatures()[0]
+func (sv SigVerificationDecorator) initializeSignature() error {
+	if len(sv.tx.GetSignatures()) > 0 {
+		sig := sv.tx.GetSignatures()[0]
+		//sv.signature = sig
+		sv.signature = NewSignature(time.Now(), sig.SignatureValue)
+		return nil
+	} else {
+		return ErrItemNotFound("tx signature not found")
+	}
 }
-func (sv SigVerificationDecorator) newSign() {
-	/*signatureBytes := ed25519.Sign(&privKey, signBytes)
-	return NewSignature(time.Now(), *signatureBytes)*/
+
+// verify the signature and increment the sequence. If the account doesn't have
+func (sv SigVerificationDecorator) SignMessage(signBytes []byte, privKey [64]byte) error {
+	pk := ed25519tm.PrivKeyEd25519(privKey)
+	signatureBytes, err := pk.Sign(signBytes)
+	if err != nil {
+		return err
+	}
+	var setSignature [64]byte
+	copy(setSignature[:], signatureBytes)
+	sv.signature = NewSignature(time.Now(), setSignature)
+	return nil
 }
 func (sv SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	if e := sv.retrievePubkey(ctx, tx, simulate); e != nil {
 		return ctx, InvalidTxDecodePubkeyNotFound(e)
 	}
-
-	//ixoSig := NewSignature(time.Now(), sv.signature.SignatureValue)
-	signBytes := getSignBytes(ctx.ChainID(), sv.tx, sv.account, sv.isGenesis(ctx))
-
-	//if !simulate && !sv.publicKey.VerifyBytes(signBytes, sig.SignatureValue[:]) {
+	if e := sv.initializeSignature(); e != nil {
+		return ctx, e
+	}
+	signBytes := sv.tx.GetSignBytes(ctx, sv.account)
 	if !simulate && !sv.publicKey.VerifyBytes(signBytes, sv.signature.SignatureValue[:]) {
 		return ctx, Unauthorized("Signature Verification failed. dxp")
 	}
-
 	return next(ctx, tx, simulate)
 }

@@ -569,7 +569,7 @@ func initAnteHandler(app *DpApp) sdk.AnteHandler {
 		msg := tx.GetMsgs()[0]
 		switch msg.Route() {
 		case did.RouterKey:
-			fmt.Println("did didAnteHandler")
+			fmt.Println("node did tx handler")
 			return didAnteHandler(ctx, tx, simulate)
 		case project.RouterKey:
 			switch msg.Type() {
@@ -585,7 +585,7 @@ func initAnteHandler(app *DpApp) sdk.AnteHandler {
 		case payments.RouterKey:
 			return defaultIxoAnteHandler(ctx, tx, simulate)
 		default:
-			fmt.Println("use cosmosAnteHandler")
+			fmt.Println("node cosmos tx handler")
 			return cosmosAnteHandler(ctx, tx, simulate)
 		}
 	}
