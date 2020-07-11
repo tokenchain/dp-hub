@@ -42,7 +42,7 @@ func createDidRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		msg := types.NewMsgAddDid(sovrinDid.Did, sovrinDid.VerifyKey)
+		msg := types.NewMsgAddDid(sovrinDid.Did,sovrinDid.GetPubKey())
 
 		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
 		if err != nil {

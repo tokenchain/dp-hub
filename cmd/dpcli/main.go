@@ -27,6 +27,7 @@ func main() {
 	cobra.EnableCommandSorting = false
 	cdc := app.MakeCodec()
 	config := sdk.GetConfig()
+	config.SetCoinType(app.CoinType)
 	config.SetBech32PrefixForAccount(app.Bech32PrefixAccAddr, app.Bech32PrefixAccPub)
 	config.SetBech32PrefixForValidator(app.Bech32PrefixValAddr, app.Bech32PrefixValPub)
 	config.SetBech32PrefixForConsensusNode(app.Bech32PrefixConsAddr, app.Bech32PrefixConsPub)
@@ -39,7 +40,7 @@ func main() {
 
 	rootCmd.PersistentFlags().String(flags.FlagChainID, "", "Chain ID of tendermint node")
 	rootCmd.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
-			return cli2.InitConfig(rootCmd)
+		return cli2.InitConfig(rootCmd)
 	}
 
 	rootCmd.AddCommand(

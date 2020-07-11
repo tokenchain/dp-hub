@@ -21,7 +21,6 @@ func GetCmdAddressFromDid() *cobra.Command {
 			if !exported.IsValidDid(args[0]) {
 				return errors.New("input is not a valid did")
 			}
-
 			accAddress := types2.DidToAddr(args[0])
 			fmt.Println(accAddress.String())
 			return nil
@@ -73,24 +72,20 @@ func GetCmdAllDids(cdc *codec.Codec) *cobra.Command {
 		Short: "Query all DIDs",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
 			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
 				keeper.QueryAllDids, "ALL"), nil)
 			if err != nil {
 				return err
 			}
-
 			var didDids []exported.Did
 			err = cdc.UnmarshalJSON(res, &didDids)
 			if err != nil {
 				return err
 			}
-
 			output, err := cdc.MarshalJSONIndent(didDids, "", "  ")
 			if err != nil {
 				return err
 			}
-
 			fmt.Println(string(output))
 			return nil
 		},
@@ -103,24 +98,20 @@ func GetCmdAllDidDocs(cdc *codec.Codec) *cobra.Command {
 		Short: "Query all DID documents",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
 			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
 				keeper.QueryAllDidDocs, "ALL"), nil)
 			if err != nil {
 				return err
 			}
-
 			var didDocs []types.BaseDidDoc
 			err = cdc.UnmarshalJSON(res, &didDocs)
 			if err != nil {
 				return err
 			}
-
 			output, err := cdc.MarshalJSONIndent(didDocs, "", "  ")
 			if err != nil {
 				return err
 			}
-
 			fmt.Println(string(output))
 			return nil
 		},

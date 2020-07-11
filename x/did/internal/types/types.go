@@ -36,6 +36,7 @@ func (dd BaseDidDoc) SetDid(did exported.Did) error {
 
 	return nil
 }
+
 func (dd BaseDidDoc) SetPubKey(pubKey string) error {
 	if len(dd.PubKey) != 0 {
 		return errors.New("cannot override BaseDidDoc pubKey")
@@ -45,6 +46,7 @@ func (dd BaseDidDoc) SetPubKey(pubKey string) error {
 
 	return nil
 }
+
 func (dd *BaseDidDoc) AddCredential(cred exported.DidCredential) {
 	if dd.Credentials == nil {
 		dd.Credentials = make([]exported.DidCredential, 0)
@@ -67,7 +69,7 @@ func fromJsonString(jsonIxoDid string) (exported.IxoDid, error) {
 	var did exported.IxoDid
 	err := json.Unmarshal([]byte(jsonIxoDid), &did)
 	if err != nil {
-		err := fmt.Errorf("Could not unmarshal did into struct. Error: %s", err.Error())
+		err := fmt.Errorf("Could not unmarshal did into struct. Error: %s .", err.Error())
 		return exported.IxoDid{}, err
 	}
 

@@ -3,6 +3,7 @@ package exported
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -20,10 +21,12 @@ type (
 	}
 	IdpDid interface {
 		String() string
-		AddressUnverified() sdk.AccAddress
+		AddressEd() sdk.AccAddress
+		AddressDx0() sdk.AccAddress
 		Address() sdk.AccAddress
 		DidAddress() string
 		MarshaDid() ([]byte, error)
+		GetPubKey() string
 	}
 	Claim struct {
 		Id           Did  `json:"id" yaml:"id"`
@@ -45,7 +48,22 @@ type (
 		VerifyKey           string `json:"verifyKey" yaml:"verifyKey"`
 		EncryptionPublicKey string `json:"encryptionPublicKey" yaml:"encryptionPublicKey"`
 		Secret              Secret `json:"secret" yaml:"secret"`
+		Dpinfo              DpInfo `json:"dp" yaml:"dp"`
 	}
+	DpInfo struct {
+		DpAddress string           `json:"address" yaml:"address"`
+		PubKey    string           `json:"pubkey" yaml:"pubkey"`
+		Name      string           `json:"name" yaml:"name"`
+		Algo      keys.SigningAlgo `json:"algo" yaml:"algo"`
+	}
+	KeyGenerator struct {
+		mem     string
+		pubkey  []byte
+		privkey []byte
+		name    string
+		seed    [32]byte
+	}
+
 	Credential struct{}
 )
 
@@ -72,12 +90,17 @@ func (s Secret) String() string {
 //    }
 // }
 
-func (id IxoDid) AddressUnverified() sdk.AccAddress {
-	return UnverifiedToAddr(id.VerifyKey)
+func (id IxoDid) AddressDx0() sdk.AccAddress {
+	address, _ := sdk.AccAddressFromBech32(id.Dpinfo.DpAddress)
+	return address
 }
-
 func (id IxoDid) Address() sdk.AccAddress {
-	return VerifyKeyToAddr(id.VerifyKey)
+	//return VerifyKeyToAddr(id.VerifyKey)
+	//return id.AddressDx0()
+	return VerifyKeyToAddrEd25519(id.VerifyKey)
+}
+func (id IxoDid) AddressEd() sdk.AccAddress {
+	return UnverifiedToAddr(id.VerifyKey)
 }
 func (id IxoDid) DidAddress() string {
 	return id.Did
@@ -87,7 +110,6 @@ func (id IxoDid) String() string {
 	if err != nil {
 		panic(err)
 	}
-
 	return fmt.Sprintf("%v", string(output))
 }
 
@@ -98,7 +120,11 @@ func (id IxoDid) MarshaDid() ([]byte, error) {
 	}
 	return t, nil
 }
-
+func (id IxoDid) GetPubKey() string {
+	//han := RecoverDidEd25519PublicKey(id)
+	//return base58.Encode(han[:])
+	return id.VerifyKey
+}
 func fromJsonStringDp(jsonSovrinDid string) (IxoDid, error) {
 	var did IxoDid
 	err := json.Unmarshal([]byte(jsonSovrinDid), &did)
@@ -108,6 +134,7 @@ func fromJsonStringDp(jsonSovrinDid string) (IxoDid, error) {
 	}
 	return did, nil
 }
+
 /*
 func VerifyKeyToAddr(verifyKey string) sdk.AccAddress {
 	var pubKey ed25519.PubKeyEd25519

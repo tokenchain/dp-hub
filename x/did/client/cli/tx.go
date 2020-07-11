@@ -25,7 +25,7 @@ func GetCmdAddDidDoc(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 			cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(sovrinDid.Address())
-			msg := types.NewMsgAddDid(sovrinDid.Did, sovrinDid.VerifyKey)
+			msg := types.NewMsgAddDid(sovrinDid.Did, sovrinDid.GetPubKey())
 			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
@@ -57,16 +57,16 @@ func GetCmdAddCredential(cdc *codec.Codec) *cobra.Command {
 
 func GetCmdDidGenerate(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "generate-did-doc",
-		Short: "Query all DID documents",
-		RunE:  RunMnemonicCmd,
+		Use:   "generate-doc [username]",
+		Short: "Generate new did document for the given name",
+		RunE:  RunGenerationNewDoc(cdc),
 	}
 }
 
 func GetCmdAccDidGenerate(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "generate-did-acc [name]",
-		Short: "Query all DID documents",
-		RunE:  RunAccMnemonicCmd(cdc),
+		Use:   "generate-offline [name]",
+		Short: "Generate did document offline",
+		RunE:  RunGenerationOffline(cdc),
 	}
 }

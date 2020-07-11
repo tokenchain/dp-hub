@@ -15,7 +15,7 @@ This is the official repository for the Internet of Impact Relayer Hub (DP Hub)
 ### Other documentations
 - [Whitepaper](https://github.com/tokenchain/dp-hub/blob/master/doc/whitepaper.md)
 - [Chinese Developer Guide](https://github.com/tokenchain/dp-hub/blob/master/doc/commands.md)
-
+- [Development Guide](https://github.com/cosmos/cosmos-sdk/tree/master/docs/building-modules)
 
 ### Scripts
 Quick-start:

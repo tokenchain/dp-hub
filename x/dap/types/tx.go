@@ -32,7 +32,7 @@ type (
 		GetSignerDid() exported.Did
 	}
 	IxoSignature struct {
-		SignatureValue [ed25519SignatureLen]byte `json:"signatureValue" yaml:"signatureValue"`
+		SignatureValue [Ed25519SignatureLen]byte `json:"signatureValue" yaml:"signatureValue"`
 		Created        time.Time                 `json:"created" yaml:"created"`
 	}
 	IxoTx struct {
@@ -67,7 +67,7 @@ func (is IxoSignature) MarshalYAML() (interface{}, error) {
 	return string(bz), err
 }
 
-func NewSignature(created time.Time, signature [ed25519SignatureLen]byte) IxoSignature {
+func NewSignature(created time.Time, signature [Ed25519SignatureLen]byte) IxoSignature {
 	return IxoSignature{
 		SignatureValue: signature,
 		Created:        created,

@@ -12,7 +12,7 @@ func NewMsgCreateProject(senderDid exported.Did, projectDoc ProjectDoc, projectD
 		TxHash:     "",
 		SenderDid:  senderDid,
 		ProjectDid: projectDid.Did,
-		PubKey:     projectDid.VerifyKey,
+		PubKey:     projectDid.GetPubKey(),
 		Data:       projectDoc,
 	}
 }

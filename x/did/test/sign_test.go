@@ -1,4 +1,4 @@
-package cligen
+package test
 
 import (
 	"encoding/hex"
@@ -49,7 +49,7 @@ func Test_dk(t *testing.T) {
 	//isDryRun, _ := flags.GetBool(flagDryRun)
 	kb, err := getKeybase(true, nil)
 	require.Nil(t, err, "KB pass ")
-	mnemonic = mnem
+	mnemonic = sample_mnom
 	// create master key and derive first key for keyring
 	derivedPriv, err := keys.StdDeriveKey(mnemonic, "", hdPath, algo)
 	require.Nil(t, err, "pass 1 ")
@@ -152,7 +152,7 @@ func Test_recover(t *testing.T) {
 	}
 	//isDryRun, _ := flags.GetBool(flagDryRun)
 	kb, err := getKeybase(true, nil)
-	mnemonic = mnem
+	mnemonic = sample_mnom
 	// create master key and derive first key for keyring
 	derivedPriv, err := keys.StdDeriveKey(mnemonic, "", hdPath, algo)
 	privKey, err := keys.StdPrivKeyGen(derivedPriv, algo)
@@ -166,6 +166,7 @@ func Test_recover(t *testing.T) {
 	fmt.Println(recover_privKey)
 	require.Equal(t, 32, len(recover_privKey), "is now the same")
 }
+
 func Test_development(t *testing.T) {
 	name := "cosmos"
 	entropySeed, err := bip39.NewEntropy(mnemonicEntropySize)
@@ -187,7 +188,7 @@ func Test_development(t *testing.T) {
 	}
 	//isDryRun, _ := flags.GetBool(flagDryRun)
 	kb, err := getKeybase(true, nil)
-	mnemonic = mnem
+	mnemonic = sample_mnom
 	// create master key and derive first key for keyring
 	derivedPriv, err := keys.StdDeriveKey(mnemonic, "", hdPath, algo)
 	privKey, err := keys.StdPrivKeyGen(derivedPriv, algo)
@@ -200,8 +201,6 @@ func Test_development(t *testing.T) {
 	var recover_privKey secp256k1.PrivKeySecp256k1
 	p1, _ := hex.DecodeString(strings.ToLower(did_document.Secret.EncryptionPrivateKey))
 	p2, _ := hex.DecodeString(strings.ToLower(did_document.Secret.SignKey))
-
-
 	privKey_orginal := exported.PrivateKeyToSecp256k1(privKey)
 	privkey_v3 := exported.SecpPrivKey(derivedPriv)
 

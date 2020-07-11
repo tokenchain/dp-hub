@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -44,6 +45,7 @@ import (
 
 const (
 	appName              = "Darkpool"
+	CoinType             = 919
 	Bech32MainPrefix     = "dx0"
 	Bech32PrefixAccAddr  = Bech32MainPrefix
 	Bech32PrefixAccPub   = Bech32MainPrefix + sdk.PrefixPublic
@@ -551,11 +553,11 @@ func initAnteHandler(app *DpApp) sdk.AnteHandler {
 	projectPubKeyGetter := project.GetPubKeyGetter(app.projectKeeper, app.didKeeper)
 
 	defaultIxoAnteHandler := dap.NewDefaultAnteHandler(
-		app.accountKeeper, app.supplyKeeper, defaultPubKeyGetter)
+		app.accountKeeper, app.bankKeeper, app.supplyKeeper, defaultPubKeyGetter, dap.DefaultSigVerificationGasConsumer)
 	didAnteHandler := dap.NewDefaultAnteHandler(
-		app.accountKeeper, app.supplyKeeper, didPubKeyGetter)
+		app.accountKeeper, app.bankKeeper, app.supplyKeeper, didPubKeyGetter, dap.DefaultSigVerificationGasConsumer)
 	projectAnteHandler := dap.NewDefaultAnteHandler(
-		app.accountKeeper, app.supplyKeeper, projectPubKeyGetter)
+		app.accountKeeper, app.bankKeeper, app.supplyKeeper, projectPubKeyGetter, dap.DefaultSigVerificationGasConsumer)
 	cosmosAnteHandler := auth.NewAnteHandler(
 		app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer)
 
@@ -567,6 +569,7 @@ func initAnteHandler(app *DpApp) sdk.AnteHandler {
 		msg := tx.GetMsgs()[0]
 		switch msg.Route() {
 		case did.RouterKey:
+			fmt.Println("did didAnteHandler")
 			return didAnteHandler(ctx, tx, simulate)
 		case project.RouterKey:
 			switch msg.Type() {
@@ -582,6 +585,7 @@ func initAnteHandler(app *DpApp) sdk.AnteHandler {
 		case payments.RouterKey:
 			return defaultIxoAnteHandler(ctx, tx, simulate)
 		default:
+			fmt.Println("use cosmosAnteHandler")
 			return cosmosAnteHandler(ctx, tx, simulate)
 		}
 	}

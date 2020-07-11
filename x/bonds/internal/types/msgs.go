@@ -377,7 +377,7 @@ type MsgSell struct {
 func NewMsgSell(sellerDid exported.IxoDid, amount sdk.Coin, bondDid exported.Did) MsgSell {
 	return MsgSell{
 		SellerDid: sellerDid.Did,
-		PubKey:    sellerDid.VerifyKey,
+		PubKey:    sellerDid.GetPubKey(),
 		Amount:    amount,
 		BondDid:   bondDid,
 	}

@@ -17,17 +17,17 @@ type (
 
 var (
 	// Auth
-	NewDefaultPubKeyGetter           = types.NewDefaultPubKeyGetter
-	NewDefaultAnteHandler            = types.NewDefaultAnteHandler
-	ApproximateFeeForTx              = types.ApproximateFeeForTx
-	GenerateOrBroadcastMsgs          = types.GenerateOrBroadcastMsgs
-	CompleteAndBroadcastTxRest       = types.CompleteAndBroadcastTxRest
-	SignAndBroadcastTxFromStdSignMsg = types.SignAndBroadcastTxFromStdSignMsg
-	NewSignature                     = types.NewSignature
-	ProcessSig                       = types.ProcessSig
-	SignAndBroadcastTxCli            = types.SignAndBroadcastTxCli
-	SignAndBroadcastTxRest           = types.SignAndBroadcastTxRest
-
+	NewDefaultPubKeyGetter            = types.NewDefaultPubKeyGetter
+	DefaultSigVerificationGasConsumer = types.DefaultSigVerificationGasConsumer
+	NewDefaultAnteHandler             = types.NewDapAnteHandler
+	ApproximateFeeForTx               = types.ApproximateFeeForTx
+	GenerateOrBroadcastMsgs           = types.GenerateOrBroadcastMsgs
+	CompleteAndBroadcastTxRest        = types.CompleteAndBroadcastTxRest
+	SignAndBroadcastTxFromStdSignMsg  = types.SignAndBroadcastTxFromStdSignMsg
+	NewSignature                      = types.NewSignature
+	ProcessSig                        = types.ProcessSig
+	SignAndBroadcastTxCli             = types.SignAndBroadcastTxCli
+	SignAndBroadcastTxRest            = types.SignAndBroadcastTxRest
 
 	// Types
 	IxoDecimals = types.IxoDecimals

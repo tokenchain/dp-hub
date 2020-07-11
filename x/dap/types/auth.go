@@ -17,6 +17,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	sdkexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
+	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/spf13/viper"
 	"github.com/tendermint/ed25519"
@@ -37,9 +38,9 @@ var (
 
 	// simulation signature values used to estimate gas consumption
 	simEd25519Pubkey   ed25519tm.PubKeyEd25519
-	simEd25519Sig      [ed25519SignatureLen]byte
+	simEd25519Sig      [Ed25519SignatureLen]byte
 	simSecp256k1Pubkey secp256k1.PubKeySecp256k1
-	simSecp256k1Sig    [ed25519SignatureLen]byte
+	simSecp256k1Sig    [Ed25519SignatureLen]byte
 )
 
 func init() {
@@ -50,6 +51,7 @@ func init() {
 }
 
 type PubKeyGetter func(ctx sdk.Context, msg IxoMsg) (crypto.PubKey, error)
+type SigVerificationGasConsumer func(meter sdk.GasMeter, sig []byte, pubkey crypto.PubKey, params types.Params) error
 
 func consumeSimSigGas(gasmeter sdk.GasMeter, pubkey crypto.PubKey, sig IxoSignature, params auth.Params) {
 	simSig := IxoSignature{}
@@ -123,14 +125,53 @@ did
 project
 bonds
 */
-func NewDefaultAnteHandler(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGetter PubKeyGetter) sdk.AnteHandler {
+/*
+store := ctx.KVStore(capKey)
+txTest := tx.(txTest)
+
+if txTest.FailOnAnte {
+return newCtx, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "ante handler failure")
+}
+
+_, err = incrementingCounter(t, store, storeKey, txTest.Counter)
+if err != nil {
+return newCtx, err
+}
+
+return newCtx, nil*/
+
+func DefaultSigVerificationGasConsumer(
+	meter sdk.GasMeter, sig []byte, pubkey crypto.PubKey, params types.Params,
+) error {
+	switch pubkey := pubkey.(type) {
+	case ed25519tm.PubKeyEd25519:
+		meter.ConsumeGas(params.SigVerifyCostED25519, "ante verify: ed25519")
+		return errors.Wrap(errors.ErrInvalidPubKey, "ED25519 public keys are unsupported")
+
+	case secp256k1.PubKeySecp256k1:
+		meter.ConsumeGas(params.SigVerifyCostSecp256k1, "ante verify: secp256k1")
+		return nil
+
+	case multisig.PubKeyMultisigThreshold:
+		var multisignature multisig.Multisignature
+		codec.Cdc.MustUnmarshalBinaryBare(sig, &multisignature)
+
+		ConsumeMultisignatureVerificationGas(meter, multisignature, pubkey, params)
+		return nil
+
+	default:
+		return errors.Wrapf(errors.ErrInvalidPubKey, "unrecognized public key type: %T", pubkey)
+	}
+}
+
+func NewDefaultAnteHandlerBad(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGetter PubKeyGetter) sdk.AnteHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 		// NOTE: GasWanted should be returned by the AnteHandler. GasUsed is
 		// determined by the GasMeter. We need access to the context to get the gas
 		// meter so we initialize upfront.
 		var gasWanted uint64
-		var result *sdk.Result
-		var gInfo sdk.GasInfo
+		//var result *sdk.Result
+		//var gInfo sdk.GasInfo
 
 		if addr := sk.GetModuleAddress(auth.FeeCollectorName); addr == nil {
 			panic(fmt.Sprintf("%s module account has not been set", auth.FeeCollectorName))
@@ -190,10 +231,10 @@ func NewDefaultAnteHandler(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGetter
 					)
 				}
 
-				result = nil
+				//	result = nil
 			}
 
-			gInfo = sdk.GasInfo{GasWanted: gasWanted, GasUsed: ctx.GasMeter().GasConsumed()}
+			//	gInfo = sdk.GasInfo{GasWanted: gasWanted, GasUsed: ctx.GasMeter().GasConsumed()}
 		}()
 
 		if err := tx.ValidateBasic(); err != nil {
@@ -212,7 +253,7 @@ func NewDefaultAnteHandler(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGetter
 		// all messages must be of type IxoMsg
 		msg, ok := ixoTx.GetMsgs()[0].(IxoMsg)
 		if !ok {
-			gInfo = sdk.GasInfo{}
+			//gInfo = sdk.GasInfo{}
 			return newCtx, IntErr("msg must be ixo.IxoMsg. dxp")
 		}
 
@@ -293,20 +334,20 @@ func signAndBroadcast(ctx context.CLIContext, msg auth.StdSignMsg, ixoDid export
 	if len(msg.Msgs) != 1 {
 		panic("expected one message")
 	}
-	privKey := exported.RecoverDidEd25519ToPrivateKey(ixoDid)
+	privKey := exported.RecoverDidToPrivateKeyClassic(ixoDid)
+	fmt.Println(privKey)
 	signature := SignIxoMessageEd25519(msg.Bytes(), privKey)
+	fmt.Println(signature)
 	tx := NewIxoTxSingleMsg(msg.Msgs[0], msg.Fee, signature, msg.Memo)
-
+	fmt.Println(msg)
 	bz, err := ctx.Codec.MarshalJSON(tx)
 	if err != nil {
 		return sdk.TxResponse{}, fmt.Errorf("Could not marshall tx to binary. Error: %s! ", err.Error())
 	}
-
 	res, err := ctx.BroadcastTx(bz)
 	if err != nil {
 		return sdk.TxResponse{}, fmt.Errorf("Could not broadcast tx. Error: %s! ", err.Error())
 	}
-
 	return res, nil
 }
 
@@ -500,12 +541,12 @@ func SignAndBroadcastTxCli(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid exp
 	bldr := auth.NewTxBuilderFromCLI(cliCtx.Input).
 		WithTxEncoder(utils.GetTxEncoder(cliCtx.Codec)).
 		WithKeybase(cliCtx.Keybase)
-	println("sign 1 ---- ")
+
 	txBldr, err := utils.PrepareTxBuilder(bldr, cliCtx)
 	if err != nil {
 		return err
 	}
-	println("sign 2 ---- ")
+
 	msgs := []sdk.Msg{msg}
 
 	if txBldr.SimulateAndExecute() || cliCtx.Simulate {
@@ -518,7 +559,7 @@ func SignAndBroadcastTxCli(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid exp
 		gasEst := utils.GasEstimateResponse{GasEstimate: txBldr.Gas()}
 		_, _ = fmt.Fprintf(os.Stderr, "%s\n", gasEst.String())
 	}
-	println("sign 3 ---- ")
+
 	if cliCtx.Simulate {
 		return nil
 	}
@@ -538,7 +579,7 @@ func SignAndBroadcastTxCli(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid exp
 		} else {
 			json = cliCtx.Codec.MustMarshalJSON(stdSignMsg)
 		}
-		println("sign 4 ---- ")
+		//println("sign 4 ---- ")
 		_, _ = fmt.Fprintf(os.Stderr, "%s\n\n", json)
 
 		buf := bufio.NewReader(os.Stdin)
@@ -611,23 +652,3 @@ func ValidateMemo(stdTx IxoTx, params params.Params) error {
 	return nil
 }
 */
-
-func UnknownRequest(m string) error {
-	return errors.Wrap(errors.ErrUnknownRequest, m)
-}
-func Unauthorized(m string) error {
-	return errors.Wrap(errors.ErrUnauthorized, m)
-}
-func Unauthorizedf(format string, a ...interface{}) error {
-	return errors.Wrap(errors.ErrUnauthorized, fmt.Sprintf(format, a...))
-}
-func IntErr(m string) error {
-	return errors.Wrap(errors.ErrPanic, m)
-}
-func ErrJsonMars(m string) error {
-	return errors.Wrapf(errors.ErrJSONMarshal, "Json marshall error %s", m)
-}
-
-func InvalidPubKey(m string) error {
-	return errors.Wrapf(errors.ErrInvalidPubKey, "PubKey error %s", m)
-}

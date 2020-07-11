@@ -10,5 +10,5 @@ var (
 
 const (
 	NativeToken         = "dap"
-	ed25519SignatureLen = 64
+	Ed25519SignatureLen = 64
 )

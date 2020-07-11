@@ -216,7 +216,7 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 		default:
 			// Deduce and set signer address
 			//signerAddress := types.DidToAddr(ixoMsg.GetSignerDid())
-			signerAddress := exported.VerifyKeyToAddr(req.PubKey)
+			signerAddress := exported.VerifyKeyToAddrEd25519(req.PubKey)
 			cliCtx = cliCtx.WithFromAddress(signerAddress)
 
 			//	reader := bufio.NewReader(cmd.InOrStdin())
@@ -236,8 +236,7 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 			// Create dummy tx with blank signature for fee approximation
 			signature := types.IxoSignature{}
 			signature.Created = signature.Created.Add(1) // maximizes signature length
-			tx := types.NewIxoTxSingleMsg(
-				stdSignMsg.Msgs[0], stdSignMsg.Fee, signature, stdSignMsg.Memo)
+			tx := types.NewIxoTxSingleMsg(stdSignMsg.Msgs[0], stdSignMsg.Fee, signature, stdSignMsg.Memo)
 
 			// Approximate fee
 			fee, err := dap.ApproximateFeeForTx(cliCtx, tx, txBldr.ChainID())
