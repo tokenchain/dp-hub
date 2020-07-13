@@ -73,7 +73,7 @@ func NewSigVerification(ak auth.AccountKeeper, p PubKeyGetter) SigVerification {
 func (sv SigVerification) isGenesis(ctx sdk.Context) bool {
 	return ctx.BlockHeight() == 0
 }
-func (sv SigVerification) GetSignerAccont(ctx sdk.Context) aexported.Account {
+func (sv SigVerification) GetSignerAccount(ctx sdk.Context) aexported.Account {
 	signerAcc, err := auth.GetSignerAcc(ctx, sv.ak, sv.account_address)
 	if err != nil {
 		panic(" cannot get the GetSignerAccont")
@@ -222,7 +222,7 @@ func (sv SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 	if e != nil {
 		return ctx, e
 	}
-	signedMessageBytes := nsv2.dap_tx.GetSignBytes(ctx, nsv2.GetSignerAccont(ctx))
+	signedMessageBytes := nsv2.dap_tx.GetSignBytes(ctx, nsv2.GetSignerAccount(ctx))
 	fmt.Println("✅  check signature data ....")
 	fmt.Println(nsv2.signature.SignatureValue[:])
 	fmt.Println("✅  check signed message data ....")

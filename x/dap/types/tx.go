@@ -280,9 +280,13 @@ func (tb SignTxPack) collectSignatures() []IxoSignature {
 }
 
 func (tb SignTxPack) getSignature() IxoSignature {
-	privKey := tb.did.GetPriKeyByte()
-	//signatureBytes := ed25519.Sign(&privKey, tb.msg.GetSignBytes())
-	signatureBytes := ed25519.Sign(privKey[:], tb.msg.GetSignBytes())
+	privateKey := tb.did.GetPriKeyByte()
+	//signatureBytes := ed25519.Sign(&privateKey, tb.msg.GetSignBytes())
+	ixt, ok := tb.msg.(IxoMsg)
+	if !ok {
+		fmt.Println("the msg type is not IxoMsg")
+	}
+	signatureBytes := ed25519.Sign(privateKey[:], ixt.GetSignBytes())
 	//return NewSignature(time.Now(), signatureBytes[:])
 	return NewSignature(time.Now(), signatureBytes)
 }
@@ -371,7 +375,7 @@ func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {
 		return err
 	}
 
-	tx := tb.SignAndGenerateMessage(stdmsg)
+	signed_tx_msg := tb.SignAndGenerateMessage(stdmsg)
 	fmt.Println("=============== public key ==============")
 	fmt.Println(tb.did.GetPubKey())
 	fmt.Println("=============== private key ==============")
@@ -379,9 +383,9 @@ func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {
 	fmt.Println("=============== signature equals to==============")
 	fmt.Println(tb.signature.SignatureValue)
 	fmt.Println("=============== pre-tx-signature ==============")
-	fmt.Println(tx.GetFirstSignatureValues())
+	fmt.Println(signed_tx_msg.GetFirstSignatureValues())
 
-	bz, err := tb.ctxCli.Codec.MarshalJSON(tx)
+	bz, err := tb.ctxCli.Codec.MarshalJSON(signed_tx_msg)
 	if err != nil {
 		return fmt.Errorf("Could not marshall tx to binary. Error: %s! ", err.Error())
 	}

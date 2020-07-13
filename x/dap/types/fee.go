@@ -53,7 +53,7 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 
 	// deduct the fees
 	if !sv.dap_tx.GetFee().IsZero() {
-		if err = DeductFees(dfd.supplyKeeper, ctx, dfd.GetSignerAccont(ctx), sv.dap_tx.GetFee()); err != nil {
+		if err = DeductFees(dfd.supplyKeeper, ctx, dfd.GetSignerAccount(ctx), sv.dap_tx.GetFee()); err != nil {
 			return ctx, err
 		}
 		// reload the account as fees have been deducted
