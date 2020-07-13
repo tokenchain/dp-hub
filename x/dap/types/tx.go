@@ -202,7 +202,9 @@ func (tx IxoTx) GetSignBytes(ctx sdk.Context, acc authexported.Account) []byte {
 	signByte := auth.StdSignBytes(
 		chainID, accNum, acc.GetSequence(), tx.Fee, tx.Msgs, tx.Memo,
 	)
+	fmt.Println("============ sign bytes ======")
 	fmt.Println(signByte)
+	fmt.Println("============ sign bytes ======")
 	return signByte
 }
 func (tx IxoTx) GetSigner() sdk.AccAddress {
