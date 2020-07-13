@@ -1,14 +1,6 @@
 package dap
 
-import (
-	"fmt"
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
-	"os"
-	"time"
-
-	"github.com/tendermint/ed25519"
-)
-
+/*
 func SignIxoMessage(signBytes []byte, privKey [64]byte) types.IxoSignature {
 	signatureBytes := ed25519.Sign(&privKey, signBytes)
 	signature := *signatureBytes
@@ -30,3 +22,4 @@ func LookupEnv(name string, defaultValue string) string {
 	}
 	return defaultValue
 }
+*/

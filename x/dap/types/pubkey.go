@@ -1,13 +1,17 @@
 package types
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/btcsuite/btcutil/base58"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
+	aexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
+	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/go-bip39"
 	"github.com/tendermint/tendermint/crypto"
 	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tokenchain/ixo-blockchain/x/did/ed25519"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"time"
 )
@@ -24,11 +28,13 @@ type (
 		GetAddDids(ctx sdk.Context) (dids []exported.Did)
 	}
 	SigVerification struct {
-		ak        auth.AccountKeeper
-		publicKey crypto.PubKey
-		account   authexported.Account
-		pgetter   PubKeyGetter
-		tx        IxoTx
+		ak              auth.AccountKeeper
+		stdSignature    auth.StdSignature
+		account_address []byte
+		pubkey          []byte
+		dap_tx          IxoTx
+		pgetter         PubKeyGetter
+		signature       IxoSignature
 	}
 	DapPubKeyDecoratorDecorator struct {
 		SigVerification
@@ -50,8 +56,15 @@ func NewDefaultPubKeyGetter(didKeeper DidKeeper) PubKeyGetter {
 		return pubKeyRaw, nil
 	}
 }
-
+func initializeAddress() sdk.AccAddress {
+	var addressDefault [32]byte
+	entropySeed, _ := bip39.NewEntropy(64)
+	p, _, _ := ed25519.GenerateKey(bytes.NewReader(entropySeed))
+	copy(addressDefault[:], p[:])
+	return sdk.AccAddress(addressDefault[:])
+}
 func NewSigVerification(ak auth.AccountKeeper, p PubKeyGetter) SigVerification {
+
 	return SigVerification{
 		ak:      ak,
 		pgetter: p,
@@ -60,37 +73,67 @@ func NewSigVerification(ak auth.AccountKeeper, p PubKeyGetter) SigVerification {
 func (sv SigVerification) isGenesis(ctx sdk.Context) bool {
 	return ctx.BlockHeight() == 0
 }
-func (sv SigVerification) retrievePubkey(ctx sdk.Context, tx sdk.Tx, simulate bool) error {
+func (sv SigVerification) GetSignerAccont(ctx sdk.Context) aexported.Account {
+	signerAcc, err := auth.GetSignerAcc(ctx, sv.ak, sv.account_address)
+	if err != nil {
+		panic(" cannot get the GetSignerAccont")
+	}
+	return signerAcc
+}
+func (sv SigVerification) RefreshAccount(ctx sdk.Context) error {
+	//address := sdk.AccAddress(sv.publicKey.Address())
+	//_, err := auth.GetSignerAcc(ctx, sv.ak, address)
+	//if err != nil {
+	//		return IntErr("msg must be ixo.IxoMsg. dxp")
+	//	}
+	//	sv.account_address = address
+	return nil
+}
 
+func (sv SigVerification) initializeSignatures() (nsv SigVerification, err error) {
+	//f := sv.tx.GetFirstSignatureValues()
+	if len(sv.dap_tx.Signatures) > 0 {
+		sv.signature = NewSignature(time.Now(), sv.dap_tx.GetFirstSignatureValues())
+		return sv, nil
+	} else {
+		return sv, ErrItemNotFound("tx signature not found")
+	}
+}
+
+
+func (sv SigVerification) RetrievePubkey(ctx sdk.Context, tx sdk.Tx, simulate bool) (nsv SigVerification, pubKey crypto.PubKey, err error) {
 	sigTx, ok := tx.(IxoTx)
 	if !ok {
-		return InvalidTxDecode()
+		return sv, nil, InvalidTxDecode()
 	}
-	sv.tx = sigTx
-
+	//fmt.Println(sigTx)
+	//fmt.Println(*sv.tx)
 	// all messages must be of type IxoMsg
 	msg, ok := sigTx.GetMsgs()[0].(IxoMsg)
 	if !ok {
 		//gInfo = sdk.GasInfo{}
-		return IntErr("msg must be ixo.IxoMsg. dxp")
+		return sv, nil, IntErr("msg must be ixo.IxoMsg. dxp")
 	}
 
-	signer := sigTx.GetSigner()
-	acc := sv.ak.GetAccount(ctx, signer)
-	if acc != nil {
-		p := acc.GetPubKey()
-		if p != nil {
-			sv.publicKey = p
-			return nil
-		}
+	pubKey, err = sv.pgetter(ctx, msg)
+	if err != nil {
+		return sv, nil, err
+	}
+
+	address := sdk.AccAddress(pubKey.Address())
+	signerAcc, err := auth.GetSignerAcc(ctx, sv.ak, address)
+	//signer := sigTx.GetSigner()
+	//acc := sv.ak.GetAccount(ctx, signer)
+	if signerAcc != nil {
+		sv.account_address = address
+		//copy(sv.account_address, address.Bytes())
+		//fmt.Println("check-RetrievePubkey check value pass ....")
+		//fmt.Println(address)
+
 	} else {
-		return sdkerrors.Wrap(sdkerrors.ErrUnknownAddress, "account is not found...")
+		return sv, nil, UnknownAddress("the signer account address is not found.")
 	}
 
-	sv.account = acc
-	// Get pubKey
-
-	pubKey, err := sv.pgetter(ctx, msg)
 	if simulate {
 		// In simulate mode the transaction comes with no signatures, thus if the
 		// account's pubkey is nil, both signature verification and gasKVStore.Set()
@@ -98,22 +141,26 @@ func (sv SigVerification) retrievePubkey(ctx sdk.Context, tx sdk.Tx, simulate bo
 		// secp256k1 keys than ed25519 ones.
 
 		if pubKey == nil {
-			sv.publicKey = simSecp256k1Pubkey
+			//copy(sv.publicKey[:], simSecp256k1Pubkey[:])
+			return sv, nil, InvalidPubKey("there is no valid public key to use for simulation.")
 		}
-	} else {
+	}
 
+	/*	err = signerAcc.SetPubKey(sv.publicKey)
 		if err != nil {
-			return err
+			return InvalidPubKey(err.Error())
 		}
-
-		sv.publicKey = pubKey
+	*/
+	simSig := types.StdSignature{
+		Signature: simSecp256k1Sig[:],
+		PubKey:    pubKey,
 	}
 
-	err = acc.SetPubKey(sv.publicKey)
-	if err != nil {
-		return InvalidPubKey(err.Error())
-	}
-	return nil
+	sv.stdSignature = simSig
+	sv.dap_tx = sigTx
+	sv.pubkey = pubKey.Bytes()
+	//fmt.Println(sv.account_address)
+	return sv, pubKey, nil
 }
 
 func NewDapPubKeyDecorator(ak auth.AccountKeeper, p PubKeyGetter) DapPubKeyDecoratorDecorator {
@@ -122,25 +169,17 @@ func NewDapPubKeyDecorator(ak auth.AccountKeeper, p PubKeyGetter) DapPubKeyDecor
 	}
 }
 func (__edp DapPubKeyDecoratorDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	if e := __edp.retrievePubkey(ctx, tx, simulate); e != nil {
+	if _, _, e := __edp.RetrievePubkey(ctx, tx, simulate); e != nil {
 		return ctx, InvalidTxDecodePubkeyNotFound(e)
 	}
+	fmt.Println("✅  DapPubKeyDecoratorDecorator pass")
+
 	return next(ctx, tx, simulate)
 }
 
 func NewSigVerificationDecorator(ak auth.AccountKeeper, p PubKeyGetter) SigVerificationDecorator {
 	return SigVerificationDecorator{
 		SigVerification: NewSigVerification(ak, p),
-	}
-}
-func (sv SigVerificationDecorator) initializeSignature() error {
-	if len(sv.tx.GetSignatures()) > 0 {
-		sig := sv.tx.GetSignatures()[0]
-		//sv.signature = sig
-		sv.signature = NewSignature(time.Now(), sig.SignatureValue)
-		return nil
-	} else {
-		return ErrItemNotFound("tx signature not found")
 	}
 }
 
@@ -151,21 +190,29 @@ func (sv SigVerificationDecorator) SignMessage(signBytes []byte, privKey [64]byt
 	if err != nil {
 		return err
 	}
-	var setSignature [64]byte
-	copy(setSignature[:], signatureBytes)
-	sv.signature = NewSignature(time.Now(), setSignature)
+	//var setSignature [64]byte
+	//copy(setSignature[:], signatureBytes)
+	sv.signature = NewSignature(time.Now(), signatureBytes)
 	return nil
 }
+
 func (sv SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	if e := sv.retrievePubkey(ctx, tx, simulate); e != nil {
+	nsv, pubKey, e := sv.RetrievePubkey(ctx, tx, simulate)
+	if e != nil {
 		return ctx, InvalidTxDecodePubkeyNotFound(e)
 	}
-	if e := sv.initializeSignature(); e != nil {
+	nsv2, e := nsv.initializeSignatures()
+	if e != nil {
 		return ctx, e
 	}
-	signBytes := sv.tx.GetSignBytes(ctx, sv.account)
-	if !simulate && !sv.publicKey.VerifyBytes(signBytes, sv.signature.SignatureValue[:]) {
+	signBytes := nsv.dap_tx.GetSignBytes(ctx, nsv2.GetSignerAccont(ctx))
+	fmt.Println("✅  3check value pass ....")
+	fmt.Println(nsv2.signature.SignatureValue[:])
+
+	if !simulate && !pubKey.VerifyBytes(signBytes, nsv2.signature.SignatureValue[:]) {
 		return ctx, Unauthorized("Signature Verification failed. dxp")
 	}
+
+	fmt.Println("✅  SigVerificationDecorator pass ....")
 	return next(ctx, tx, simulate)
 }

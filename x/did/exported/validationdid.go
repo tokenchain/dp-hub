@@ -32,7 +32,7 @@ func RecoverDidToPrivateKeyClassic(did_doc IxoDid) ed25519tm.PrivKeyEd25519 {
 	copy(privKey[32:], base58.Decode(did_doc.VerifyKey))
 	return privKey
 }
-func RecoverDidEd25519ToPrivateKey(doc IxoDid) ed25519tm.PrivKeyEd25519 {
+func RecoverDidEd25519ToPrivateKeyC(doc IxoDid) ed25519tm.PrivKeyEd25519 {
 	var recover_priv_key_ed [64]byte
 	p1, _ := hex.DecodeString(strings.ToLower(doc.Secret.EncryptionPrivateKey))
 	p2, _ := hex.DecodeString(strings.ToLower(doc.Secret.SignKey))
@@ -40,7 +40,11 @@ func RecoverDidEd25519ToPrivateKey(doc IxoDid) ed25519tm.PrivKeyEd25519 {
 	copy(recover_priv_key_ed[32:], p2)
 	return recover_priv_key_ed
 }
-
+func RecoverDidEd25519ToPrivateKey(doc IxoDid) ed25519tm.PrivKeyEd25519 {
+	var recover_priv_key_ed [64]byte
+	copy(recover_priv_key_ed[:], base58.Decode(doc.Secret.EncryptionPrivateKey))
+	return recover_priv_key_ed
+}
 func RecoverDidEd25519PublicKey(doc IxoDid) [32]byte {
 	var recover_pub [32]byte
 	name := substring(doc.Did, 8, len(doc.Did))

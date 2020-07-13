@@ -18,9 +18,10 @@ func NewDapAnteHandler(ak auth.AccountKeeper, bk bank.Keeper, sk supply.Keeper, 
 		NewDapConsumeGasForTxSizeDecorator(ak, pubKeyGetter),
 		NewDapPubKeyDecorator(ak, pubKeyGetter), // SetPubKeyDecorator must be called before all signature verification decorators
 		//ante.NewValidateSigCountDecorator(ak),
-		ante.NewDeductFeeDecorator(ak, sk),
+		NewDeductFeeDecorator(ak, sk, pubKeyGetter),
+		NewConsumeVerSignGasDecorator(ak, pubKeyGetter),
 		//ante.NewDeductFeeDecorator(ak, bk),
-		ante.NewSigGasConsumeDecorator(ak, sign),
+		//ante.NewSigGasConsumeDecorator(ak, sign),
 		NewSigVerificationDecorator(ak, pubKeyGetter),
 		ante.NewIncrementSequenceDecorator(ak),
 	)

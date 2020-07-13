@@ -71,7 +71,7 @@ func fromJsonString(jsonSovrinDid string) (IxoDid, error) {
 	return did, nil
 }
 
-func NewDapDid(did, verifykey, publickey, seed, signkey, privatekey string) IxoDid {
+func NewDapDid(did, verifykey, publickey, seed, signkey, privatekey, dpaddress, dppubkey, name string) IxoDid {
 	return IxoDid{
 		Did:                 did,
 		VerifyKey:           verifykey,
@@ -80,6 +80,12 @@ func NewDapDid(did, verifykey, publickey, seed, signkey, privatekey string) IxoD
 			Seed:                 seed,
 			SignKey:              signkey,
 			EncryptionPrivateKey: privatekey,
+		},
+		Dpinfo: DpInfo{
+			DpAddress: dpaddress,
+			PubKey:    dppubkey,
+			Name:      name,
+			Algo:      "ed25519",
 		},
 	}
 }

@@ -12,6 +12,9 @@ func InvalidTxDecodePubkeyNotFound(e error) error {
 func InvalidTxDecode() error {
 	return errors.Wrap(errors.ErrTxDecode, "invalid tx type")
 }
+func InvalidTxDecodeMsg(ar string) error {
+	return errors.Wrap(errors.ErrTxDecode, ar)
+}
 func UnknownRequest(m string) error {
 	return errors.Wrap(errors.ErrUnknownRequest, m)
 }
@@ -21,6 +24,14 @@ func Unauthorized(m string) error {
 func Unauthorizedf(format string, a ...interface{}) error {
 	return errors.Wrap(errors.ErrUnauthorized, fmt.Sprintf(format, a...))
 }
+
+func UnknownAddress(m string) error {
+	return errors.Wrap(errors.ErrUnknownAddress, m)
+}
+func UnknownAddressf(format string, a ...interface{}) error {
+	return errors.Wrap(errors.ErrUnknownAddress, fmt.Sprintf(format, a...))
+}
+
 func IntErr(m string) error {
 	return errors.Wrap(errors.ErrPanic, m)
 }
@@ -56,9 +67,12 @@ func ErrItemDuplication(msg string) error {
 	return errors.Wrap(x.ErrItemDuplication, errMsg)
 }
 
+func ItemSigNotFound(msg string) error {
+	errMsg := fmt.Sprintf("No multi signatures found %s", msg)
+	return errors.Wrap(x.ErrItemNotFound, errMsg)
+}
 func ErrItemNotFound(msg string) error {
 	errMsg := fmt.Sprintf("item is not found %s", msg)
-
 	return errors.Wrap(x.ErrItemNotFound, errMsg)
 }
 

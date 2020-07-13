@@ -26,8 +26,10 @@ var (
 	SignAndBroadcastTxFromStdSignMsg  = types.SignAndBroadcastTxFromStdSignMsg
 	NewSignature                      = types.NewSignature
 	ProcessSig                        = types.ProcessSig
+	RegisterCodec                     = types.RegisterCodec
 	SignAndBroadcastTxCli             = types.SignAndBroadcastTxCli
 	SignAndBroadcastTxRest            = types.SignAndBroadcastTxRest
+	NewDidTxBuild                     = types.NewDidTxBuild
 
 	// Types
 	IxoDecimals = types.IxoDecimals

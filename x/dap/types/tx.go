@@ -3,21 +3,27 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
+	"github.com/spf13/viper"
+	"github.com/tendermint/ed25519"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"gopkg.in/yaml.v2"
+	"os"
 	"time"
 )
 
 var (
 	maxGasWanted         = uint64((1 << 63) - 1)
-	_            TxActor = (*IxoTx)(nil)
+	//_            TxActor = (*IxoTx)(nil)
 	_            sdk.Tx  = (*IxoTx)(nil)
 )
 
@@ -36,20 +42,20 @@ type (
 		GetSignerDid() exported.Did
 	}
 	IxoSignature struct {
-		SignatureValue [Ed25519SignatureLen]byte `json:"signatureValue" yaml:"signatureValue"`
-		Created        time.Time                 `json:"created" yaml:"created"`
+		SignatureValue []byte    `json:"signatureValue" yaml:"signatureValue"`
+		Created        time.Time `json:"created" yaml:"created"`
 	}
 	IxoTx struct {
 		sdk.Tx
+		Memo       string         `json:"memo" yaml:"memo"`
 		Msgs       []sdk.Msg      `json:"payload" yaml:"payload"`
 		Fee        auth.StdFee    `json:"fee" yaml:"fee"`
 		Signatures []IxoSignature `json:"signatures" yaml:"signatures"`
-		Memo       string         `json:"memo" yaml:"memo"`
 	}
 	TxActor interface {
 		GetMsgs() []sdk.Msg
-		GetMemo() string
 		ValidateBasic() error
+		GetMemo() string
 		String() string
 		GetGas() uint64
 		GetFee() sdk.Coins
@@ -57,6 +63,7 @@ type (
 		GetSignBytes(ctx sdk.Context, acc authexported.Account) []byte
 		GetSigner() sdk.AccAddress
 		GetSignatures() []IxoSignature
+		GetFirstSignatureValues() []byte
 	}
 )
 
@@ -81,7 +88,42 @@ func (is IxoSignature) MarshalYAML() (interface{}, error) {
 	return string(bz), err
 }
 
-func NewSignature(created time.Time, signature [Ed25519SignatureLen]byte) IxoSignature {
+func (is IxoSignature) String() string {
+	return fmt.Sprintf("{%V}", is)
+}
+
+/*
+
+func (ss StdSignature) MarshalYAML() (interface{}, error) {
+	var (
+		bz     []byte
+		pubkey string
+		err    error
+	)
+
+	if ss.PubKey != nil {
+		pubkey, err = sdk.Bech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, ss.PubKey)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	bz, err = yaml.Marshal(struct {
+		PubKey    string
+		Signature string
+	}{
+		PubKey:    pubkey,
+		Signature: fmt.Sprintf("%s", ss.Signature),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return string(bz), err
+}
+
+*/
+func NewSignature(created time.Time, signature []byte) IxoSignature {
 	return IxoSignature{
 		SignatureValue: signature,
 		Created:        created,
@@ -164,6 +206,9 @@ func (tx IxoTx) GetSigner() sdk.AccAddress {
 func (tx IxoTx) GetSignatures() []IxoSignature {
 	return tx.Signatures
 }
+func (tx IxoTx) GetFirstSignatureValues() []byte {
+	return tx.Signatures[0].SignatureValue
+}
 
 /*
 GetGas() uint64
@@ -203,4 +248,113 @@ func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 			return tx, nil
 		}
 	}
+}
+
+type SignTxPack struct {
+	ctxCli    context.CLIContext
+	msg       sdk.Msg
+	did       exported.IxoDid
+	signature IxoSignature
+	txBldr    auth.TxBuilder
+}
+
+func NewDidTxBuild(ctx context.CLIContext, msg sdk.Msg, ixoDid exported.IxoDid) SignTxPack {
+	instance := SignTxPack{
+		ctxCli: ctx,
+		msg:    msg,
+		did:    ixoDid,
+	}
+	instance.txBldr = auth.NewTxBuilderFromCLI(ctx.Input)
+	instance.signature = instance.getSignature()
+	return instance
+}
+
+func (tb SignTxPack) collectMsgs() []sdk.Msg {
+	return []sdk.Msg{tb.msg}
+}
+
+func (tb SignTxPack) collectSignatures() []IxoSignature {
+	return []IxoSignature{tb.signature}
+}
+
+func (tb SignTxPack) getSignature() IxoSignature {
+	privKey := tb.did.GetPriKeyByte()
+	signatureBytes := ed25519.Sign(&privKey, tb.msg.GetSignBytes())
+	return NewSignature(time.Now(), signatureBytes[:])
+}
+
+func (tb SignTxPack) generateBoardcastDapTx(t auth.StdSignMsg) IxoTx {
+	return NewIxoTx(tb.collectMsgs(), t.Fee, tb.collectSignatures(), t.Memo)
+}
+
+func (tb SignTxPack) printUnsignedStdTx() error {
+	if tb.txBldr.SimulateAndExecute() {
+		if err := tb.doSimulate(); err != nil {
+			return err
+		}
+	}
+
+	stdSignMsg, err := tb.txBldr.BuildSignMsg(tb.collectMsgs())
+	if err != nil {
+		return err
+	}
+
+	var json []byte
+	if viper.GetBool(flags.FlagIndentResponse) {
+		json, err = tb.ctxCli.Codec.MarshalJSONIndent(stdSignMsg, "", "  ")
+	} else {
+		json, err = tb.ctxCli.Codec.MarshalJSON(stdSignMsg)
+	}
+	if err != nil {
+		return err
+	}
+
+	_, _ = fmt.Fprintf(tb.ctxCli.Output, "%s\n", json)
+	return nil
+}
+func (tb SignTxPack) doSimulate() error {
+	if tb.ctxCli.Simulate {
+		txBldr, err := utils.EnrichWithGas(tb.txBldr, tb.ctxCli, tb.collectMsgs())
+		if err != nil {
+			return err
+		}
+
+		gasEst := utils.GasEstimateResponse{GasEstimate: txBldr.Gas()}
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n", gasEst.String())
+	}
+	return nil
+}
+func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {
+	txBldr, err := utils.PrepareTxBuilder(tb.txBldr, tb.ctxCli)
+	if err != nil {
+		return err
+	}
+	if err := tb.printUnsignedStdTx(); err != nil {
+		return err
+	}
+	stdmsg, err := txBldr.BuildSignMsg([]sdk.Msg{tb.msg})
+	if err != nil {
+		return err
+	}
+
+	tx := tb.generateBoardcastDapTx(stdmsg)
+	fmt.Println("=============== public key ==============")
+	fmt.Println(tb.did.GetPubKey())
+	fmt.Println("=============== private key ==============")
+	fmt.Println(tb.did.GetPriKeyByte())
+	fmt.Println("=============== signature ==============")
+	fmt.Println(tb.signature.SignatureValue)
+	fmt.Println("=============== pre-tx-signature ==============")
+	fmt.Println(tx.GetFirstSignatureValues())
+	bz, err := tb.ctxCli.Codec.MarshalJSON(tx)
+	if err != nil {
+		return fmt.Errorf("Could not marshall tx to binary. Error: %s! ", err.Error())
+	}
+	res, err := tb.ctxCli.BroadcastTx(bz)
+	if err != nil {
+		return fmt.Errorf("Could not broadcast tx. Error: %s! ", err.Error())
+	}
+	fmt.Println(res.String())
+	fmt.Printf("Committed at block %d. Hash: %s\n", res.Height, res.TxHash)
+	return nil
 }

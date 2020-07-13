@@ -108,8 +108,7 @@ return newCtx, nil
 func consumeSimSigGas(gasmeter sdk.GasMeter, pubkey crypto.PubKey, sig IxoSignature, params auth.Params) {
 	simSig := IxoSignature{}
 	if binary.Size(sig.SignatureValue) == 0 {
-		simSig.SignatureValue = simEd25519Sig
-		//simSig.SignatureValue = simEd25519Sig[:]
+		simSig.SignatureValue = simEd25519Sig[:]
 	}
 	simSig.Created = simSig.Created.Add(1) // maximizes signature length
 	ModuleCdc := codec.New()
@@ -307,9 +306,8 @@ func signAndBroadcast(ctx context.CLIContext, msg auth.StdSignMsg, ixoDid export
 		panic("expected one message")
 	}
 	privKey := exported.RecoverDidToPrivateKeyClassic(ixoDid)
-	fmt.Println(privKey)
 	signature := SignIxoMessageEd25519(msg.Bytes(), privKey)
-	fmt.Println(signature)
+
 	tx := NewIxoTxSingleMsg(msg.Msgs[0], msg.Fee, signature, msg.Memo)
 	fmt.Println(msg)
 	bz, err := ctx.Codec.MarshalJSON(tx)
@@ -346,15 +344,6 @@ func simulateMsgs(txBldr auth.TxBuilder, cliCtx context.CLIContext, msgs []sdk.M
 	return
 }
 
-func enrichWithGas(txBldr auth.TxBuilder, cliCtx context.CLIContext, msgs []sdk.Msg) (auth.TxBuilder, error) {
-	_, adjusted, err := simulateMsgs(txBldr, cliCtx, msgs)
-	if err != nil {
-		return txBldr, err
-	}
-
-	return txBldr.WithGas(adjusted), nil
-}
-
 func ApproximateFeeForTx(cliCtx context.CLIContext, tx IxoTx, chainId string) (auth.StdFee, error) {
 
 	// Set up a transaction builder
@@ -365,7 +354,7 @@ func ApproximateFeeForTx(cliCtx context.CLIContext, tx IxoTx, chainId string) (a
 	txBldr := auth.NewTxBuilder(txEncoder(cdc), 0, 0, 0, gasAdjustment, true, chainId, tx.Memo, fees, nil)
 
 	// Approximate gas consumption
-	txBldr, err := enrichWithGas(txBldr, cliCtx, tx.Msgs)
+	txBldr, err := utils.EnrichWithGas(txBldr, cliCtx, tx.Msgs)
 	if err != nil {
 		return auth.StdFee{}, err
 	}
@@ -388,76 +377,6 @@ func GenerateOrBroadcastMsgs(cliCtx context.CLIContext, msg sdk.Msg, ixoDid expo
 	}
 
 	return CompleteAndBroadcastTxCLI(txBldr, cliCtx, msgs, ixoDid)
-}
-
-func CompleteAndBroadcastTxCLI(txBldr auth.TxBuilder, cliCtx context.CLIContext, msgs []sdk.Msg, ixoDid exported.IxoDid) error {
-	txBldr, err := utils.PrepareTxBuilder(txBldr, cliCtx)
-	if err != nil {
-		return err
-	}
-
-	//fromName := cliCtx.GetFromName()
-
-	if txBldr.SimulateAndExecute() || cliCtx.Simulate {
-		txBldr, err = enrichWithGas(txBldr, cliCtx, msgs)
-		if err != nil {
-			return err
-		}
-
-		gasEst := utils.GasEstimateResponse{GasEstimate: txBldr.Gas()}
-		_, _ = fmt.Fprintf(os.Stderr, "%s\n", gasEst.String())
-	}
-
-	if cliCtx.Simulate {
-		return nil
-	}
-
-	if !cliCtx.SkipConfirm {
-		stdSignMsg, err := txBldr.BuildSignMsg(msgs)
-		if err != nil {
-			return err
-		}
-
-		var json []byte
-		if viper.GetBool(flags.FlagIndentResponse) {
-			json, err = cliCtx.Codec.MarshalJSONIndent(stdSignMsg, "", "  ")
-			if err != nil {
-				panic(err)
-			}
-		} else {
-			json = cliCtx.Codec.MustMarshalJSON(stdSignMsg)
-		}
-
-		_, _ = fmt.Fprintf(os.Stderr, "%s\n\n", json)
-
-		buf := bufio.NewReader(os.Stdin)
-		ok, err := input.GetConfirmation("confirm transaction before signing and broadcasting", buf)
-		if err != nil || !ok {
-			_, _ = fmt.Fprintf(os.Stderr, "%s\n", "cancelled transaction")
-			return err
-		}
-	}
-
-	//passphrase, err := keys.GetPassphrase(fromName)
-	//if err != nil {
-	//	return err
-	//}
-
-	// Build the transaction
-	stdSignMsg, err := txBldr.BuildSignMsg(msgs)
-	if err != nil {
-		return err
-	}
-
-	// Sign and broadcast to a Tendermint node
-	res, err := signAndBroadcast(cliCtx, stdSignMsg, ixoDid)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(res.String())
-	fmt.Printf("Committed at block %d. Hash: %s\n", res.Height, res.TxHash)
-	return nil
 }
 
 func CompleteAndBroadcastTxRest(cliCtx context.CLIContext, msg sdk.Msg, ixoDid exported.IxoDid) ([]byte, error) {
@@ -492,14 +411,13 @@ func CompleteAndBroadcastTxRest(cliCtx context.CLIContext, msg sdk.Msg, ixoDid e
 	return output, nil
 }
 
-func SignAndBroadcastTxFromStdSignMsg(cliCtx context.CLIContext,
-	msg auth.StdSignMsg, ixoDid exported.IxoDid) (sdk.TxResponse, error) {
+func SignAndBroadcastTxFromStdSignMsg(cliCtx context.CLIContext, msg auth.StdSignMsg, ixoDid exported.IxoDid) (sdk.TxResponse, error) {
 	return signAndBroadcast(cliCtx, msg, ixoDid)
 }
 
 func SignIxoMessageEd25519(signBytes []byte, privKey [ed25519.PrivateKeySize]byte) IxoSignature {
 	signatureBytes := ed25519.Sign(&privKey, signBytes)
-	return NewSignature(time.Now(), *signatureBytes)
+	return NewSignature(time.Now(), signatureBytes[:])
 }
 
 /*
@@ -523,7 +441,7 @@ func SignAndBroadcastTxCli(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid exp
 
 	if txBldr.SimulateAndExecute() || cliCtx.Simulate {
 		var err error // important so that enrichWithGas overwrites txBldr
-		txBldr, err = enrichWithGas(txBldr, cliCtx, msgs)
+		txBldr, err = utils.EnrichWithGas(txBldr, cliCtx, msgs)
 		if err != nil {
 			return err
 		}
@@ -555,7 +473,7 @@ func SignAndBroadcastTxCli(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid exp
 		_, _ = fmt.Fprintf(os.Stderr, "%s\n\n", json)
 
 		buf := bufio.NewReader(os.Stdin)
-		ok, err := input.GetConfirmation("confirm transaction before signing and broadcasting", buf)
+		ok, err := input.GetConfirmation("📝  Confirm transaction before signing and broadcasting", buf)
 		if err != nil || !ok {
 			_, _ = fmt.Fprintf(os.Stderr, "%s\n", "cancelled transaction")
 			return err
@@ -567,22 +485,20 @@ func SignAndBroadcastTxCli(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid exp
 	if err != nil {
 		return err
 	}
-	println("sign 5 ---- ")
 	// Sign and broadcast
 	res, err := signAndBroadcast(cliCtx, stdSignMsg, sovrinDid)
 	if err != nil {
 		return err
 	}
-	println("sign 6 ---- ")
+	fmt.Println("========================🗳 BROADCAST COMPLETE")
 	fmt.Println(res.String())
+	fmt.Println("========================🏁 BLOCK COMMITTED")
 	fmt.Printf("Committed at block %d. Hash: %s\n", res.Height, res.TxHash)
 	return nil
 }
 
 func SignAndBroadcastTxRest(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid exported.IxoDid) ([]byte, error) {
-
 	// TODO: implement using txBldr or just remove function completely (ref: #123)
-
 	// Construct dummy tx and approximate and set fee
 	tx := NewIxoTxSingleMsg(msg, auth.StdFee{}, IxoSignature{}, "")
 	chainId := viper.GetString(flags.FlagChainID)
@@ -590,14 +506,12 @@ func SignAndBroadcastTxRest(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid ex
 	if err != nil {
 		return nil, err
 	}
-
 	// Construct sign message
 	stdSignMsg := auth.StdSignMsg{
 		Fee:  fee,
 		Msgs: []sdk.Msg{msg},
 		Memo: "",
 	}
-
 	// Sign and broadcast
 	res, err := signAndBroadcast(cliCtx, stdSignMsg, sovrinDid)
 	if err != nil {

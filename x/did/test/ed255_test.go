@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/go-bip39"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"testing"
@@ -25,17 +26,20 @@ func Test_recover_ke(t *testing.T) {
 	fmt.Println(mnemonic)
 }
 func Test_recover_public_key(t *testing.T) {
+	setPrefix()
 	doc := exported.NewDapDid(
 		sample_did,
 		sample_verifyKey,
 		sample_encryptionPublicKey,
 		sample_seed,
 		sample_signKey,
-		sample_encryptionPrivateKey)
+		sample_encryptionPrivateKey,
+		sample_address,
+		sample_pub,
+		"cosmos",
+	)
 
 	//err := dap.SignAndBroadcastTxCli()
-
-	fmt.Println(doc.GetPubKey())
 
 	/*	var recover_pub [32]byte
 		name := substring(doc.Did, 8, len(doc.Did))
@@ -49,7 +53,26 @@ func Test_recover_public_key(t *testing.T) {
 		config.SetBech32PrefixForValidator(app.Bech32PrefixValAddr, app.Bech32PrefixValPub)
 		config.SetBech32PrefixForConsensusNode(app.Bech32PrefixConsAddr, app.Bech32PrefixConsPub)
 		config.Seal()*/
+	//both parts are filled
 	r := exported.RecoverDidToPrivateKeyClassic(doc)
+	//only the first part filled
+	//f := exported.RecoverDidEd25519ToPrivateKey(doc)
+	//get the private key
+	fmt.Println(doc.FromAddressDx0().String())
+	fmt.Println(doc.Address().String())
+
+	fmt.Println("========key recover  pubkey from pub key=========")
+	fmt.Println(doc.FromPubKeyDx0())
+	fmt.Println(doc.GetPubKey())
+
+	fmt.Println("========key recover  pubkey=========")
+	fmt.Println(doc.GetPubKeyByte())
+
+	fmt.Println("========key recover  private key=========")
+	fmt.Println(doc.GetPriKeyByte())
+	pri := doc.GetPriKeyByte()
+	fmt.Println(len(pri), pri)
+	require.Equal(t, r, ed25519.PrivKeyEd25519(doc.GetPriKeyByte()))
 	fmt.Println("========it is now name  =========")
 	//	fmt.Println(name, doc.Address().String())
 
@@ -57,7 +80,6 @@ func Test_recover_public_key(t *testing.T) {
 	fmt.Println(len(r), r)
 
 	fmt.Println("========key recover  =========")
-	//	fmt.Println(len(recover_pub), recover_pub)
 
 	fmt.Println("========key recover  =========")
 	require.Nil(t, nil, "successfull signed")

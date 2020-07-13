@@ -25,8 +25,12 @@ func GetCmdAddDidDoc(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 			cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(sovrinDid.Address())
+			//msg := types.NewMsgAddDid(sovrinDid.Did, sovrinDid.Dpinfo.PubKey)
 			msg := types.NewMsgAddDid(sovrinDid.Did, sovrinDid.GetPubKey())
-			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			//return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			//return dap.NewDidTxBuild(cliCtx, msg, ixoDid).CompleteAndBroadcastTxCLI()
+			return dap.NewDidTxBuild(cliCtx, msg, sovrinDid).
+				CompleteAndBroadcastTxCLI()
 		},
 	}
 }

@@ -1,6 +1,7 @@
 package exported
 
 import (
+	"crypto"
 	"encoding/json"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
@@ -22,7 +23,8 @@ type (
 	IdpDid interface {
 		String() string
 		AddressEd() sdk.AccAddress
-		AddressDx0() sdk.AccAddress
+		FromAddressDx0() sdk.AccAddress
+		FromPubKeyDx0() crypto.PublicKey
 		Address() sdk.AccAddress
 		DidAddress() string
 		MarshaDid() ([]byte, error)
@@ -90,8 +92,22 @@ func (s Secret) String() string {
 //    }
 // }
 
-func (id IxoDid) AddressDx0() sdk.AccAddress {
+func (id IxoDid) GetPubKeyByte() [32]byte {
+	return RecoverDidEd25519PublicKey(id)
+}
+func (id IxoDid) GetPriKeyByte() [64]byte {
+	return RecoverDidToPrivateKeyClassic(id)
+}
+func (id IxoDid) FromAddressDx0() sdk.AccAddress {
 	address, _ := sdk.AccAddressFromBech32(id.Dpinfo.DpAddress)
+	return address
+}
+func (id IxoDid) FromPubKeyDx0() crypto.PublicKey {
+	address, e := sdk.GetPubKeyFromBech32(sdk.Bech32PubKeyTypeAccPub, id.Dpinfo.PubKey)
+	//address, _ := sdk.AccAddressFromBech32( id.VerifyKey)
+	if e != nil {
+		fmt.Println("cannot get the pubkey, ", e, id.Dpinfo.PubKey)
+	}
 	return address
 }
 func (id IxoDid) Address() sdk.AccAddress {
@@ -112,7 +128,6 @@ func (id IxoDid) String() string {
 	}
 	return fmt.Sprintf("%v", string(output))
 }
-
 func (id IxoDid) MarshaDid() ([]byte, error) {
 	t, err := json.Marshal(id)
 	if err != nil {

@@ -33,6 +33,8 @@ const (
 	sample_seed                 = "74fd93fdd7508e6b2fc9f4e1ac8cef727003f2c36e3f1acf1fcb104658da8f42"
 	sample_signKey              = "8sgZQSCiu8GHTveWb1mfusT1KbaFCksriHoXhyDzwahF"
 	sample_encryptionPrivateKey = "8sgZQSCiu8GHTveWb1mfusT1KbaFCksriHoXhyDzwahF"
+	sample_address              = "dx01nyx8wn3qelmdpykjcjqnw22zdmu9pjt9us0y73"
+	sample_pub                  = "dx0pub1zcjduepqaxmxmerk2lw76qxlsf8cc0rzst5hfgy4a3xmvnaxgmkczc9hv30sh4yj2y"
 )
 
 /**
@@ -75,7 +77,7 @@ func createTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
 
 	return app, ctx
 }
-func setPrefix(){
+func setPrefix() {
 	config := sdk.GetConfig()
 	config.SetBech32PrefixForAccount(app.Bech32PrefixAccAddr, app.Bech32PrefixAccPub)
 	config.SetBech32PrefixForValidator(app.Bech32PrefixValAddr, app.Bech32PrefixValPub)
