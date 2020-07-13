@@ -157,10 +157,11 @@ func (sv SigVerification) RetrievePubkey(ctx sdk.Context, tx sdk.Tx, simulate bo
 
 	sv.stdSignature = simSig
 	sv.dap_tx = sigTx
-	var pubkey_orginal ed25519tm.PubKeyEd25519
-	copy(pubkey_orginal[:], pubKey.Bytes()[5:])
-	sv.pubkey = pubkey_orginal[:]
+	//var pubkey_orginal ed25519tm.PubKeyEd25519
+	//copy(pubkey_orginal[:], pubKey.Bytes()[5:])
+	//sv.pubkey = pubkey_orginal[:]
 	//fmt.Println(sv.account_address)
+	//sv.pubkey = ed25519tm.PubKeyEd25519(pubKey)
 
 	return sv, pubKey, nil
 }

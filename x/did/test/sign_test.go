@@ -77,7 +77,7 @@ func Test_dk(t *testing.T) {
 
 	require.Nil(t, err, "offline creation pass 3")
 	//	println(mnemonic)
-	did_document := exported.InfoToDid(info, privKey, algo)
+	did_document := exported.GenDidInfoExperiment(info, privKey, algo)
 	println("========💳  Address from VerifyKeyToAddr ====================================================")
 	println(exported.VerifyKeyToAddr(did_document.VerifyKey).String())
 	println("========💳  Address stored darkpool=====")
@@ -159,7 +159,7 @@ func Test_recover(t *testing.T) {
 
 	info, err := kb.CreateOffline(name, privKey.PubKey(), algo)
 
-	did_document := exported.InfoToDid(info, privKey, algo)
+	did_document := exported.GenDidInfoExperiment(info, privKey, algo)
 	recover_privKey:=exported.RecoverDidSecpK1ToPrivateKey(did_document)
 
 	//var recover_privKey ed25519tm.PrivKeyEd25519
@@ -195,7 +195,7 @@ func Test_development(t *testing.T) {
 
 	info, err := kb.CreateOffline(name, privKey.PubKey(), algo)
 
-	did_document := exported.InfoToDid(info, privKey, algo)
+	did_document := exported.GenDidInfoExperiment(info, privKey, algo)
 
 	//var recover_privKey ed25519tm.PrivKeyEd25519
 	var recover_privKey secp256k1.PrivKeySecp256k1

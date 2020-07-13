@@ -45,6 +45,89 @@ type SovrinDid struct {
 	Secret              SovrinSecret `json:"secret" yaml:"secret"`
 }
 
+func NewDapDid(did, verifykey, publickey, seed, signkey, privatekey, dpaddress, dppubkey, name string) IxoDid {
+	return IxoDid{
+		Did:                 did,
+		VerifyKey:           verifykey,
+		EncryptionPublicKey: publickey,
+		Secret: Secret{
+			Seed:                 seed,
+			SignKey:              signkey,
+			EncryptionPrivateKey: privatekey,
+		},
+		Dpinfo: DpInfo{
+			DpAddress: dpaddress,
+			PubKey:    dppubkey,
+			Name:      name,
+			Algo:      "ed25519",
+		},
+	}
+}
+
+// todo: not working and will be removed
+func GenDidInfoExperiment(doc keys.Info, privateKey tmcrypto.PrivKey, x keys.SigningAlgo) IxoDid {
+
+	_, privateKeyBytes, err := edgen.GenerateKey(bytes.NewReader(doc.GetPubKey().Bytes()[0:32]))
+	publicKeyBytes2, _, err := edgen.GenerateKey(bytes.NewReader(privateKeyBytes[:]))
+	if err != nil {
+		panic(err)
+	}
+	//signKey := base58.Encode(privateKeyBytes[:32])
+	hashedEntropy := sha256.Sum256(privateKey.Bytes())
+	dpaddress := doc.GetAddress().String()
+
+	privKey := PrivateKeyToSecp256k1(privateKey)
+
+	sovDid := IxoDid{
+		Did:                 dxpDidAddress(base58.Encode(doc.GetPubKey().Bytes()[:16])),
+		VerifyKey:           base58.Encode([]byte(dpaddress)),
+		EncryptionPublicKey: base58.Encode(publicKeyBytes2[:]),
+
+		Secret: Secret{
+			Seed:                 hex.EncodeToString(hashedEntropy[:]),
+			SignKey:              strings.ToUpper(hex.EncodeToString(privKey[24:])),
+			EncryptionPrivateKey: strings.ToUpper(hex.EncodeToString(privKey[:24])),
+		},
+	}
+
+	//	addr, err := sdk.AccAddressFromBech32("cosmos1yq8lgssgxlx9smjhes6ryjasmqmd3ts2559g0t")
+
+	return sovDid
+
+}
+
+func InfoToDidEd25519(doc keys.Info, derivedPriv []byte) IxoDid {
+	pub, pri, _ := edgen.GenerateKey(bytes.NewReader(derivedPriv[0:32]))
+	signKey := base58.Encode(pri[:32])
+	pk, _ := sdk.Bech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, doc.GetPubKey())
+	keyPairPublicKey, keyPairPrivateKey, _ := naclBox.GenerateKey(bytes.NewReader(pri[:]))
+	/*
+		fmt.Println("========private key  =========")
+		fmt.Println(keyPairPrivateKey)
+		fmt.Println(keyPairPublicKey)
+		fmt.Println("========derivedPriv key  =========")
+		fmt.Println(len(derivedPriv), derivedPriv)
+	*/
+	sovDid := IxoDid{
+		Dpinfo: DpInfo{
+			DpAddress: doc.GetAddress().String(),
+			PubKey:    pk,
+			Name:      doc.GetName(),
+			Algo:      "secp256k1",
+		},
+		Did:                 dxpDidAddress(base58.Encode(pub[:16])),
+		VerifyKey:           base58.Encode(pub[:]),
+		EncryptionPublicKey: base58.Encode(keyPairPublicKey[:]),
+		Secret: Secret{
+			Seed:                 hex.EncodeToString(derivedPriv[0:32]),
+			SignKey:              signKey,
+			EncryptionPrivateKey: base58.Encode(keyPairPrivateKey[:]),
+		},
+	}
+	return sovDid
+
+}
+
 func (sd SovrinDid) String() string {
 	output, err := json.MarshalIndent(sd, "", "  ")
 	if err != nil {
@@ -69,25 +152,6 @@ func fromJsonString(jsonSovrinDid string) (IxoDid, error) {
 	}
 
 	return did, nil
-}
-
-func NewDapDid(did, verifykey, publickey, seed, signkey, privatekey, dpaddress, dppubkey, name string) IxoDid {
-	return IxoDid{
-		Did:                 did,
-		VerifyKey:           verifykey,
-		EncryptionPublicKey: publickey,
-		Secret: Secret{
-			Seed:                 seed,
-			SignKey:              signkey,
-			EncryptionPrivateKey: privatekey,
-		},
-		Dpinfo: DpInfo{
-			DpAddress: dpaddress,
-			PubKey:    dppubkey,
-			Name:      name,
-			Algo:      "ed25519",
-		},
-	}
 }
 
 func mnemonicToDid(mnemonic string) IxoDid {
@@ -154,72 +218,6 @@ func VerifyKeyToAddr(verifyKey string) sdk.AccAddress {
 		panic(msg)
 	}
 	return g
-}
-
-// todo: not working and will be removed
-func InfoToDid(doc keys.Info, privateKey tmcrypto.PrivKey, x keys.SigningAlgo) IxoDid {
-
-	_, privateKeyBytes, err := edgen.GenerateKey(bytes.NewReader(doc.GetPubKey().Bytes()[0:32]))
-	publicKeyBytes2, _, err := edgen.GenerateKey(bytes.NewReader(privateKeyBytes[:]))
-	if err != nil {
-		panic(err)
-	}
-	//signKey := base58.Encode(privateKeyBytes[:32])
-	hashedEntropy := sha256.Sum256(privateKey.Bytes())
-	dpaddress := doc.GetAddress().String()
-
-	privKey := PrivateKeyToSecp256k1(privateKey)
-
-	sovDid := IxoDid{
-		Did:                 dxpDidAddress(base58.Encode(doc.GetPubKey().Bytes()[:16])),
-		VerifyKey:           base58.Encode([]byte(dpaddress)),
-		EncryptionPublicKey: base58.Encode(publicKeyBytes2[:]),
-
-		Secret: Secret{
-			Seed:                 hex.EncodeToString(hashedEntropy[:]),
-			SignKey:              strings.ToUpper(hex.EncodeToString(privKey[24:])),
-			EncryptionPrivateKey: strings.ToUpper(hex.EncodeToString(privKey[:24])),
-		},
-	}
-
-	//	addr, err := sdk.AccAddressFromBech32("cosmos1yq8lgssgxlx9smjhes6ryjasmqmd3ts2559g0t")
-
-	return sovDid
-
-}
-
-func InfoToDidEd25519(doc keys.Info, derivedPriv []byte) IxoDid {
-	pub, pri, _ := edgen.GenerateKey(bytes.NewReader(derivedPriv[0:32]))
-	signKey := base58.Encode(pri[:32])
-
-	pk, _ := sdk.Bech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, doc.GetPubKey())
-
-	keyPairPublicKey, keyPairPrivateKey, _ := naclBox.GenerateKey(bytes.NewReader(pri[:]))
-	/*
-		fmt.Println("========private key  =========")
-		fmt.Println(keyPairPrivateKey)
-		fmt.Println(keyPairPublicKey)
-		fmt.Println("========derivedPriv key  =========")
-		fmt.Println(len(derivedPriv), derivedPriv)*/
-
-	sovDid := IxoDid{
-		Dpinfo: DpInfo{
-			DpAddress: doc.GetAddress().String(),
-			PubKey:    pk,
-			Name:      doc.GetName(),
-			Algo:      "secp256k1",
-		},
-		Did:                 dxpDidAddress(base58.Encode(pub[:16])),
-		VerifyKey:           base58.Encode(pub[:]),
-		EncryptionPublicKey: base58.Encode(keyPairPublicKey[:]),
-		Secret: Secret{
-			Seed:                 hex.EncodeToString(derivedPriv[0:32]),
-			SignKey:              signKey,
-			EncryptionPrivateKey: base58.Encode(keyPairPrivateKey[:]),
-		},
-	}
-	return sovDid
-
 }
 
 func dxpDidAddress(document string) string {

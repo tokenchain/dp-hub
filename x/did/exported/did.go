@@ -93,11 +93,12 @@ func (s Secret) String() string {
 // }
 
 func (id IxoDid) GetPubKeyByte() [32]byte {
-	return RecoverDidEd25519PublicKey(id)
+	return RecoverDidToEd25519PubKey(id)
 }
 func (id IxoDid) GetPriKeyByte() [64]byte {
-	return RecoverDidToPrivateKeyClassic(id)
+	return RecoverDidToEd25519PrivateKey(id)
 }
+
 func (id IxoDid) FromAddressDx0() sdk.AccAddress {
 	address, _ := sdk.AccAddressFromBech32(id.Dpinfo.DpAddress)
 	return address

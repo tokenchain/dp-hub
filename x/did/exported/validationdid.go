@@ -20,7 +20,16 @@ var (
 	//   to consider project accounts as DIDs (especially in treasury module),
 	//   possibly should just be `^did:(dxp:|sov:)([a-zA-Z0-9]){21,22}$`.
 )
-
+func RecoverDidToEd25519PrivateKey(did_doc IxoDid)  ed25519tm.PrivKeyEd25519 {
+	var privKey  ed25519tm.PrivKeyEd25519
+	copy(privKey[:], base58.Decode(did_doc.Secret.EncryptionPrivateKey)[:])
+	return privKey
+}
+func RecoverDidToEd25519PubKey(did_doc IxoDid)  ed25519tm.PubKeyEd25519 {
+	var privKey  ed25519tm.PubKeyEd25519
+	copy(privKey[:], base58.Decode(did_doc.EncryptionPublicKey)[:])
+	return privKey
+}
 func RecoverDidToCosmosPrivateKey(did_doc IxoDid) secp256k1.PrivKeySecp256k1 {
 	var privKey secp256k1.PrivKeySecp256k1
 	copy(privKey[:], base58.Decode(did_doc.Secret.EncryptionPrivateKey)[:])

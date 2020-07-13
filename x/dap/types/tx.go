@@ -20,6 +20,7 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"gopkg.in/yaml.v2"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -286,17 +287,22 @@ func (tb SignTxPack) getSignature() IxoSignature {
 	if !ok {
 		fmt.Println("the msg type is not IxoMsg")
 	}
+
+	if l := len(privateKey); l != ed25519.PrivateKeySize {
+		panic("ed25519: bad private key length: " + strconv.Itoa(l))
+	}
+
 	signatureBytes := ed25519.Sign(privateKey[:], ixt.GetSignBytes())
 	//return NewSignature(time.Now(), signatureBytes[:])
 	return NewSignature(time.Now(), signatureBytes)
 }
 
-func (tb SignTxPack) SignAndGenerateMessage(t auth.StdSignMsg) IxoTx {
+func (tb SignTxPack) SignAndGenerateMessage(standardMsg auth.StdSignMsg) IxoTx {
 	//sign message
-	sign_signature := tb.collectSignatures()
+	signingSignature := tb.collectSignatures()
 	//collection of messages
 	messages := tb.collectMsgs()
-	return NewIxoTx(messages, t.Fee, sign_signature, t.Memo)
+	return NewIxoTx(messages, standardMsg.Fee, signingSignature, standardMsg.Memo)
 }
 
 func (tb SignTxPack) printUnsignedStdTx(stdSignMsg auth.StdSignMsg) error {
@@ -336,8 +342,8 @@ func (tb SignTxPack) doSimulate() error {
 	return nil
 }
 func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {
-	txBldr, err := utils.PrepareTxBuilder(tb.txBldr, tb.ctxCli)
 
+	txBldr, err := utils.PrepareTxBuilder(tb.txBldr, tb.ctxCli)
 	if err != nil {
 		return err
 	}

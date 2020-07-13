@@ -25,11 +25,6 @@ func NewDeductFeeDecorator(ak keeper.AccountKeeper, sk types.SupplyKeeper, p Pub
 }
 
 func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
-	//feeTx, ok := tx.(IxoTx)
-	/*if !ok {
-		return ctx, InvalidTxDecodeMsg("Tx must be a FeeTx")
-	}*/
-
 	sv, _, e := dfd.RetrievePubkey(ctx, tx, simulate)
 	if e != nil {
 		return ctx, InvalidTxDecodePubkeyNotFound(e)
@@ -38,18 +33,6 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 	if addr := dfd.supplyKeeper.GetModuleAddress(types.FeeCollectorName); addr == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.FeeCollectorName))
 	}
-	/*
-		feePayer := feeTx.FeePayer()
-		feePayerAcc := dfd.ak.GetAccount(ctx, feePayer)
-
-		if feePayerAcc == nil {
-			return ctx, UnknownAddressf("fee payer address: %s does not exist", feePayer)
-		}
-	*/
-	//fmt.Println("✅  1-DeductFeeDecorator check value pass ....")
-	//fmt.Println(dfd.SigVerification.account_address)
-	//fmt.Println(dfd.account_address)
-	//fmt.Println("✅  2-DeductFeeDecorator check value pass ....")
 
 	// deduct the fees
 	if !sv.dap_tx.GetFee().IsZero() {
