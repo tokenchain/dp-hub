@@ -192,15 +192,14 @@ func (sv SigVerificationDecorator) VerifyNow(pub []byte, message []byte, sign []
 	if len(sign) != ed25519.SignatureSize {
 		return Unauthorizedf("signature size is not matched, expected size %d got %d !", ed25519.SignatureSize, len(sign))
 	}
-
 	if l := len(pub); l != ed25519.PublicKeySize {
 		return Unauthorizedf("ed25519: bad public key length expected %d but got %d! ", ed25519.PublicKeySize, l)
 	}
-	fmt.Println("final public key check:", base58.Encode(pub), len(pub), pub)
+	fmt.Println("===> debug public key check:", base58.Encode(pub), len(pub), pub)
 	if ed25519.Verify(pub, message, sign) {
 		return nil
 	} else {
-		return Unauthorized("Signature Verification failed. dxp v2")
+		return Unauthorized("Signature Verification failed. dxp Z.")
 	}
 }
 

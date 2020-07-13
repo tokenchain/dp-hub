@@ -263,9 +263,7 @@ func NewDefaultAnteHandler(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGetter
 		if !res.IsOK() {
 			return newCtx, res, true
 		}
-
 		ak.SetAccount(newCtx, signerAcc)
-
 		return newCtx, sdk.Result{GasWanted: ixoTx.Fee.Gas}, false // continue...
 	}
 }
