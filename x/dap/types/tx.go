@@ -372,8 +372,6 @@ func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {
 	fmt.Println(tb.did.GetPubKey())
 	fmt.Println("=============== private key ==============")
 	fmt.Println(tb.did.GetPriKeyByte())
-	fmt.Println("=============== signature equals to==============")
-	fmt.Println(tb.signature.SignatureValue)
 
 	if !tb.ctxCli.SkipConfirm {
 
@@ -400,15 +398,16 @@ func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {
 		}
 	}
 
-	signed_tx_msg := tb.SignAndGenerateMessage(stdSignMsg)
+	signTxMsg := tb.SignAndGenerateMessage(stdSignMsg)
 	fmt.Println("=============== pre-tx-signature ==============")
-	fmt.Println(signed_tx_msg.GetFirstSignature())
+	fmt.Println(signTxMsg.GetFirstSignature())
 
-	bz, err := tb.ctxCli.Codec.MarshalJSON(signed_tx_msg)
+	bz, err := tb.ctxCli.Codec.MarshalJSON(signTxMsg)
 	if err != nil {
 		return fmt.Errorf("Could not marshall tx to binary. Error: %s! ", err.Error())
 	}
-
+	fmt.Println("=============== signed message from standard message format ==============")
+	fmt.Println(bz)
 	res, err := tb.ctxCli.BroadcastTx(bz)
 	if err != nil {
 		return fmt.Errorf("Could not broadcast tx. Error: %s! ", err.Error())

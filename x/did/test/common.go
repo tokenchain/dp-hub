@@ -35,6 +35,8 @@ const (
 	sample_encryptionPrivateKey = "8sgZQSCiu8GHTveWb1mfusT1KbaFCksriHoXhyDzwahF"
 	sample_address              = "dx01nyx8wn3qelmdpykjcjqnw22zdmu9pjt9us0y73"
 	sample_pub                  = "dx0pub1zcjduepqaxmxmerk2lw76qxlsf8cc0rzst5hfgy4a3xmvnaxgmkczc9hv30sh4yj2y"
+
+	sample_msg = "While this tutorial has content that we believe is of great benefit to our community, we have not yet tested or edited it to ensure you have an error-free learning experience. It's on our list, and we're working on it! You can help us out by using the \"report an issue\" button at the bottom of the tutorial."
 )
 
 /**
