@@ -13,7 +13,6 @@ import (
 	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tokenchain/ixo-blockchain/x/did/ed25519"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
-	"strconv"
 	"time"
 )
 
@@ -158,7 +157,9 @@ func (sv SigVerification) RetrievePubkey(ctx sdk.Context, tx sdk.Tx, simulate bo
 
 	sv.stdSignature = simSig
 	sv.dap_tx = sigTx
-	sv.pubkey = pubKey.Bytes()
+	var pubkey_orginal ed25519tm.PubKeyEd25519
+	copy(pubkey_orginal[:], pubKey.Bytes()[5:])
+	sv.pubkey = pubkey_orginal[:]
 	//fmt.Println(sv.account_address)
 	return sv, pubKey, nil
 }
@@ -201,7 +202,7 @@ func (sv SigVerificationDecorator) Verify(pub []byte, message []byte, sign []byt
 	}
 
 	if l := len(pub); l != ed25519.PublicKeySize {
-		return Unauthorized("ed25519: bad public key length: " + strconv.Itoa(l))
+		return Unauthorizedf("ed25519: bad public key length expected %d but got %d! ", ed25519.PublicKeySize, l)
 	}
 
 	if ed25519.Verify(pub, message, sign) {
