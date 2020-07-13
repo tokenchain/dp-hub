@@ -65,7 +65,7 @@ type (
 		GetSignBytes(ctx sdk.Context, acc authexported.Account) []byte
 		GetSigner() sdk.AccAddress
 		GetSignatures() []IxoSignature
-		GetFirstSignatureValues() []byte
+		GetFirstSignature() []byte
 	}
 )
 
@@ -208,7 +208,7 @@ func (tx IxoTx) GetSigner() sdk.AccAddress {
 func (tx IxoTx) GetSignatures() []IxoSignature {
 	return tx.Signatures
 }
-func (tx IxoTx) GetFirstSignatureValues() []byte {
+func (tx IxoTx) GetFirstSignature() []byte {
 	return tx.Signatures[0].SignatureValue
 }
 
@@ -299,29 +299,28 @@ func (tb SignTxPack) SignAndGenerateMessage(t auth.StdSignMsg) IxoTx {
 	return NewIxoTx(messages, t.Fee, sign_signature, t.Memo)
 }
 
-func (tb SignTxPack) printUnsignedStdTx() error {
+func (tb SignTxPack) printUnsignedStdTx(stdSignMsg auth.StdSignMsg) error {
 	if tb.txBldr.SimulateAndExecute() {
 		if err := tb.doSimulate(); err != nil {
 			return err
 		}
 	}
 
-	stdSignMsg, err := tb.txBldr.BuildSignMsg(tb.collectMsgs())
-	if err != nil {
-		return err
-	}
-
 	var json []byte
+	var err error
+
 	if viper.GetBool(flags.FlagIndentResponse) {
 		json, err = tb.ctxCli.Codec.MarshalJSONIndent(stdSignMsg, "", "  ")
 	} else {
 		json, err = tb.ctxCli.Codec.MarshalJSON(stdSignMsg)
 	}
+
 	if err != nil {
 		return err
 	}
 
 	_, _ = fmt.Fprintf(tb.ctxCli.Output, "%s\n", json)
+
 	return nil
 }
 func (tb SignTxPack) doSimulate() error {
@@ -338,61 +337,70 @@ func (tb SignTxPack) doSimulate() error {
 }
 func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {
 	txBldr, err := utils.PrepareTxBuilder(tb.txBldr, tb.ctxCli)
+
 	if err != nil {
 		return err
 	}
-	if err := tb.printUnsignedStdTx(); err != nil {
+
+	stdSignMsg, err := txBldr.BuildSignMsg([]sdk.Msg{tb.msg})
+	if err != nil {
 		return err
 	}
+
+	if err := tb.printUnsignedStdTx(stdSignMsg); err != nil {
+		return err
+	}
+
 	if tb.ctxCli.Simulate {
 		return nil
 	}
-	if !tb.ctxCli.SkipConfirm {
-		stdSignMsg, err := txBldr.BuildSignMsg([]sdk.Msg{tb.msg})
-		if err != nil {
-			return err
-		}
-		var json []byte
-		if viper.GetBool(flags.FlagIndentResponse) {
-			json, err = tb.ctxCli.Codec.MarshalJSONIndent(stdSignMsg, "", "  ")
-			if err != nil {
-				panic(err)
-			}
-		} else {
-			json = tb.ctxCli.Codec.MustMarshalJSON(stdSignMsg)
-		}
-		_, _ = fmt.Fprintf(os.Stderr, "%s\n\n", json)
-		buf := bufio.NewReader(os.Stdin)
-		ok, err := input.GetConfirmation("confirm transaction before signing and broadcasting", buf)
-		if err != nil || !ok {
-			_, _ = fmt.Fprintf(os.Stderr, "%s\n", "cancelled transaction")
-			return err
-		}
-	}
 
-	stdmsg, err := txBldr.BuildSignMsg([]sdk.Msg{tb.msg})
-	if err != nil {
-		return err
-	}
-
-	signed_tx_msg := tb.SignAndGenerateMessage(stdmsg)
 	fmt.Println("=============== public key ==============")
 	fmt.Println(tb.did.GetPubKey())
 	fmt.Println("=============== private key ==============")
 	fmt.Println(tb.did.GetPriKeyByte())
 	fmt.Println("=============== signature equals to==============")
 	fmt.Println(tb.signature.SignatureValue)
+
+	if !tb.ctxCli.SkipConfirm {
+
+		var json []byte
+
+		if viper.GetBool(flags.FlagIndentResponse) {
+			json, err = tb.ctxCli.Codec.MarshalJSONIndent(stdSignMsg, "", "  ")
+		} else {
+			json, err = tb.ctxCli.Codec.MarshalJSON(stdSignMsg)
+		}
+
+		if err != nil {
+			panic(err)
+		}
+
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n\n", json)
+
+		buf := bufio.NewReader(os.Stdin)
+
+		ok, err := input.GetConfirmation("Confirm transaction before signing and broadcasting", buf)
+		if err != nil || !ok {
+			_, _ = fmt.Fprintf(os.Stderr, "%s\n", "cancelled transaction")
+			return err
+		}
+	}
+
+	signed_tx_msg := tb.SignAndGenerateMessage(stdSignMsg)
 	fmt.Println("=============== pre-tx-signature ==============")
-	fmt.Println(signed_tx_msg.GetFirstSignatureValues())
+	fmt.Println(signed_tx_msg.GetFirstSignature())
 
 	bz, err := tb.ctxCli.Codec.MarshalJSON(signed_tx_msg)
 	if err != nil {
 		return fmt.Errorf("Could not marshall tx to binary. Error: %s! ", err.Error())
 	}
+
 	res, err := tb.ctxCli.BroadcastTx(bz)
 	if err != nil {
 		return fmt.Errorf("Could not broadcast tx. Error: %s! ", err.Error())
 	}
+
 	fmt.Println(res.String())
 	fmt.Printf("Committed at block %d. Hash: %s\n", res.Height, res.TxHash)
 	return nil

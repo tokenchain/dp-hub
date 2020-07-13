@@ -93,7 +93,7 @@ func (sv SigVerification) RefreshAccount(ctx sdk.Context) error {
 func (sv SigVerification) initializeSignatures() (nsv SigVerification, err error) {
 	//f := sv.tx.GetFirstSignatureValues()
 	if len(sv.dap_tx.Signatures) > 0 {
-		sv.signature = NewSignature(time.Now(), sv.dap_tx.GetFirstSignatureValues())
+		sv.signature = NewSignature(time.Now(), sv.dap_tx.GetFirstSignature())
 		return sv, nil
 	} else {
 		return sv, ErrItemNotFound("tx signature not found")
