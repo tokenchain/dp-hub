@@ -1,6 +1,7 @@
 package did
 
 import (
+	"fmt"
 	"github.com/btcsuite/btcutil/base58"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
@@ -16,8 +17,11 @@ func GetPubKeyGetter(keeper Keeper) types.PubKeyGetter {
 		var pubKeyEd25519 ed25519.PubKeyEd25519
 		switch msg := msg.(type) {
 		case MsgAddDid:
+			fmt.Println("- confirm MsgAddDid")
 			copy(pubKeyEd25519[:], base58.Decode(msg.DidDoc.PubKey))
+			//pubKeyEd25519 = did.RecoverDidToEd25519PubKey(msg.DidDoc.)
 		default:
+			fmt.Println("- confirm other did message")
 			// For the remaining messages, the did is the signer
 			didDoc, _ := keeper.GetDidDoc(ctx, msg.GetSignerDid())
 			if didDoc == nil {

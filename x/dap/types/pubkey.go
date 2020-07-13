@@ -1,14 +1,12 @@
 package types
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/btcsuite/btcutil/base58"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	aexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/go-bip39"
 	"github.com/tendermint/tendermint/crypto"
 	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tokenchain/ixo-blockchain/x/did/ed25519"
@@ -56,15 +54,7 @@ func NewDefaultPubKeyGetter(didKeeper DidKeeper) PubKeyGetter {
 		return pubKeyRaw, nil
 	}
 }
-func initializeAddress() sdk.AccAddress {
-	var addressDefault [32]byte
-	entropySeed, _ := bip39.NewEntropy(64)
-	p, _, _ := ed25519.GenerateKey(bytes.NewReader(entropySeed))
-	copy(addressDefault[:], p[:])
-	return sdk.AccAddress(addressDefault[:])
-}
 func NewSigVerification(ak auth.AccountKeeper, p PubKeyGetter) SigVerification {
-
 	return SigVerification{
 		ak:      ak,
 		pgetter: p,
