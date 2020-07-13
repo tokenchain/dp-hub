@@ -13,6 +13,7 @@ import (
 	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tokenchain/ixo-blockchain/x/did/ed25519"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+	"strconv"
 	"time"
 )
 
@@ -99,7 +100,6 @@ func (sv SigVerification) initializeSignatures() (nsv SigVerification, err error
 		return sv, ErrItemNotFound("tx signature not found")
 	}
 }
-
 
 func (sv SigVerification) RetrievePubkey(ctx sdk.Context, tx sdk.Tx, simulate bool) (nsv SigVerification, pubKey crypto.PubKey, err error) {
 	sigTx, ok := tx.(IxoTx)
@@ -195,9 +195,24 @@ func (sv SigVerificationDecorator) SignMessage(signBytes []byte, privKey [64]byt
 	sv.signature = NewSignature(time.Now(), signatureBytes)
 	return nil
 }
+func (sv SigVerificationDecorator) Verify(pub []byte, message []byte, sign []byte) error {
+	if len(sign) != ed25519.SignatureSize {
+		return Unauthorizedf("signature size is not matched, expected size %d got %d !", ed25519.SignatureSize, len(sign))
+	}
+
+	if l := len(pub); l != ed25519.PublicKeySize {
+		return Unauthorized("ed25519: bad public key length: " + strconv.Itoa(l))
+	}
+
+	if ed25519.Verify(pub, message, sign) {
+		return nil
+	} else {
+		return Unauthorized("Signature Verification failed. dxp")
+	}
+}
 
 func (sv SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	nsv, pubKey, e := sv.RetrievePubkey(ctx, tx, simulate)
+	nsv, _, e := sv.RetrievePubkey(ctx, tx, simulate)
 	if e != nil {
 		return ctx, InvalidTxDecodePubkeyNotFound(e)
 	}
@@ -205,14 +220,21 @@ func (sv SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 	if e != nil {
 		return ctx, e
 	}
-	signBytes := nsv.dap_tx.GetSignBytes(ctx, nsv2.GetSignerAccont(ctx))
-	fmt.Println("✅  3check value pass ....")
+	signedMessageBytes := nsv2.dap_tx.GetSignBytes(ctx, nsv2.GetSignerAccont(ctx))
+	fmt.Println("✅  check signature data ....")
 	fmt.Println(nsv2.signature.SignatureValue[:])
+	fmt.Println("✅  check signed message data ....")
+	fmt.Println(signedMessageBytes)
 
-	if !simulate && !pubKey.VerifyBytes(signBytes, nsv2.signature.SignatureValue[:]) {
+	/*if !simulate && !pubKey.VerifyBytes(signBytes, nsv2.signature.SignatureValue[:]) {
 		return ctx, Unauthorized("Signature Verification failed. dxp")
+	}*/
+	if !simulate {
+		if er := sv.Verify(nsv2.pubkey, signedMessageBytes, nsv2.signature.SignatureValue[:]); er != nil {
+			return ctx, er
+		}
+		fmt.Println("✅  SigVerificationDecorator pass ....")
 	}
 
-	fmt.Println("✅  SigVerificationDecorator pass ....")
 	return next(ctx, tx, simulate)
 }
