@@ -18,6 +18,7 @@ func GetPubKeyGetter(keeper Keeper) types.PubKeyGetter {
 		switch msg := msg.(type) {
 		case MsgAddDid:
 			fmt.Println("- confirm MsgAddDid")
+
 			copy(pubKeyEd25519[:], base58.Decode(msg.DidDoc.PubKey))
 			//pubKeyEd25519 = did.RecoverDidToEd25519PubKey(msg.DidDoc.)
 		default:
@@ -29,6 +30,9 @@ func GetPubKeyGetter(keeper Keeper) types.PubKeyGetter {
 			}
 			copy(pubKeyEd25519[:], base58.Decode(didDoc.GetPubKey()))
 		}
+
+		fmt.Println("- json message -")
+		fmt.Println(msg)
 
 		return pubKeyEd25519, nil
 	}
