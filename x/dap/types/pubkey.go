@@ -161,6 +161,7 @@ func (sv SigVerification) RetrievePubkey(ctx sdk.Context, tx sdk.Tx, simulate bo
 	copy(pubkey_orginal[:], pubKey.Bytes()[5:])
 	sv.pubkey = pubkey_orginal[:]
 	//fmt.Println(sv.account_address)
+
 	return sv, pubKey, nil
 }
 
@@ -196,7 +197,7 @@ func (sv SigVerificationDecorator) SignMessage(signBytes []byte, privKey [64]byt
 	sv.signature = NewSignature(time.Now(), signatureBytes)
 	return nil
 }
-func (sv SigVerificationDecorator) Verify(pub []byte, message []byte, sign []byte) error {
+func (sv SigVerificationDecorator) VerifyNow(pub []byte, message []byte, sign []byte) error {
 	if len(sign) != ed25519.SignatureSize {
 		return Unauthorizedf("signature size is not matched, expected size %d got %d !", ed25519.SignatureSize, len(sign))
 	}
@@ -213,7 +214,7 @@ func (sv SigVerificationDecorator) Verify(pub []byte, message []byte, sign []byt
 }
 
 func (sv SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	nsv, _, e := sv.RetrievePubkey(ctx, tx, simulate)
+	nsv, pp, e := sv.RetrievePubkey(ctx, tx, simulate)
 	if e != nil {
 		return ctx, InvalidTxDecodePubkeyNotFound(e)
 	}
@@ -227,11 +228,12 @@ func (sv SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 	fmt.Println("✅  check signed message data ....")
 	fmt.Println(signedMessageBytes)
 
-	/*if !simulate && !pubKey.VerifyBytes(signBytes, nsv2.signature.SignatureValue[:]) {
+	if !simulate && !pp.VerifyBytes(signedMessageBytes, nsv2.signature.SignatureValue[:]) {
 		return ctx, Unauthorized("Signature Verification failed. dxp")
-	}*/
+	}
 	if !simulate {
-		if er := sv.Verify(nsv2.pubkey, signedMessageBytes, nsv2.signature.SignatureValue[:]); er != nil {
+		key := pp.(ed25519tm.PubKeyEd25519)
+		if er := sv.VerifyNow(key[:], signedMessageBytes, nsv2.signature.SignatureValue[:]); er != nil {
 			return ctx, er
 		}
 		fmt.Println("✅  SigVerificationDecorator pass ....")
