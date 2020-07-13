@@ -176,18 +176,6 @@ func NewSigVerificationDecorator(ak auth.AccountKeeper, p PubKeyGetter) SigVerif
 	}
 }
 
-// verify the signature and increment the sequence. If the account doesn't have
-func (sv SigVerificationDecorator) SignMessage(signBytes []byte, privKey [64]byte) error {
-	pk := ed25519tm.PrivKeyEd25519(privKey)
-	signatureBytes, err := pk.Sign(signBytes)
-	if err != nil {
-		return err
-	}
-	//var setSignature [64]byte
-	//copy(setSignature[:], signatureBytes)
-	sv.signature = NewSignature(time.Now(), signatureBytes)
-	return nil
-}
 func (sv SigVerificationDecorator) VerifyNow(pub []byte, message []byte, sign []byte) error {
 	if len(sign) != ed25519.SignatureSize {
 		return Unauthorizedf("signature size is not matched, expected size %d got %d !", ed25519.SignatureSize, len(sign))
@@ -196,6 +184,8 @@ func (sv SigVerificationDecorator) VerifyNow(pub []byte, message []byte, sign []
 		return Unauthorizedf("ed25519: bad public key length expected %d but got %d! ", ed25519.PublicKeySize, l)
 	}
 	fmt.Println("===> debug public key check:", base58.Encode(pub), len(pub), pub)
+	fmt.Println("===> ⚠️ check signed message data ....")
+	fmt.Println(message)
 	if ed25519.Verify(pub, message, sign) {
 		return nil
 	} else {
@@ -215,8 +205,7 @@ func (sv SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 	signedMessageBytes := nsv2.dap_tx.GetSignBytes(ctx, nsv2.GetSignerAccount(ctx))
 	fmt.Println("✅  check signature data ....")
 	fmt.Println(nsv2.signature.SignatureValue[:])
-	fmt.Println("✅  check signed message data ....")
-	fmt.Println(signedMessageBytes)
+
 
 	/*if !simulate && !pp.VerifyBytes(signedMessageBytes, nsv2.signature.SignatureValue[:]) {
 		return ctx, Unauthorized("Signature Verification failed. dxp")

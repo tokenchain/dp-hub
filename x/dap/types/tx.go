@@ -290,7 +290,7 @@ func (tb SignTxPack) collectSignatures() []IxoSignature {
 func (tb SignTxPack) getSignature() IxoSignature {
 	privateKey := tb.did.GetPriKeyByte()
 	//signatureBytes := ed25519.Sign(&privateKey, tb.msg.GetSignBytes())
-	ixt, ok := tb.msg.(IxoMsg)
+	messagePayload, ok := tb.msg.(IxoMsg)
 	if !ok {
 		fmt.Println("the msg type is not IxoMsg")
 	}
@@ -298,13 +298,17 @@ func (tb SignTxPack) getSignature() IxoSignature {
 	if l := len(privateKey); l != ed25519.PrivateKeySize {
 		panic("ed25519: bad private key length: " + strconv.Itoa(l))
 	}
+	signatureBytes := ed25519.Sign(privateKey[:], messagePayload.GetSignBytes())
+	fmt.Println("===> ⚠️ check signed message =====")
+	fmt.Println(messagePayload.GetSignBytes())
+	fmt.Println("===> ⚠️ check signed message comparison =====")
+	fmt.Println(tb.msg.GetSignBytes())
 
-	signatureBytes := ed25519.Sign(privateKey[:], ixt.GetSignBytes())
 	//return NewSignature(time.Now(), signatureBytes[:])
 	return NewSignature(time.Now(), signatureBytes)
 }
 
-func (tb SignTxPack) SignAndGenerateMessage(standardMsg auth.StdSignMsg) IxoTx {
+func (tb SignTxPack) SignAndGenerateMessageSignature(standardMsg auth.StdSignMsg) IxoTx {
 	//sign message
 	signingSignature := tb.collectSignatures()
 	//collection of messages
@@ -398,7 +402,7 @@ func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {
 		}
 	}
 
-	signTxMsg := tb.SignAndGenerateMessage(stdSignMsg)
+	signTxMsg := tb.SignAndGenerateMessageSignature(stdSignMsg)
 	fmt.Println("=============== pre-tx-signature ==============")
 	fmt.Println(signTxMsg.GetFirstSignature())
 
@@ -406,8 +410,7 @@ func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {
 	if err != nil {
 		return fmt.Errorf("Could not marshall tx to binary. Error: %s! ", err.Error())
 	}
-	fmt.Println("=============== signed message from standard message format ==============")
-	fmt.Println(bz)
+
 	res, err := tb.ctxCli.BroadcastTx(bz)
 	if err != nil {
 		return fmt.Errorf("Could not broadcast tx. Error: %s! ", err.Error())
