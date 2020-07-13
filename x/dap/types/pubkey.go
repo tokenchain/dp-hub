@@ -196,7 +196,7 @@ func (sv SigVerificationDecorator) VerifyNow(pub []byte, message []byte, sign []
 	if l := len(pub); l != ed25519.PublicKeySize {
 		return Unauthorizedf("ed25519: bad public key length expected %d but got %d! ", ed25519.PublicKeySize, l)
 	}
-
+	fmt.Println("final public key check:", base58.Encode(pub), len(pub), pub)
 	if ed25519.Verify(pub, message, sign) {
 		return nil
 	} else {
