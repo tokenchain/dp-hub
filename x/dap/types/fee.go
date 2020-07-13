@@ -127,7 +127,6 @@ func (cgts ConsumeTxSizeGasDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, sim
 		ctx.GasMeter().ConsumeGas(params.TxSizeCostPerByte*cost, "txSize")
 		//}
 	}
-
 	fmt.Println("✅  ConsumeTxSizeGasDecorator pass ....")
 	return next(ctx, tx, simulate)
 }

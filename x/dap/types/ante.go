@@ -23,7 +23,6 @@ func NewDapAnteHandler(ak auth.AccountKeeper, bk bank.Keeper, sk supply.Keeper, 
 		//ante.NewDeductFeeDecorator(ak, bk),
 		//ante.NewSigGasConsumeDecorator(ak, sign),
 		NewSigVerificationDecorator(ak, pubKeyGetter),
-		ante.NewIncrementSequenceDecorator(ak),
+		//ante.NewIncrementSequenceDecorator(ak),
 	)
-	//}
 }

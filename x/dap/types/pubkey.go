@@ -166,7 +166,6 @@ func (__edp DapPubKeyDecoratorDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, 
 		return ctx, InvalidTxDecodePubkeyNotFound(e)
 	}
 	fmt.Println("✅  DapPubKeyDecoratorDecorator pass")
-
 	return next(ctx, tx, simulate)
 }
 
@@ -183,9 +182,11 @@ func (sv SigVerificationDecorator) VerifyNow(pub []byte, message []byte, sign []
 	if l := len(pub); l != ed25519.PublicKeySize {
 		return Unauthorizedf("ed25519: bad public key length expected %d but got %d! ", ed25519.PublicKeySize, l)
 	}
+	/*
 	fmt.Println("===> debug public key check:", base58.Encode(pub), len(pub), pub)
 	fmt.Println("===> ⚠️ check signed message data ....")
 	fmt.Println(message)
+	*/
 	if ed25519.Verify(pub, message, sign) {
 		return nil
 	} else {
@@ -202,10 +203,10 @@ func (sv SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 	if e != nil {
 		return ctx, e
 	}
+
 	signedMessageBytes := nsv2.dap_tx.GetSignBytes(ctx, nsv2.GetSignerAccount(ctx))
 	fmt.Println("✅  check signature data ....")
 	fmt.Println(nsv2.signature.SignatureValue[:])
-
 
 	/*if !simulate && !pp.VerifyBytes(signedMessageBytes, nsv2.signature.SignatureValue[:]) {
 		return ctx, Unauthorized("Signature Verification failed. dxp")
@@ -218,5 +219,12 @@ func (sv SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 		fmt.Println("✅  SigVerificationDecorator pass ....")
 	}
 
+	acc := nsv2.GetSignerAccount(ctx)
+	// increment account sequence
+	if err := acc.SetSequence(acc.GetSequence() + 1); err != nil {
+		return ctx, InvalidTxDecodeMsg(err.Error())
+	}
+
+	sv.ak.SetAccount(ctx, nsv2.GetSignerAccount(ctx))
 	return next(ctx, tx, simulate)
 }

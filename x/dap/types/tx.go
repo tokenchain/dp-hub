@@ -133,15 +133,6 @@ func NewSignature(created time.Time, signature []byte) IxoSignature {
 	}
 }
 
-func NewIxoTx(msgs []sdk.Msg, fee auth.StdFee, sigs []IxoSignature, memo string) IxoTx {
-	return IxoTx{
-		Msgs:       msgs,
-		Fee:        fee,
-		Signatures: sigs,
-		Memo:       memo,
-	}
-}
-
 func NewIxoTxSingleMsg(msg sdk.Msg, fee auth.StdFee, signature IxoSignature, memo string) IxoTx {
 	return NewIxoTx([]sdk.Msg{msg}, fee, []IxoSignature{signature}, memo)
 }
@@ -192,6 +183,17 @@ func (tx IxoTx) GetFee() sdk.Coins {
 func (tx IxoTx) FeePayer() sdk.AccAddress {
 	return tx.GetSigner()
 }
+
+func NewIxoTx(msgs []sdk.Msg, fee auth.StdFee, sigs []IxoSignature, memo string) IxoTx {
+	return IxoTx{
+		Msgs:       msgs,
+		Fee:        fee,
+		Signatures: sigs,
+		Memo:       memo,
+	}
+}
+
+//used on verification
 func (tx IxoTx) GetSignBytes(ctx sdk.Context, acc authexported.Account) []byte {
 	genesis := ctx.BlockHeight() == 0
 	chainID := ctx.ChainID()
@@ -261,11 +263,10 @@ func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 }
 
 type SignTxPack struct {
-	ctxCli    context.CLIContext
-	msg       sdk.Msg
-	did       exported.IxoDid
-	signature IxoSignature
-	txBldr    auth.TxBuilder
+	ctxCli context.CLIContext
+	msg    sdk.Msg
+	did    exported.IxoDid
+	txBldr auth.TxBuilder
 }
 
 func NewDidTxBuild(ctx context.CLIContext, msg sdk.Msg, ixoDid exported.IxoDid) SignTxPack {
@@ -274,7 +275,6 @@ func NewDidTxBuild(ctx context.CLIContext, msg sdk.Msg, ixoDid exported.IxoDid) 
 		msg:    msg,
 		did:    ixoDid,
 	}
-	instance.signature = instance.getSignature()
 	instance.txBldr = auth.NewTxBuilderFromCLI(ctx.Input)
 	return instance
 }
@@ -283,34 +283,30 @@ func (tb SignTxPack) collectMsgs() []sdk.Msg {
 	return []sdk.Msg{tb.msg}
 }
 
-func (tb SignTxPack) collectSignatures() []IxoSignature {
-	return []IxoSignature{tb.signature}
+func (tb SignTxPack) collectSignatures(sig IxoSignature) []IxoSignature {
+	return []IxoSignature{sig}
 }
 
-func (tb SignTxPack) getSignature() IxoSignature {
+// sign the message in here
+func (tb SignTxPack) SignMsgForSignature(msg auth.StdSignMsg) IxoSignature {
 	privateKey := tb.did.GetPriKeyByte()
-	//signatureBytes := ed25519.Sign(&privateKey, tb.msg.GetSignBytes())
-	messagePayload, ok := tb.msg.(IxoMsg)
-	if !ok {
-		fmt.Println("the msg type is not IxoMsg")
-	}
 
 	if l := len(privateKey); l != ed25519.PrivateKeySize {
 		panic("ed25519: bad private key length: " + strconv.Itoa(l))
 	}
-	signatureBytes := ed25519.Sign(privateKey[:], messagePayload.GetSignBytes())
+
+	signatureBytes := ed25519.Sign(privateKey[:], msg.Bytes())
 	fmt.Println("===> ⚠️ check signed message =====")
-	fmt.Println(messagePayload.GetSignBytes())
-	fmt.Println("===> ⚠️ check signed message comparison =====")
-	fmt.Println(tb.msg.GetSignBytes())
+	fmt.Println(msg.Bytes())
 
 	//return NewSignature(time.Now(), signatureBytes[:])
 	return NewSignature(time.Now(), signatureBytes)
 }
 
-func (tb SignTxPack) SignAndGenerateMessageSignature(standardMsg auth.StdSignMsg) IxoTx {
+func (tb SignTxPack) CollectSignedMessage(standardMsg auth.StdSignMsg) IxoTx {
+	signature := tb.SignMsgForSignature(standardMsg)
 	//sign message
-	signingSignature := tb.collectSignatures()
+	signingSignature := tb.collectSignatures(signature)
 	//collection of messages
 	messages := tb.collectMsgs()
 	return NewIxoTx(messages, standardMsg.Fee, signingSignature, standardMsg.Memo)
@@ -371,12 +367,12 @@ func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {
 	if tb.ctxCli.Simulate {
 		return nil
 	}
-
-	fmt.Println("=============== public key ==============")
-	fmt.Println(tb.did.GetPubKey())
-	fmt.Println("=============== private key ==============")
-	fmt.Println(tb.did.GetPriKeyByte())
-
+	/*
+		fmt.Println("=============== public key ==============")
+		fmt.Println(tb.did.GetPubKey())
+		fmt.Println("=============== private key ==============")
+		fmt.Println(tb.did.GetPriKeyByte())
+	*/
 	if !tb.ctxCli.SkipConfirm {
 
 		var json []byte
@@ -402,10 +398,11 @@ func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {
 		}
 	}
 
-	signTxMsg := tb.SignAndGenerateMessageSignature(stdSignMsg)
-	fmt.Println("=============== pre-tx-signature ==============")
-	fmt.Println(signTxMsg.GetFirstSignature())
-
+	signTxMsg := tb.CollectSignedMessage(stdSignMsg)
+	/*
+		fmt.Println("=============== pre-tx-signature ==============")
+		fmt.Println(signTxMsg.GetFirstSignature())
+	*/
 	bz, err := tb.ctxCli.Codec.MarshalJSON(signTxMsg)
 	if err != nil {
 		return fmt.Errorf("Could not marshall tx to binary. Error: %s! ", err.Error())
