@@ -1,10 +1,12 @@
 package types
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/client/input"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
@@ -12,9 +14,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/spf13/viper"
-	"github.com/tendermint/ed25519"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did/ed25519"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"gopkg.in/yaml.v2"
 	"os"
@@ -22,9 +24,9 @@ import (
 )
 
 var (
-	maxGasWanted         = uint64((1 << 63) - 1)
+	maxGasWanted = uint64((1 << 63) - 1)
 	//_            TxActor = (*IxoTx)(nil)
-	_            sdk.Tx  = (*IxoTx)(nil)
+	_ sdk.Tx = (*IxoTx)(nil)
 )
 
 // GetSignBytes returns the signBytes of the tx for a given signer
@@ -264,8 +266,8 @@ func NewDidTxBuild(ctx context.CLIContext, msg sdk.Msg, ixoDid exported.IxoDid) 
 		msg:    msg,
 		did:    ixoDid,
 	}
-	instance.txBldr = auth.NewTxBuilderFromCLI(ctx.Input)
 	instance.signature = instance.getSignature()
+	instance.txBldr = auth.NewTxBuilderFromCLI(ctx.Input)
 	return instance
 }
 
@@ -279,12 +281,18 @@ func (tb SignTxPack) collectSignatures() []IxoSignature {
 
 func (tb SignTxPack) getSignature() IxoSignature {
 	privKey := tb.did.GetPriKeyByte()
-	signatureBytes := ed25519.Sign(&privKey, tb.msg.GetSignBytes())
-	return NewSignature(time.Now(), signatureBytes[:])
+	//signatureBytes := ed25519.Sign(&privKey, tb.msg.GetSignBytes())
+	signatureBytes := ed25519.Sign(privKey[:], tb.msg.GetSignBytes())
+	//return NewSignature(time.Now(), signatureBytes[:])
+	return NewSignature(time.Now(), signatureBytes)
 }
 
-func (tb SignTxPack) generateBoardcastDapTx(t auth.StdSignMsg) IxoTx {
-	return NewIxoTx(tb.collectMsgs(), t.Fee, tb.collectSignatures(), t.Memo)
+func (tb SignTxPack) SignAndGenerateMessage(t auth.StdSignMsg) IxoTx {
+	//sign message
+	sign_signature := tb.collectSignatures()
+	//collection of messages
+	messages := tb.collectMsgs()
+	return NewIxoTx(messages, t.Fee, sign_signature, t.Memo)
 }
 
 func (tb SignTxPack) printUnsignedStdTx() error {
@@ -332,20 +340,47 @@ func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {
 	if err := tb.printUnsignedStdTx(); err != nil {
 		return err
 	}
+	if tb.ctxCli.Simulate {
+		return nil
+	}
+	if !tb.ctxCli.SkipConfirm {
+		stdSignMsg, err := txBldr.BuildSignMsg([]sdk.Msg{tb.msg})
+		if err != nil {
+			return err
+		}
+		var json []byte
+		if viper.GetBool(flags.FlagIndentResponse) {
+			json, err = tb.ctxCli.Codec.MarshalJSONIndent(stdSignMsg, "", "  ")
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			json = tb.ctxCli.Codec.MustMarshalJSON(stdSignMsg)
+		}
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n\n", json)
+		buf := bufio.NewReader(os.Stdin)
+		ok, err := input.GetConfirmation("confirm transaction before signing and broadcasting", buf)
+		if err != nil || !ok {
+			_, _ = fmt.Fprintf(os.Stderr, "%s\n", "cancelled transaction")
+			return err
+		}
+	}
+
 	stdmsg, err := txBldr.BuildSignMsg([]sdk.Msg{tb.msg})
 	if err != nil {
 		return err
 	}
 
-	tx := tb.generateBoardcastDapTx(stdmsg)
+	tx := tb.SignAndGenerateMessage(stdmsg)
 	fmt.Println("=============== public key ==============")
 	fmt.Println(tb.did.GetPubKey())
 	fmt.Println("=============== private key ==============")
 	fmt.Println(tb.did.GetPriKeyByte())
-	fmt.Println("=============== signature ==============")
+	fmt.Println("=============== signature equals to==============")
 	fmt.Println(tb.signature.SignatureValue)
 	fmt.Println("=============== pre-tx-signature ==============")
 	fmt.Println(tx.GetFirstSignatureValues())
+
 	bz, err := tb.ctxCli.Codec.MarshalJSON(tx)
 	if err != nil {
 		return fmt.Errorf("Could not marshall tx to binary. Error: %s! ", err.Error())

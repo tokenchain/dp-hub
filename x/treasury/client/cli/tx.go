@@ -31,14 +31,11 @@ func GetCmdSend(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixoDid.Address())
+			cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(ixoDid.Address())
 
 			msg := types.NewMsgSend(toDidOrAddr, coins, ixoDid.Did)
 
 			return dap.GenerateOrBroadcastMsgs(cliCtx, msg, ixoDid)
-
-			//return dap.NewDidTxBuild(cliCtx, msg, ixoDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 }

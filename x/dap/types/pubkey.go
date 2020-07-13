@@ -209,7 +209,7 @@ func (sv SigVerificationDecorator) VerifyNow(pub []byte, message []byte, sign []
 	if ed25519.Verify(pub, message, sign) {
 		return nil
 	} else {
-		return Unauthorized("Signature Verification failed. dxp")
+		return Unauthorized("Signature Verification failed. dxp v2")
 	}
 }
 
@@ -228,9 +228,9 @@ func (sv SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 	fmt.Println("✅  check signed message data ....")
 	fmt.Println(signedMessageBytes)
 
-	if !simulate && !pp.VerifyBytes(signedMessageBytes, nsv2.signature.SignatureValue[:]) {
+	/*if !simulate && !pp.VerifyBytes(signedMessageBytes, nsv2.signature.SignatureValue[:]) {
 		return ctx, Unauthorized("Signature Verification failed. dxp")
-	}
+	}*/
 	if !simulate {
 		key := pp.(ed25519tm.PubKeyEd25519)
 		if er := sv.VerifyNow(key[:], signedMessageBytes, nsv2.signature.SignatureValue[:]); er != nil {

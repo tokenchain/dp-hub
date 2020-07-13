@@ -101,7 +101,7 @@ func (privKey PrivateKey) PubKey() tmCrypto.PubKey {
 
 // Sign signs the message with privateKey and returns a signature. It will
 // panic if len(privateKey) is not PrivateKeySize.
-func Sign(privateKey PrivateKey, message []byte) []byte {
+func Sign(privateKey []byte, message []byte) []byte {
 	if l := len(privateKey); l != PrivateKeySize {
 		panic("ed25519: bad private key length: " + strconv.Itoa(l))
 	}

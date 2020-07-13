@@ -29,8 +29,7 @@ func GetCmdAddDidDoc(cdc *codec.Codec) *cobra.Command {
 			msg := types.NewMsgAddDid(sovrinDid.Did, sovrinDid.GetPubKey())
 			//return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 			//return dap.NewDidTxBuild(cliCtx, msg, ixoDid).CompleteAndBroadcastTxCLI()
-			return dap.NewDidTxBuild(cliCtx, msg, sovrinDid).
-				CompleteAndBroadcastTxCLI()
+			return dap.NewDidTxBuild(cliCtx, msg, sovrinDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 }
