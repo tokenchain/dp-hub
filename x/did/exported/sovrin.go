@@ -97,17 +97,20 @@ func GenDidInfoExperiment(doc keys.Info, privateKey tmcrypto.PrivKey, x keys.Sig
 }
 
 func InfoToDidEd25519(doc keys.Info, derivedPriv []byte) IxoDid {
-	pub, pri, _ := edgen.GenerateKey(bytes.NewReader(derivedPriv[0:32]))
-	signKey := base58.Encode(pri[:32])
+	pubEd25519, priEd25519, _ := edgen.GenerateKey(bytes.NewReader(derivedPriv[0:32]))
 	pk, _ := sdk.Bech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, doc.GetPubKey())
-	keyPairPublicKey, keyPairPrivateKey, _ := naclBox.GenerateKey(bytes.NewReader(pri[:]))
-	/*
-		fmt.Println("========private key  =========")
-		fmt.Println(keyPairPrivateKey)
-		fmt.Println(keyPairPublicKey)
-		fmt.Println("========derivedPriv key  =========")
-		fmt.Println(len(derivedPriv), derivedPriv)
-	*/
+	keyPairPublicKey, keyPairPrivateKey, _ := naclBox.GenerateKey(bytes.NewReader(priEd25519[:]))
+
+	fmt.Println("========pair1 key  =========")
+	fmt.Println("pub", len(pubEd25519), pubEd25519)
+	fmt.Println("pri", len(priEd25519), priEd25519)
+	fmt.Println("========pair2 key  =========")
+	fmt.Println("pub", len(keyPairPublicKey), keyPairPublicKey)
+	fmt.Println("pri", len(keyPairPrivateKey), keyPairPrivateKey)
+	fmt.Println("========Derived private key  =========")
+	fmt.Println(len(derivedPriv), derivedPriv)
+	fmt.Println("================================")
+
 	sovDid := IxoDid{
 		Dpinfo: DpInfo{
 			DpAddress: doc.GetAddress().String(),
@@ -115,17 +118,17 @@ func InfoToDidEd25519(doc keys.Info, derivedPriv []byte) IxoDid {
 			Name:      doc.GetName(),
 			Algo:      "secp256k1",
 		},
-		Did:                 dxpDidAddress(base58.Encode(pub[:16])),
-		VerifyKey:           base58.Encode(pub[:]),
+		Did:                 dxpDidAddress(base58.Encode(pubEd25519[:16])),
+		VerifyKey:           base58.Encode(pubEd25519[:]),
 		EncryptionPublicKey: base58.Encode(keyPairPublicKey[:]),
 		Secret: Secret{
 			Seed:                 hex.EncodeToString(derivedPriv[0:32]),
-			SignKey:              signKey,
+			SignKey:              base58.Encode(priEd25519[:32]),
 			EncryptionPrivateKey: base58.Encode(keyPairPrivateKey[:]),
 		},
 	}
-	return sovDid
 
+	return sovDid
 }
 
 func (sd SovrinDid) String() string {

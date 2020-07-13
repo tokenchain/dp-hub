@@ -20,26 +20,27 @@ var (
 	//   to consider project accounts as DIDs (especially in treasury module),
 	//   possibly should just be `^did:(dxp:|sov:)([a-zA-Z0-9]){21,22}$`.
 )
-func RecoverDidToEd25519PrivateKey(did_doc IxoDid)  ed25519tm.PrivKeyEd25519 {
-	var privKey  ed25519tm.PrivKeyEd25519
-	copy(privKey[:], base58.Decode(did_doc.Secret.EncryptionPrivateKey)[:])
-	return privKey
+
+func RecoverDidToEd25519PrivateKeyPart2(did_doc IxoDid) ed25519tm.PrivKeyEd25519 {
+	var k ed25519tm.PrivKeyEd25519
+	copy(k[:], base58.Decode(did_doc.Secret.EncryptionPrivateKey)[:])
+	return k
 }
-func RecoverDidToEd25519PubKey(did_doc IxoDid)  ed25519tm.PubKeyEd25519 {
-	var privKey  ed25519tm.PubKeyEd25519
-	copy(privKey[:], base58.Decode(did_doc.EncryptionPublicKey)[:])
-	return privKey
+func RecoverDidToEd25519PubKeyPart2(did_doc IxoDid) ed25519tm.PubKeyEd25519 {
+	var k ed25519tm.PubKeyEd25519
+	copy(k[:], base58.Decode(did_doc.EncryptionPublicKey)[:])
+	return k
 }
-func RecoverDidToCosmosPrivateKey(did_doc IxoDid) secp256k1.PrivKeySecp256k1 {
-	var privKey secp256k1.PrivKeySecp256k1
-	copy(privKey[:], base58.Decode(did_doc.Secret.EncryptionPrivateKey)[:])
-	return privKey
+func RecoverDidToEd25519PrivateKey(did_doc IxoDid) ed25519tm.PrivKeyEd25519 {
+	var k ed25519tm.PrivKeyEd25519
+	copy(k[:], base58.Decode(did_doc.Secret.SignKey))
+	copy(k[32:], base58.Decode(did_doc.VerifyKey))
+	return k
 }
-func RecoverDidToPrivateKeyClassic(did_doc IxoDid) ed25519tm.PrivKeyEd25519 {
-	var privKey ed25519tm.PrivKeyEd25519
-	copy(privKey[:], base58.Decode(did_doc.Secret.SignKey))
-	copy(privKey[32:], base58.Decode(did_doc.VerifyKey))
-	return privKey
+func RecoverDidToEd25519PubKey(did_doc IxoDid) ed25519tm.PubKeyEd25519 {
+	var k ed25519tm.PubKeyEd25519
+	copy(k[:], base58.Decode(did_doc.VerifyKey))
+	return k
 }
 func RecoverDidEd25519ToPrivateKeyC(doc IxoDid) ed25519tm.PrivKeyEd25519 {
 	var recover_priv_key_ed [64]byte
@@ -82,12 +83,6 @@ func SecpPrivKey(bz []byte) secp256k1.PrivKeySecp256k1 {
 	var bzArr [32]byte
 	copy(bzArr[:], bz)
 	return secp256k1.PrivKeySecp256k1(bzArr)
-}
-
-func PrivateKeyToEd25519(privKey tmcrypto.PrivKey) ed25519tm.PrivKeyEd25519 {
-	var privKey_orginal ed25519tm.PrivKeyEd25519
-	copy(privKey_orginal[:], privKey.Bytes()[:])
-	return privKey_orginal
 }
 
 func getArrayFromKey(key string) []byte {

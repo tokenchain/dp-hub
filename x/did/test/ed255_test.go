@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"testing"
 )
@@ -54,7 +53,7 @@ func Test_recover_public_key(t *testing.T) {
 		config.SetBech32PrefixForConsensusNode(app.Bech32PrefixConsAddr, app.Bech32PrefixConsPub)
 		config.Seal()*/
 	//both parts are filled
-	r := exported.RecoverDidToPrivateKeyClassic(doc)
+	r := exported.RecoverDidToEd25519PubKey(doc)
 	//only the first part filled
 	//f := exported.RecoverDidEd25519ToPrivateKey(doc)
 	//get the private key
@@ -121,13 +120,13 @@ func Test_ed25519_development(t *testing.T) {
 
 	//	privKey_orginal := exported.PrivateKeyToSecp256k1(privKey)
 	//	privkey_v3 := exported.SecpPrivKey(derivedPriv)
-	privateRecover := exported.RecoverDidToPrivateKeyClassic(docCombine)
-	cosmosPrivateKey := exported.RecoverDidToCosmosPrivateKey(docCombine)
+	//privateRecover := exported.RecoverDidToPrivateKeyClassic(docCombine)
+	//cosmosPrivateKey := exported.RecoverDidToCosmosPrivateKey(docCombine)
 
 	fmt.Println("========key recover  =========")
 	fmt.Println(docCombine)
 	fmt.Println(docCombine.Dpinfo.DpAddress)
-	fmt.Println(privateRecover)
+	//fmt.Println(privateRecover)
 
 	fmt.Println(info.GetAddress().String())
 	fmt.Println(docCombine.Dpinfo.PubKey)
@@ -137,14 +136,14 @@ func Test_ed25519_development(t *testing.T) {
 
 	fmt.Println(len(derivedPriv), derivedPriv)
 	fmt.Println(len(privKey.Bytes()), privKey)
-	fmt.Println(len(cosmosPrivateKey), cosmosPrivateKey.PubKey().Address().Bytes())
-	fmt.Println(privKey.Equals(secp256k1.PrivKeySecp256k1(cosmosPrivateKey)))
+	//fmt.Println(len(cosmosPrivateKey), cosmosPrivateKey.PubKey().Address().Bytes())
+	//fmt.Println(privKey.Equals(secp256k1.PrivKeySecp256k1(cosmosPrivateKey)))
 
 	fmt.Println("========end game now  ===========================")
 	//require.Equal(t, cap(privKey.Bytes()), cap(recover_priv_key_ed), "recover key are the same")
 	//	require.Equal(t, cap(privKey.Bytes()), cap(recover_priv_key_ed.Bytes()), "recover key success")
-	require.Equal(t, 64, len(privateRecover), "recover key success")
-	require.Equal(t, privKey, cosmosPrivateKey, "recover private cosmos key success")
+	//require.Equal(t, 64, len(privateRecover), "recover key success")
+	//require.Equal(t, privKey, cosmosPrivateKey, "recover private cosmos key success")
 	//require.Equal(t, info.GetAddress().String(), docCombine.DpInfo.GetAddress().String(), "keybase account established")
 
 }

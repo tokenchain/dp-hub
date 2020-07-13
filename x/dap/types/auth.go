@@ -305,7 +305,7 @@ func signAndBroadcast(ctx context.CLIContext, msg auth.StdSignMsg, ixoDid export
 	if len(msg.Msgs) != 1 {
 		panic("expected one message")
 	}
-	privKey := exported.RecoverDidToPrivateKeyClassic(ixoDid)
+	privKey := exported.RecoverDidEd25519ToPrivateKey(ixoDid)
 	signature := SignIxoMessageEd25519(msg.Bytes(), privKey)
 
 	tx := NewIxoTxSingleMsg(msg.Msgs[0], msg.Fee, signature, msg.Memo)
