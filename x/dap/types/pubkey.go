@@ -205,8 +205,13 @@ func (sv SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 	}
 
 	signedMessageBytes := nsv2.dap_tx.GetSignBytes(ctx, nsv2.GetSignerAccount(ctx))
+	/*
+
 	fmt.Println("✅  check signature data ....")
 	fmt.Println(nsv2.signature.SignatureValue[:])
+
+
+	*/
 
 	/*if !simulate && !pp.VerifyBytes(signedMessageBytes, nsv2.signature.SignatureValue[:]) {
 		return ctx, Unauthorized("Signature Verification failed. dxp")

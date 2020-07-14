@@ -179,7 +179,7 @@ func RunGenerationOffline(cdc *codec.Codec) CommandDo {
 				return err2
 			}
 			if !response {
-				return errors.New("aborted")
+				return errors.New("aborted, not going to override this name")
 			}
 		}
 
@@ -202,7 +202,7 @@ func RunGenerationOffline(cdc *codec.Codec) CommandDo {
 			return err2
 		}
 		if !response {
-			return errors.New("aborted")
+			return errors.New("aborted.")
 		}
 
 		cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(did_document.Address())

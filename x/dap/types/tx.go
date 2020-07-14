@@ -204,12 +204,6 @@ func (tx IxoTx) GetSignBytes(ctx sdk.Context, acc authexported.Account) []byte {
 	signByte := auth.StdSignBytes(
 		chainID, accNum, acc.GetSequence(), tx.Fee, tx.Msgs, tx.Memo,
 	)
-	fmt.Println("============ sign bytes ======")
-	fmt.Println(chainID)
-	fmt.Println(accNum)
-	fmt.Println(acc.GetSequence())
-	fmt.Println(tx.Fee, tx.Msgs, tx.Memo, )
-	fmt.Println("============ end location now ======")
 	return signByte
 }
 func (tx IxoTx) GetSigner() sdk.AccAddress {
@@ -360,11 +354,10 @@ func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {
 		return err
 	}
 
-	if err := tb.printUnsignedStdTx(stdSignMsg); err != nil {
-		return err
-	}
-
 	if tb.ctxCli.Simulate {
+		if err := tb.printUnsignedStdTx(stdSignMsg); err != nil {
+			return err
+		}
 		return nil
 	}
 	/*
