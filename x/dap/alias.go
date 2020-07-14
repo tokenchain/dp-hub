@@ -1,6 +1,7 @@
 package dap
 
 import (
+	"github.com/tokenchain/ixo-blockchain/x/dap/auth"
 	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 )
 
@@ -8,36 +9,18 @@ const (
 	IxoNativeToken = types.NativeToken
 )
 
-type (
-	IxoTx        = types.IxoTx
-	IxoSignature = types.IxoSignature
-	IxoMsg       = types.IxoMsg
-	PubKeyGetter = types.PubKeyGetter
-)
-
 var (
 	// Auth
-	NewDefaultPubKeyGetter           = types.NewDefaultPubKeyGetter
-	DefaultAnteHandler               = types.DefaultAnteHandler
-	DidAnteHandler                   = types.DidAnteHandler
-	ApproximateFeeForTx              = types.ApproximateFeeForTx
-	GenerateOrBroadcastMsgs          = types.GenerateOrBroadcastMsgs
-	CompleteAndBroadcastTxRest       = types.CompleteAndBroadcastTxRest
-	SignAndBroadcastTxFromStdSignMsg = types.SignAndBroadcastTxFromStdSignMsg
-	NewSignature                     = types.NewSignature
-	ProcessSig                       = types.ProcessSig
-	RegisterCodec                    = types.RegisterCodec
-	SignAndBroadcastTxCli            = types.SignAndBroadcastTxCli
-	SignAndBroadcastTxRest           = types.SignAndBroadcastTxRest
-	NewDidTxBuild                    = types.NewDidTxBuild
+
+	ApproximateFeeForTx     = auth.ApproximateFeeForTx
+	GenerateOrBroadcastMsgs = auth.GenerateOrBroadcastMsgs
+	//CompleteAndBroadcastTxRest       = auth.CompleteAndBroadcastTxRest
+	SignAndBroadcastTxFromStdSignMsg = auth.SignAndBroadcastTxFromStdSignMsg
+
+	ProcessSig             = auth.ProcessSig
+	SignAndBroadcastTxCli  = auth.SignAndBroadcastTxCli
+	SignAndBroadcastTxRest = auth.SignAndBroadcastTxRest
 
 	// Types
 	IxoDecimals = types.IxoDecimals
-
-	// Tx
-	DefaultTxDecoder  = types.DefaultTxDecoder
-	NewIxoTxSingleMsg = types.NewIxoTxSingleMsg
-
-	//helper
-	DidToAddr = types.DidToAddr
 )

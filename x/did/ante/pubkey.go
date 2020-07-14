@@ -1,4 +1,4 @@
-package types
+package ante
 
 import (
 	"fmt"
@@ -11,6 +11,7 @@ import (
 	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tokenchain/ixo-blockchain/x/did/ed25519"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+
 	"time"
 )
 
@@ -209,7 +210,6 @@ func (sv SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 
 	fmt.Println("✅  check signature data ....")
 	fmt.Println(nsv2.signature.SignatureValue[:])
-
 
 	*/
 

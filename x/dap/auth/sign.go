@@ -1,4 +1,4 @@
-package types
+package auth
 
 import (
 	"bufio"
@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	utils "github.com/cosmos/cosmos-sdk/x/auth/client/utils"
+	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/spf13/viper"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
@@ -164,7 +164,6 @@ func OldCompleteAndBroadcastTxCLI(txBldr auth.TxBuilder, cliCtx context.CLIConte
 	if err != nil {
 		return err
 	}
-
 
 	// Sign and broadcast to a Tendermint node
 	res, err := signAndBroadcast(cliCtx, stdSignMsg, ixoDid)

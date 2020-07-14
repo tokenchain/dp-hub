@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
@@ -21,7 +21,7 @@ func GetCmdAddressFromDid() *cobra.Command {
 			if !exported.IsValidDid(args[0]) {
 				return errors.New("input is not a valid did")
 			}
-			accAddress := types2.DidToAddr(args[0])
+			accAddress := ante.DidToAddr(args[0])
 			fmt.Println(accAddress.String())
 			return nil
 		},

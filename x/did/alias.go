@@ -3,7 +3,6 @@ package did
 import (
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did/ed25519"
-	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 )
@@ -19,21 +18,36 @@ const (
 type (
 	Keeper       = keeper.Keeper
 	GenesisState = types.GenesisState
-	Did          = exported.Did
+/*	Did          = exported.Did
 	DidDoc       = exported.DidDoc
-	IxoDid       = exported.IxoDid
+	IxoDid       = exported.IxoDid*/
 
 	MsgAddDid        = types.MsgAddDid
 	MsgAddCredential = types.MsgAddCredential
+
+/*	IxoTx        = ante.IxoTx
+	IxoSignature = ante.IxoSignature
+	IxoMsg       = ante.IxoMsg
+	PubKeyGetter = ante.PubKeyGetter*/
 )
 
 var (
+/*	NewDefaultPubKeyGetter = ante.NewDefaultPubKeyGetter
+	DefaultAnteHandler     = ante.DefaultAnteHandler
+	DidAnteHandler         = ante.DidAnteHandler
+	NewDidTxBuild          = ante.NewDidTxBuild
+	NewSignature           = ante.NewSignature
+	DefaultTxDecoder       = ante.DefaultTxDecoder
+	NewIxoTxSingleMsg      = ante.NewIxoTxSingleMsg
+	DidToAddr              = ante.DidToAddr*/
 
 	// function aliases
 	NewKeeper     = keeper.NewKeeper
 	NewQuerier    = keeper.NewQuerier
 	RegisterCodec = types.RegisterCodec
 	RegisterAmino = ed25519.RegisterAmino
+
+	// Tx
 
 	NewGenesisState     = types.NewGenesisState
 	DefaultGenesisState = types.DefaultGenesisState

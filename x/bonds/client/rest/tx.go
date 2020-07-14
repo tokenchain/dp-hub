@@ -10,6 +10,7 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
 	"github.com/tokenchain/ixo-blockchain/x/dap"
+	"github.com/tokenchain/ixo-blockchain/x/dap/auth"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"net/http"
 	"strings"
@@ -185,7 +186,7 @@ func createBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			orderQuantityLimits, sanityRate, sanityMarginPercentage,
 			req.AllowSells, batchBlocks, req.BondDid)
 
-		output, err2 := dap.SignAndBroadcastTxRest(cliCtx, msg, creatorDid)
+		output, err2 := auth.SignAndBroadcastTxRest(cliCtx, msg, creatorDid)
 		if err2 != nil {
 			writeHead(w, http.StatusInternalServerError, err2.Error())
 			return
@@ -220,7 +221,7 @@ func editBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			req.OrderQuantityLimits, req.SanityRate,
 			req.SanityMarginPercentage, editorDid, req.BondDid)
 
-		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, editorDid)
+		output, err := auth.SignAndBroadcastTxRest(cliCtx, msg, editorDid)
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return

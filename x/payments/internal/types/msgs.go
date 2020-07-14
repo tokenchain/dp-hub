@@ -2,13 +2,12 @@ package types
 
 import (
 	"encoding/json"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
 	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"github.com/tokenchain/ixo-blockchain/x/did"
+	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
@@ -22,13 +21,13 @@ const (
 )
 
 var (
-	_ types.IxoMsg = MsgCreatePaymentTemplate{}
-	_ types.IxoMsg = MsgCreatePaymentContract{}
-	_ types.IxoMsg = MsgCreateSubscription{}
-	_ types.IxoMsg = MsgSetPaymentContractAuthorisation{}
-	_ types.IxoMsg = MsgGrantDiscount{}
-	_ types.IxoMsg = MsgRevokeDiscount{}
-	_ types.IxoMsg = MsgEffectPayment{}
+	_ ante.IxoMsg = MsgCreatePaymentTemplate{}
+	_ ante.IxoMsg = MsgCreatePaymentContract{}
+	_ ante.IxoMsg = MsgCreateSubscription{}
+	_ ante.IxoMsg = MsgSetPaymentContractAuthorisation{}
+	_ ante.IxoMsg = MsgGrantDiscount{}
+	_ ante.IxoMsg = MsgRevokeDiscount{}
+	_ ante.IxoMsg = MsgEffectPayment{}
 )
 
 type MsgCreatePaymentTemplate struct {
@@ -174,7 +173,7 @@ func (msg MsgCreateSubscription) ValidateBasic() error {
 
 func (msg MsgCreateSubscription) GetSignerDid() exported.Did { return msg.CreatorDid }
 func (msg MsgCreateSubscription) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateSubscription) String() string {
@@ -224,7 +223,7 @@ func (msg MsgSetPaymentContractAuthorisation) ValidateBasic() error {
 
 func (msg MsgSetPaymentContractAuthorisation) GetSignerDid() exported.Did { return msg.PayerDid }
 func (msg MsgSetPaymentContractAuthorisation) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgSetPaymentContractAuthorisation) String() string {
@@ -278,7 +277,7 @@ func (msg MsgGrantDiscount) ValidateBasic() error {
 
 func (msg MsgGrantDiscount) GetSignerDid() exported.Did { return msg.SenderDid }
 func (msg MsgGrantDiscount) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgGrantDiscount) String() string {
@@ -331,7 +330,7 @@ func (msg MsgRevokeDiscount) ValidateBasic() error {
 
 func (msg MsgRevokeDiscount) GetSignerDid() exported.Did { return msg.SenderDid }
 func (msg MsgRevokeDiscount) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgRevokeDiscount) String() string {
@@ -381,7 +380,7 @@ func (msg MsgEffectPayment) ValidateBasic() error {
 
 func (msg MsgEffectPayment) GetSignerDid() exported.Did { return msg.SenderDid }
 func (msg MsgEffectPayment) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgEffectPayment) String() string {

@@ -1,10 +1,9 @@
-package types
+package auth
 
 import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -15,20 +14,26 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	sdkexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
-	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/spf13/viper"
 	"github.com/tendermint/ed25519"
 	"github.com/tendermint/tendermint/crypto"
 	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/multisig"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
+	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+
 	"os"
 	"time"
 )
 
+const (
+	Ed25519SignatureLen = 64
+)
+
 var (
-	expectedMinGasPrices       = "0.025" + NativeToken
+	expectedMinGasPrices       = "0.025" + types.NativeToken
 	approximationGasAdjustment = float64(1.5)
 	// TODO: parameterise (or remove) hard-coded gas prices and adjustments
 
@@ -39,15 +44,8 @@ var (
 	simSecp256k1Sig    [Ed25519SignatureLen]byte
 )
 
-func init() {
-	// This decodes a valid hex string into a ed25519Pubkey for use in transaction simulation
-	bz, _ := hex.DecodeString("035AD6810A47F073553FF30D2FCC7E0D3B1C0B74B61A1AAA2582344037151E14")
-	copy(simEd25519Pubkey[:], bz)
-	//copy(simSecp256k1Pubkey[:], bz)
-}
 
-type PubKeyGetter func(ctx sdk.Context, msg IxoMsg) (crypto.PubKey, error)
-type SigVerificationGasConsumer func(meter sdk.GasMeter, sig []byte, pubkey crypto.PubKey, params types.Params) error
+
 
 /*
 
@@ -61,27 +59,6 @@ bonds
 
 
 */
-
-func DefaultSigVerificationGasConsumer(meter sdk.GasMeter, sig []byte, pubkey crypto.PubKey, params types.Params, ) error {
-	switch pubkey := pubkey.(type) {
-	case ed25519tm.PubKeyEd25519:
-		meter.ConsumeGas(params.SigVerifyCostED25519, "ante verify: ed25519")
-		return InvalidPubKey("ED25519 public keys are unsupported")
-
-	case secp256k1.PubKeySecp256k1:
-		meter.ConsumeGas(params.SigVerifyCostSecp256k1, "ante verify: secp256k1")
-		return nil
-
-	case multisig.PubKeyMultisigThreshold:
-		var multisignature multisig.Multisignature
-		codec.Cdc.MustUnmarshalBinaryBare(sig, &multisignature)
-		ConsumeMultisignatureVerificationGas(meter, multisignature, pubkey, params)
-		return nil
-
-	default:
-		return InvalidPubKeyf("unrecognized public key type: %T", pubkey)
-	}
-}
 
 /*
 
@@ -105,8 +82,8 @@ return newCtx, nil
 
 
 */
-func consumeSimSigGas(gasmeter sdk.GasMeter, pubkey crypto.PubKey, sig IxoSignature, params auth.Params) {
-	simSig := IxoSignature{}
+func consumeSimSigGas(gasmeter sdk.GasMeter, pubkey crypto.PubKey, sig ante.IxoSignature, params auth.Params) {
+	simSig := ante.IxoSignature{}
 	if binary.Size(sig.SignatureValue) == 0 {
 		simSig.SignatureValue = simEd25519Sig[:]
 	}
@@ -126,7 +103,7 @@ func consumeSimSigGas(gasmeter sdk.GasMeter, pubkey crypto.PubKey, sig IxoSignat
 
 // verify the signature and increment the sequence. If the account doesn't have
 // a pubkey, set it.
-func ProcessSig(ctx sdk.Context, acc sdkexported.Account, sig IxoSignature, signBytes []byte, simulate bool, p auth.Params) (updatedAcc sdkexported.Account, err error) {
+func ProcessSig(ctx sdk.Context, acc sdkexported.Account, sig ante.IxoSignature, signBytes []byte, simulate bool, p auth.Params) (updatedAcc sdkexported.Account, err error) {
 	pubKey, res := proccessPublicKey(acc, sig, simulate)
 	if res != nil {
 		return nil, res
@@ -135,7 +112,7 @@ func ProcessSig(ctx sdk.Context, acc sdkexported.Account, sig IxoSignature, sign
 	err = acc.SetPubKey(pubKey)
 	if err != nil {
 		//return nil, sdk.ErrInternal("setting PubKey on signer's account").Result()
-		return nil, InvalidPubKey("setting PubKey on signer's account")
+		return nil, ante.InvalidPubKey("setting PubKey on signer's account")
 	}
 
 	if simulate {
@@ -149,7 +126,7 @@ func ProcessSig(ctx sdk.Context, acc sdkexported.Account, sig IxoSignature, sign
 	ctx.GasMeter().ConsumeGas(p.SigVerifyCostED25519, "ante verify: ed25519")
 	// Verify signature
 	if !simulate && !pubKey.VerifyBytes(signBytes, sig.SignatureValue[:]) {
-		return nil, Unauthorized("Signature Verification failed. dxp")
+		return nil, ante.Unauthorized("Signature Verification failed. dxp")
 	}
 
 	if err = acc.SetSequence(acc.GetSequence() + 1); err != nil {
@@ -270,7 +247,7 @@ func NewDefaultAnteHandler(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGetter
 
 */
 
-func proccessPublicKey(acc sdkexported.Account, sig IxoSignature, simulate bool) (crypto.PubKey, error) {
+func proccessPublicKey(acc sdkexported.Account, sig ante.IxoSignature, simulate bool) (crypto.PubKey, error) {
 	// If pubkey is not known for account, set it from the types.StdSignature.
 	pubKey := acc.GetPubKey()
 	if simulate {
@@ -287,11 +264,11 @@ func proccessPublicKey(acc sdkexported.Account, sig IxoSignature, simulate bool)
 	if pubKey == nil {
 		pubKey = acc.GetPubKey()
 		if pubKey == nil {
-			return nil, InvalidPubKey("PubKey not found")
+			return nil, ante.InvalidPubKey("PubKey not found")
 		}
 
 		if !bytes.Equal(pubKey.Address(), acc.GetAddress()) {
-			return nil, Unauthorizedf("PubKey does not match Signer address %s", acc.GetAddress())
+			return nil, ante.Unauthorizedf("PubKey does not match Signer address %s", acc.GetAddress())
 		}
 	}
 
@@ -306,7 +283,7 @@ func signAndBroadcast(ctx context.CLIContext, msg auth.StdSignMsg, ixoDid export
 	privKey := exported.RecoverDidEd25519ToPrivateKey(ixoDid)
 	signature := SignIxoMessageEd25519(msg.Bytes(), privKey)
 
-	tx := NewIxoTxSingleMsg(msg.Msgs[0], msg.Fee, signature, msg.Memo)
+	tx := ante.NewIxoTxSingleMsg(msg.Msgs[0], msg.Fee, signature, msg.Memo)
 	fmt.Println(msg)
 	bz, err := ctx.Codec.MarshalJSON(tx)
 	if err != nil {
@@ -327,8 +304,8 @@ func simulateMsgs(txBldr auth.TxBuilder, cliCtx context.CLIContext, msgs []sdk.M
 	}
 
 	// Signature set to a blank signature
-	signature := IxoSignature{}
-	tx := NewIxoTxSingleMsg(
+	signature := ante.IxoSignature{}
+	tx := ante.NewIxoTxSingleMsg(
 		stdSignMsg.Msgs[0], stdSignMsg.Fee, signature, stdSignMsg.Memo)
 
 	bz, err := cliCtx.Codec.MarshalJSON(tx)
@@ -342,13 +319,13 @@ func simulateMsgs(txBldr auth.TxBuilder, cliCtx context.CLIContext, msgs []sdk.M
 	return
 }
 
-func ApproximateFeeForTx(cliCtx context.CLIContext, tx IxoTx, chainId string) (auth.StdFee, error) {
+func ApproximateFeeForTx(cliCtx context.CLIContext, tx ante.IxoTx, chainId string) (auth.StdFee, error) {
 
 	// Set up a transaction builder
 	cdc := cliCtx.Codec
 	txEncoder := auth.DefaultTxEncoder
 	gasAdjustment := approximationGasAdjustment
-	fees := sdk.NewCoins(sdk.NewCoin(NativeToken, sdk.OneInt()))
+	fees := sdk.NewCoins(sdk.NewCoin(types.NativeToken, sdk.OneInt()))
 	txBldr := auth.NewTxBuilder(txEncoder(cdc), 0, 0, 0, gasAdjustment, true, chainId, tx.Memo, fees, nil)
 
 	// Approximate gas consumption
@@ -382,7 +359,7 @@ func CompleteAndBroadcastTxRest(cliCtx context.CLIContext, msg sdk.Msg, ixoDid e
 	// TODO: implement using txBldr or just remove function completely (ref: #123)
 
 	// Construct dummy tx and approximate and set fee
-	tx := NewIxoTxSingleMsg(msg, auth.StdFee{}, IxoSignature{}, "")
+	tx := ante.NewIxoTxSingleMsg(msg, auth.StdFee{}, ante.IxoSignature{}, "")
 	chainId := viper.GetString(flags.FlagChainID)
 	fee, err := ApproximateFeeForTx(cliCtx, tx, chainId)
 	if err != nil {
@@ -413,9 +390,9 @@ func SignAndBroadcastTxFromStdSignMsg(cliCtx context.CLIContext, msg auth.StdSig
 	return signAndBroadcast(cliCtx, msg, ixoDid)
 }
 
-func SignIxoMessageEd25519(signBytes []byte, privKey [ed25519.PrivateKeySize]byte) IxoSignature {
+func SignIxoMessageEd25519(signBytes []byte, privKey [ed25519.PrivateKeySize]byte) ante.IxoSignature {
 	signatureBytes := ed25519.Sign(&privKey, signBytes)
-	return NewSignature(time.Now(), signatureBytes[:])
+	return ante.NewSignature(time.Now(), signatureBytes[:])
 }
 
 /*
@@ -498,7 +475,7 @@ func SignAndBroadcastTxCli(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid exp
 func SignAndBroadcastTxRest(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid exported.IxoDid) ([]byte, error) {
 	// TODO: implement using txBldr or just remove function completely (ref: #123)
 	// Construct dummy tx and approximate and set fee
-	tx := NewIxoTxSingleMsg(msg, auth.StdFee{}, IxoSignature{}, "")
+	tx := ante.NewIxoTxSingleMsg(msg, auth.StdFee{}, ante.IxoSignature{}, "")
 	chainId := viper.GetString(flags.FlagChainID)
 	fee, err := ApproximateFeeForTx(cliCtx, tx, chainId)
 	if err != nil {

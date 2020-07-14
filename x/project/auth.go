@@ -16,6 +16,8 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x/dap"
 	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"github.com/tokenchain/ixo-blockchain/x/did"
+	aute2 "github.com/tokenchain/ixo-blockchain/x/did/ante"
+	export2 "github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"time"
 )
 
@@ -71,8 +73,8 @@ func GetPubKeyGetter(keeper Keeper, didKeeper did.Keeper) dap.PubKeyGetter {
 	}
 }*/
 
-func GetPubKeyGetter(keeper Keeper, didKeeper did.Keeper) dap.PubKeyGetter {
-	return func(ctx sdk.Context, msg dap.IxoMsg) (pubKey crypto.PubKey, res error) {
+func GetPubKeyGetter(keeper Keeper, didKeeper did.Keeper) aute2.PubKeyGetter {
+	return func(ctx sdk.Context, msg aute2.IxoMsg) (pubKey crypto.PubKey, res error) {
 
 		// Get signer PubKey
 		var pubKeyEd25519 ed25519.PubKeyEd25519
@@ -107,7 +109,7 @@ func IntErr(m string) error {
 }
 
 // Identical to Cosmos DeductFees function, but tokens sent to project account
-func deductProjectFundingFees(bankKeeper bank.Keeper, ctx sdk.Context, acc exported.Account, projectDid did.Did, fees sdk.Coins) error {
+func deductProjectFundingFees(bankKeeper bank.Keeper, ctx sdk.Context, acc exported.Account, projectDid export2.Did, fees sdk.Coins) error {
 	blockTime := ctx.BlockHeader().Time
 	coins := acc.GetCoins()
 
@@ -128,7 +130,7 @@ func deductProjectFundingFees(bankKeeper bank.Keeper, ctx sdk.Context, acc expor
 		return errors.Wrapf(errors.ErrInsufficientFunds, "insufficient funds to pay for fees; %s < %s", spendableCoins, fees)
 	}
 
-	projectAddr := dap.DidToAddr(projectDid)
+	projectAddr := aute2.DidToAddr(projectDid)
 	err := bankKeeper.SendCoins(ctx, acc.GetAddress(), projectAddr, fees)
 	if err != nil {
 		return err
@@ -137,7 +139,7 @@ func deductProjectFundingFees(bankKeeper bank.Keeper, ctx sdk.Context, acc expor
 	return nil
 }
 
-func getProjectCreationSignBytes(chainID string, ixoTx types.IxoTx, acc exported.Account, genesis bool) []byte {
+func getProjectCreationSignBytes(chainID string, ixoTx aute2.IxoTx, acc exported.Account, genesis bool) []byte {
 	var accNum uint64
 	if !genesis {
 		// Fixed account number used so that sign bytes do not depend on it
@@ -150,7 +152,7 @@ func getProjectCreationSignBytes(chainID string, ixoTx types.IxoTx, acc exported
 }
 func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
 	bk bank.Keeper, didKeeper did.Keeper,
-	pubKeyGetter types.PubKeyGetter) sdk.AnteHandler {
+	pubKeyGetter aute2.PubKeyGetter) sdk.AnteHandler {
 	//} func xNewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper, bk bank.Keeper) sdk.AnteHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, res error) {
 
@@ -159,7 +161,7 @@ func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
 		}
 		// var _ sdk.Tx = dap.IxoTx{}
 		// all transactions must be of type ixo.IxoTx
-		ixoTx, ok := tx.(dap.IxoTx)
+		ixoTx, ok := tx.(aute2.IxoTx)
 		if !ok {
 			// Set a gas meter with limit 0 as to prevent an infinite gas meter attack
 			// during runTx.
@@ -216,7 +218,7 @@ func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
 		// deduct the fees
 		if !ixoTx.Fee.Amount.IsZero() {
 			// fetch fee payer
-			feePayerAddr := types.DidToAddr(msg.SenderDid)
+			feePayerAddr := aute2.DidToAddr(msg.SenderDid)
 			feePayerAcc, res := auth.GetSignerAcc(ctx, ak, feePayerAddr)
 			if res != nil {
 				return newCtx, res
@@ -252,7 +254,7 @@ func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
 
 		// check signature, return account with incremented nonce
 		//ixoSig := auth.StdSignature{PubKey: projectPubKey, Signature: ixoTx.GetSignatures()[0].SignatureValue[:]}
-		ixoSig := dap.NewSignature(time.Now(), ixoTx.GetSignatures()[0].SignatureValue)
+		ixoSig := aute2.NewSignature(time.Now(), ixoTx.GetSignatures()[0].SignatureValue)
 		isGenesis := ctx.BlockHeight() == 0
 		signBytes := getProjectCreationSignBytes(newCtx.ChainID(), ixoTx, signerAcc, isGenesis)
 		signerAcc, res = dap.ProcessSig(ctx, signerAcc, ixoSig, signBytes, simulate, ak.GetParams(ctx))

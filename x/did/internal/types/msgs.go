@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
 
@@ -18,8 +18,8 @@ const (
 )
 
 var (
-	_ types.IxoMsg = MsgAddDid{}
-	_ types.IxoMsg = MsgAddCredential{}
+	_ ante.IxoMsg = MsgAddDid{}
+	_ ante.IxoMsg = MsgAddCredential{}
 )
 
 type MsgAddDid struct {
@@ -53,7 +53,7 @@ func (msg MsgAddDid) Type() string            { return TypeMsgAddDid }
 func (msg MsgAddDid) Route() string           { return RouterKey }
 func (msg MsgAddDid) GetSignerDid() exported.Did { return msg.DidDoc.Did }
 func (msg MsgAddDid) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 func (msg MsgAddDid) ValidateBasic() error {
 	// Check that not empty
@@ -115,7 +115,7 @@ func (msg MsgAddCredential) Type() string            { return TypeMsgAddCredenti
 func (msg MsgAddCredential) Route() string           { return RouterKey }
 func (msg MsgAddCredential) GetSignerDid() exported.Did { return msg.DidCredential.Issuer }
 func (msg MsgAddCredential) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 func (msg MsgAddCredential) String() string {
 	return fmt.Sprintf("MsgAddCredential{Did: %v, Type: %v, Signer: %v}",

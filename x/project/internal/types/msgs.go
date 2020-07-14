@@ -3,13 +3,13 @@ package types
 import (
 	"encoding/json"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/spf13/viper"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
@@ -26,13 +26,13 @@ const (
 )
 
 var (
-	_ types.IxoMsg = MsgCreateProject{}
-	_ types.IxoMsg = MsgUpdateProjectStatus{}
-	_ types.IxoMsg = MsgCreateAgent{}
-	_ types.IxoMsg = MsgUpdateAgent{}
-	_ types.IxoMsg = MsgCreateClaim{}
-	_ types.IxoMsg = MsgCreateEvaluation{}
-	_ types.IxoMsg = MsgWithdrawFunds{}
+	_ ante.IxoMsg = MsgCreateProject{}
+	_ ante.IxoMsg = MsgUpdateProjectStatus{}
+	_ ante.IxoMsg = MsgCreateAgent{}
+	_ ante.IxoMsg = MsgUpdateAgent{}
+	_ ante.IxoMsg = MsgCreateClaim{}
+	_ ante.IxoMsg = MsgCreateEvaluation{}
+	_ ante.IxoMsg = MsgWithdrawFunds{}
 
 	_ StoredProjectDoc = (*MsgCreateProject)(nil)
 )
@@ -94,7 +94,7 @@ func (msg MsgCreateProject) GetProjectDid() exported.Did { return msg.ProjectDid
 func (msg MsgCreateProject) GetSenderDid() exported.Did  { return msg.SenderDid }
 func (msg MsgCreateProject) GetSignerDid() exported.Did  { return msg.ProjectDid }
 func (msg MsgCreateProject) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateProject) GetPubKey() string        { return msg.PubKey }
@@ -199,7 +199,7 @@ func (msg MsgCreateAgent) ValidateBasic() error {
 
 func (msg MsgCreateAgent) GetSignerDid() exported.Did { return msg.ProjectDid }
 func (msg MsgCreateAgent) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateAgent) GetSignBytes() []byte {
@@ -251,7 +251,7 @@ func (msg MsgUpdateAgent) ValidateBasic() error {
 
 func (msg MsgUpdateAgent) GetSignerDid() exported.Did { return msg.ProjectDid }
 func (msg MsgUpdateAgent) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgUpdateAgent) GetSignBytes() []byte {
@@ -421,7 +421,7 @@ func (msg MsgWithdrawFunds) ValidateBasic() error {
 
 func (msg MsgWithdrawFunds) GetSignerDid() exported.Did { return msg.Data.RecipientDid }
 func (msg MsgWithdrawFunds) GetSigners() []sdk.AccAddress {
-//	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	//	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
 	panic("tried to use unimplemented GetSigners function")
 }
 

@@ -2,11 +2,10 @@ package types
 
 import (
 	"encoding/json"
-	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
-	"github.com/tokenchain/ixo-blockchain/x/did/exported"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
 const (
@@ -17,10 +16,10 @@ const (
 )
 
 var (
-	_ types.IxoMsg = MsgSend{}
-	_ types.IxoMsg = MsgOracleTransfer{}
-	_ types.IxoMsg = MsgOracleMint{}
-	_ types.IxoMsg = MsgOracleBurn{}
+	_ ante.IxoMsg = MsgSend{}
+	_ ante.IxoMsg = MsgOracleTransfer{}
+	_ ante.IxoMsg = MsgOracleMint{}
+	_ ante.IxoMsg = MsgOracleBurn{}
 )
 
 type MsgSend struct {
@@ -60,7 +59,7 @@ func (msg MsgSend) ValidateBasic() error {
 
 func (msg MsgSend) GetSignerDid() exported.Did { return msg.FromDid }
 func (msg MsgSend) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgSend) String() string {
@@ -182,7 +181,7 @@ func (msg MsgOracleMint) ValidateBasic() error {
 
 func (msg MsgOracleMint) GetSignerDid() exported.Did { return msg.OracleDid }
 func (msg MsgOracleMint) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgOracleMint) String() string {
@@ -236,7 +235,7 @@ func (msg MsgOracleBurn) ValidateBasic() error {
 
 func (msg MsgOracleBurn) GetSignerDid() exported.Did { return msg.OracleDid }
 func (msg MsgOracleBurn) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgOracleBurn) String() string {

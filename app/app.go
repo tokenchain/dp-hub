@@ -31,9 +31,9 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 	"github.com/tokenchain/ixo-blockchain/x/bonds"
-	dap "github.com/tokenchain/ixo-blockchain/x/dap"
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"github.com/tokenchain/ixo-blockchain/x/did"
+	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+
 	"github.com/tokenchain/ixo-blockchain/x/nameservice"
 	"github.com/tokenchain/ixo-blockchain/x/oracles"
 	"github.com/tokenchain/ixo-blockchain/x/payments"
@@ -158,7 +158,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	cdc := MakeCodec()
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
-	bApp := bam.NewBaseApp(appName, logger, db, types.DefaultTxDecoder(cdc), baseAppOptions...)
+	bApp := bam.NewBaseApp(appName, logger, db, ante.DefaultTxDecoder(cdc), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	//bApp.SetAppVersion(version.NewVersion("v0.1.1"))
 
@@ -548,13 +548,13 @@ func (app *DpApp) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList []stri
 
 func initAnteHandler(app *DpApp) sdk.AnteHandler {
 
-	defaultPubKeyGetter := dap.NewDefaultPubKeyGetter(app.didKeeper)
+	defaultPubKeyGetter := ante.NewDefaultPubKeyGetter(app.didKeeper)
 	didPubKeyGetter := did.GetPubKeyGetter(app.didKeeper)
 	projectPubKeyGetter := project.GetPubKeyGetter(app.projectKeeper, app.didKeeper)
 
-	defaultDxpAnteHandler := dap.DefaultAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, defaultPubKeyGetter)
-	didAnteHandler := dap.DidAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, didPubKeyGetter)
-	projectAnteHandler := dap.DefaultAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, projectPubKeyGetter)
+	defaultDxpAnteHandler := ante.DefaultAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, defaultPubKeyGetter)
+	didAnteHandler := ante.DidAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, didPubKeyGetter)
+	projectAnteHandler := ante.DefaultAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, projectPubKeyGetter)
 	cosmosAnteHandler := auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer)
 
 	projectCreationAnteHandler := project.NewProjectCreationAnteHandler(

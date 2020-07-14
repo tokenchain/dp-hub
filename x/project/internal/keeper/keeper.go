@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/tokenchain/ixo-blockchain/x"
-	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	exportedDid "github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/payments"
 
@@ -152,7 +152,7 @@ func (k Keeper) AddAccountToProjectAccounts(ctx sdk.Context, projectDid exported
 
 func (k Keeper) CreateNewAccount(ctx sdk.Context, projectDid exportedDid.Did,
 	accountId types.InternalAccountID) (exported.Account, error) {
-	address := types2.StringToAddr(accountId.ToAddressKey(projectDid))
+	address := ante.StringToAddr(accountId.ToAddressKey(projectDid))
 
 	if k.AccountKeeper.GetAccount(ctx, address) != nil {
 		return nil, er.Wrap(er.ErrInvalidAddress, "Generate account already exists")

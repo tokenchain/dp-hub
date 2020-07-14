@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"github.com/tokenchain/ixo-blockchain/x/dap"
+	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"time"
 
@@ -29,7 +30,7 @@ func GetCmdAddDidDoc(cdc *codec.Codec) *cobra.Command {
 			msg := types.NewMsgAddDid(sovrinDid.Did, sovrinDid.GetPubKey())
 			//return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 			//return dap.NewDidTxBuild(cliCtx, msg, ixoDid).CompleteAndBroadcastTxCLI()
-			return dap.NewDidTxBuild(cliCtx, msg, sovrinDid).CompleteAndBroadcastTxCLI()
+			return ante.NewDidTxBuild(cliCtx, msg, sovrinDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 }

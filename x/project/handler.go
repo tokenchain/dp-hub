@@ -6,9 +6,10 @@ import (
 	er "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/tokenchain/ixo-blockchain/x"
+	 "github.com/tokenchain/ixo-blockchain/x/dap"
 	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
-
 	"github.com/tokenchain/ixo-blockchain/x/payments"
 )
 
@@ -98,7 +99,7 @@ func handleMsgUpdateProjectStatus(ctx sdk.Context, k Keeper, bk bank.Keeper,
 		}
 
 		minimumFunding := k.GetParams(ctx).ProjectMinimumInitialFunding
-		if projectAcc.GetCoins().AmountOf(types2.NativeToken).LT(minimumFunding) {
+		if projectAcc.GetCoins().AmountOf(dap.IxoNativeToken).LT(minimumFunding) {
 			return nil, er.Wrapf(er.ErrInsufficientFunds, "Project has not reached minimum funding %s", minimumFunding)
 		}
 	}
@@ -173,9 +174,9 @@ func getIxoAmount(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid exported
 	if found {
 		accAddr, _ := getAccountInProjectAccounts(ctx, k, projectDid, accountID)
 		coins := bk.GetCoins(ctx, accAddr)
-		return sdk.NewCoin(types2.NativeToken, coins.AmountOf(types2.NativeToken))
+		return sdk.NewCoin(dap.IxoNativeToken, coins.AmountOf(dap.IxoNativeToken))
 	}
-	return sdk.NewCoin(types2.NativeToken, sdk.ZeroInt())
+	return sdk.NewCoin(dap.IxoNativeToken, sdk.ZeroInt())
 }
 
 func handleMsgCreateAgent(ctx sdk.Context, k Keeper, bk bank.Keeper, msg MsgCreateAgent) (*sdk.Result, error) {
@@ -270,7 +271,7 @@ func handleMsgWithdrawFunds(ctx sdk.Context, k Keeper, bk bank.Keeper,
 		fromAccountId = InternalAccountID(recipientDid)
 	}
 
-	amountCoin := sdk.NewCoin(types2.NativeToken, amount)
+	amountCoin := sdk.NewCoin(dap.IxoNativeToken, amount)
 	err = payoutAndRecon(ctx, k, bk, projectDid, fromAccountId, recipientDid, amountCoin)
 	if err != nil {
 		return nil, err
@@ -292,7 +293,7 @@ func payoutAndRecon(ctx sdk.Context, k Keeper, bk bank.Keeper, projectDid export
 		return err
 	}
 
-	recipientAddr := types2.StringToAddr(recipientDid)
+	recipientAddr := ante.StringToAddr(recipientDid)
 	err = bk.SendCoins(ctx, fromAccount, recipientAddr, sdk.Coins{amount})
 	if err != nil {
 		return err
@@ -344,12 +345,12 @@ func processFees(ctx sdk.Context, k Keeper, fk payments.Keeper, bk bank.Keeper, 
 	nodeAmount := adjustedFeeAmount.Mul(nodePercentage).RoundInt64()
 	ixoAmount := adjustedFeeAmount.RoundInt64() - nodeAmount
 
-	err = bk.SendCoins(ctx, projectAddr, validatingNodeSetAddr, sdk.Coins{sdk.NewInt64Coin(types2.NativeToken, nodeAmount)})
+	err = bk.SendCoins(ctx, projectAddr, validatingNodeSetAddr, sdk.Coins{sdk.NewInt64Coin(dap.IxoNativeToken, nodeAmount)})
 	if err != nil {
 		return err
 	}
 
-	err = bk.SendCoins(ctx, projectAddr, ixoAddr, sdk.Coins{sdk.NewInt64Coin(types2.NativeToken, ixoAmount)})
+	err = bk.SendCoins(ctx, projectAddr, ixoAddr, sdk.Coins{sdk.NewInt64Coin(dap.IxoNativeToken, ixoAmount)})
 	if err != nil {
 		return err
 	}
@@ -386,17 +387,17 @@ func processEvaluatorPay(ctx sdk.Context, k Keeper, fk payments.Keeper,
 	nodePayFees := evaluatorPayFeeAmount.Mul(nodeFeePercentage)
 	ixoPayFees := evaluatorPayFeeAmount.Sub(nodePayFees)
 
-	err = bk.SendCoins(ctx, projectAddr, evaluatorAccAddr, sdk.Coins{sdk.NewInt64Coin(types2.NativeToken, evaluatorPayLessFees.RoundInt64())})
+	err = bk.SendCoins(ctx, projectAddr, evaluatorAccAddr, sdk.Coins{sdk.NewInt64Coin(dap.IxoNativeToken, evaluatorPayLessFees.RoundInt64())})
 	if err != nil {
 		return err
 	}
 
-	err = bk.SendCoins(ctx, projectAddr, nodeAddr, sdk.Coins{sdk.NewInt64Coin(types2.NativeToken, nodePayFees.RoundInt64())})
+	err = bk.SendCoins(ctx, projectAddr, nodeAddr, sdk.Coins{sdk.NewInt64Coin(dap.IxoNativeToken, nodePayFees.RoundInt64())})
 	if err != nil {
 		return err
 	}
 
-	err = bk.SendCoins(ctx, projectAddr, ixoAddr, sdk.Coins{sdk.NewInt64Coin(types2.NativeToken, ixoPayFees.RoundInt64())})
+	err = bk.SendCoins(ctx, projectAddr, ixoAddr, sdk.Coins{sdk.NewInt64Coin(dap.IxoNativeToken, ixoPayFees.RoundInt64())})
 	if err != nil {
 		return err
 	}

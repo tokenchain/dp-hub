@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+	types2 "github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -16,7 +17,6 @@ import (
 	utils2 "github.com/tokenchain/ixo-blockchain/client/utils"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/dap"
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"github.com/tokenchain/ixo-blockchain/x/project"
 	"io/ioutil"
 	"net/http"
@@ -201,7 +201,7 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// all messages must be of type ixo.IxoMsg
-		ixoMsg, ok := msg.(types.IxoMsg)
+		ixoMsg, ok := msg.(types2.IxoMsg)
 		if !ok {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, x.IntErr("msg must be ixo.IxoMsg").Error())
 			return
@@ -234,9 +234,9 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 			}
 
 			// Create dummy tx with blank signature for fee approximation
-			signature := types.IxoSignature{}
+			signature := types2.IxoSignature{}
 			signature.Created = signature.Created.Add(1) // maximizes signature length
-			tx := types.NewIxoTxSingleMsg(stdSignMsg.Msgs[0], stdSignMsg.Fee, signature, stdSignMsg.Memo)
+			tx := types2.NewIxoTxSingleMsg(stdSignMsg.Msgs[0], stdSignMsg.Fee, signature, stdSignMsg.Memo)
 
 			// Approximate fee
 			fee, err := dap.ApproximateFeeForTx(cliCtx, tx, txBldr.ChainID())

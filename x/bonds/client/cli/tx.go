@@ -12,7 +12,7 @@ import (
 	client2 "github.com/tokenchain/ixo-blockchain/x/bonds/client"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/dap"
+	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
 )
@@ -143,7 +143,7 @@ func GetCmdCreateBond(cdc *codec.Codec) *cobra.Command {
 				_allowSells, batchBlocks, bondDid)
 
 			//return dap.SignAndBroadcastTxCli(cliCtx, msg, creatorDid)
-			return dap.NewDidTxBuild(cliCtx, msg, creatorDid).CompleteAndBroadcastTxCLI()
+			return ante.NewDidTxBuild(cliCtx, msg, creatorDid).CompleteAndBroadcastTxCLI()
 
 		},
 	}
@@ -201,7 +201,7 @@ func GetCmdEditBond(cdc *codec.Codec) *cobra.Command {
 				_sanityMarginPercentage, editorDid, _bondDid)
 
 			//	return dap.SignAndBroadcastTxCli(cliCtx, msg, editorDid)
-			return dap.NewDidTxBuild(cliCtx, msg, editorDid).CompleteAndBroadcastTxCLI()
+			return ante.NewDidTxBuild(cliCtx, msg, editorDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 
@@ -245,8 +245,8 @@ func GetCmdBuy(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgBuy(buyerDid.Did, bondCoinWithAmount, maxPrices, args[2])
 
-			//			return dap.SignAndBroadcastTxCli(cliCtx, msg, buyerDid)
-			return dap.NewDidTxBuild(cliCtx, msg, buyerDid).CompleteAndBroadcastTxCLI()
+			//			return did.SignAndBroadcastTxCli(cliCtx, msg, buyerDid)
+			return ante.NewDidTxBuild(cliCtx, msg, buyerDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 	return cmd
@@ -275,9 +275,9 @@ func GetCmdSell(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgSell(sellerDid, bondCoinWithAmount, args[1])
 
-			//return dap.SignAndBroadcastTxCli(cliCtx, msg, sellerDid)
+			//return did.SignAndBroadcastTxCli(cliCtx, msg, sellerDid)
 
-			return dap.NewDidTxBuild(cliCtx, msg, sellerDid).CompleteAndBroadcastTxCLI()
+			return ante.NewDidTxBuild(cliCtx, msg, sellerDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 	return cmd
@@ -308,9 +308,9 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgSwap(swapperDid, from, args[2], args[3])
 
-			//return dap.SignAndBroadcastTxCli(cliCtx, msg, swapperDid)
+			//return did.SignAndBroadcastTxCli(cliCtx, msg, swapperDid)
 
-			return dap.NewDidTxBuild(cliCtx, msg, swapperDid).CompleteAndBroadcastTxCLI()
+			return ante.NewDidTxBuild(cliCtx, msg, swapperDid).CompleteAndBroadcastTxCLI()
 
 		},
 	}

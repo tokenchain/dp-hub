@@ -6,12 +6,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tokenchain/ixo-blockchain/x/dap"
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 )
 
-func GetPubKeyGetter(keeper Keeper) types.PubKeyGetter {
-	return func(ctx sdk.Context, msg dap.IxoMsg) (pubKey crypto.PubKey, res error) {
+func GetPubKeyGetter(keeper Keeper) ante.PubKeyGetter {
+	return func(ctx sdk.Context, msg ante.IxoMsg) (pubKey crypto.PubKey, res error) {
 		// Get signer PubKey
 		var pubKeyEd25519 ed25519.PubKeyEd25519
 		switch msg := msg.(type) {

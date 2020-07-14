@@ -1,4 +1,4 @@
-package types
+package ante
 
 import (
 	"fmt"
@@ -165,8 +165,9 @@ func (svc ConsumeVerSignGasDecorator) consumeSimSigGas(signctx SigVerification, 
 	}
 	simSig.Created = simSig.Created.Add(1) // maximizes signature length
 
-	sigBz := ModuleCdc.MustMarshalBinaryLengthPrefixed(simSig)
-	cost := sdk.Gas(len(sigBz) + 6)
+	//sigBz := ModuleCdc.MustMarshalBinaryLengthPrefixed(simSig)
+	cost := sdk.Gas(29999 + 6)
+	//cost := sdk.Gas(len(sigBz) + 6)
 
 	// If the pubkey is a multi-signature pubkey, then we estimate for the maximum
 	// number of signers.

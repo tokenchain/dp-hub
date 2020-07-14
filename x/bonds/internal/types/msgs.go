@@ -6,8 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
-	"github.com/tokenchain/ixo-blockchain/x/did"
+	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
 )
@@ -55,15 +54,15 @@ type (
 		EditorDid              exported.Did `json:"editor_did" yaml:"editor_did"`
 	}
 	MsgBuy struct {
-		BuyerDid  did.Did   `json:"buyer_did" yaml:"buyer_did"`
+		BuyerDid  exported.Did   `json:"buyer_did" yaml:"buyer_did"`
 		Amount    sdk.Coin  `json:"amount" yaml:"amount"`
 		MaxPrices sdk.Coins `json:"max_prices" yaml:"max_prices"`
-		BondDid   did.Did   `json:"bond_did" yaml:"bond_did"`
+		BondDid   exported.Did   `json:"bond_did" yaml:"bond_did"`
 	}
 
 	MsgSwap struct {
-		SwapperDid did.Did  `json:"swapper_did" yaml:"swapper_did"`
-		BondDid    did.Did  `json:"bond_did" yaml:"bond_did"`
+		SwapperDid exported.Did  `json:"swapper_did" yaml:"swapper_did"`
+		BondDid    exported.Did  `json:"bond_did" yaml:"bond_did"`
 		From       sdk.Coin `json:"from" yaml:"from"`
 		ToToken    string   `json:"to_token" yaml:"to_token"`
 	}
@@ -88,14 +87,14 @@ type (
 )
 
 var (
-	_ types.IxoMsg = MsgCreateBond{}
-	_ types.IxoMsg = MsgEditBond{}
-	_ types.IxoMsg = MsgBuy{}
-	_ types.IxoMsg = MsgSell{}
-	_ types.IxoMsg = MsgSwap{}
-	_ types.IxoMsg = MsgMint{}
-	_ types.IxoMsg = MsgBurn{}
-	_ types.IxoMsg = MsgTransfer{}
+	_ ante.IxoMsg = MsgCreateBond{}
+	_ ante.IxoMsg = MsgEditBond{}
+	_ ante.IxoMsg = MsgBuy{}
+	_ ante.IxoMsg = MsgSell{}
+	_ ante.IxoMsg = MsgSwap{}
+	_ ante.IxoMsg = MsgMint{}
+	_ ante.IxoMsg = MsgBurn{}
+	_ ante.IxoMsg = MsgTransfer{}
 )
 
 func NewMsgCreateBond(token, name, description string, creatorDid exported.IxoDid,
@@ -232,7 +231,7 @@ func (msg MsgCreateBond) GetSignBytes() []byte {
 
 func (msg MsgCreateBond) GetSignerDid() exported.Did { return msg.CreatorDid }
 func (msg MsgCreateBond) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateBond) Route() string { return RouterKey }
@@ -309,7 +308,7 @@ func (msg MsgEditBond) GetSignBytes() []byte {
 
 func (msg MsgEditBond) GetSignerDid() exported.Did { return msg.EditorDid }
 func (msg MsgEditBond) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgEditBond) Route() string { return RouterKey }
@@ -366,7 +365,7 @@ func (msg MsgBuy) GetSignBytes() []byte {
 
 func (msg MsgBuy) GetSignerDid() exported.Did { return msg.BuyerDid }
 func (msg MsgBuy) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgBuy) Route() string { return RouterKey }
@@ -426,7 +425,7 @@ func (msg MsgSell) GetSignBytes() []byte {
 
 func (msg MsgSell) GetSignerDid() exported.Did { return msg.SellerDid }
 func (msg MsgSell) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgSell) Route() string { return RouterKey }
@@ -496,7 +495,7 @@ func (msg MsgSwap) GetSignBytes() []byte {
 
 func (msg MsgSwap) GetSignerDid() exported.Did { return msg.SwapperDid }
 func (msg MsgSwap) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgSwap) Route() string { return RouterKey }
@@ -529,7 +528,7 @@ func (msg MsgTransfer) GetSignerDid() exported.Did { return msg.ID }
 func (msg MsgTransfer) Type() string               { return TypeMsgTransfer }
 func (msg MsgTransfer) Route() string              { return RouterKey }
 func (msg MsgTransfer) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 func (msg MsgTransfer) GetSignBytes() []byte {
 	if bz, err := json.Marshal(msg); err != nil {
@@ -566,7 +565,7 @@ func (msg MsgBurn) GetSignerDid() exported.Did { return msg.ID }
 func (msg MsgBurn) Type() string               { return TypeMsgBurn }
 func (msg MsgBurn) Route() string              { return RouterKey }
 func (msg MsgBurn) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 func (msg MsgBurn) GetSignBytes() []byte {
 	if bz, err := json.Marshal(msg); err != nil {
@@ -603,7 +602,7 @@ func (msg MsgMint) GetSignerDid() exported.Did { return msg.ID }
 func (msg MsgMint) Type() string               { return TypeMsgMint }
 func (msg MsgMint) Route() string              { return RouterKey }
 func (msg MsgMint) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
 }
 func (msg MsgMint) GetSignBytes() []byte {
 	if bz, err := json.Marshal(msg); err != nil {
