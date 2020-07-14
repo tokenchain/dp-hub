@@ -17,6 +17,7 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(exported.Claim{}, "did/Claim", nil)
 	cdc.RegisterConcrete(ante.IxoSignature{}, "darkpool-dxp/Signature", nil)
 	cdc.RegisterConcrete(ante.IxoTx{}, "darkpool-dxp/Transactions", nil)
+	cdc.RegisterInterface((*ante.TxActor)(nil), nil)
 
 }
 
