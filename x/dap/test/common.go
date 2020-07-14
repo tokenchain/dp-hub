@@ -33,6 +33,8 @@ const (
 	sample_seed                 = "74fd93fdd7508e6b2fc9f4e1ac8cef727003f2c36e3f1acf1fcb104658da8f42"
 	sample_signKey              = "8sgZQSCiu8GHTveWb1mfusT1KbaFCksriHoXhyDzwahF"
 	sample_encryptionPrivateKey = "8sgZQSCiu8GHTveWb1mfusT1KbaFCksriHoXhyDzwahF"
+
+	sample_did_2    = "did:dxp:6sfePrsqYBKUSxQkWRgDXW"
 )
 
 /**

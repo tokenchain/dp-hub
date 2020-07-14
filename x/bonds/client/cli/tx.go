@@ -123,15 +123,26 @@ func GetCmdCreateBond(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
+			// Parse bond's sovrin DID if that is a json file
+			bondDid := _bondDid
+			dp, err := exported.UnmarshalDxpDid(_bondDid)
+			if err == nil {
+				bondDid = dp.Did
+			} else {
+				bondDid = strings.ReplaceAll(bondDid, "\"", "")
+			}
+
 			cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(creatorDid.Address())
 
+			fmt.Println("check did bond--- ")
+			fmt.Println(bondDid)
 			msg := types.NewMsgCreateBond(_token, _name, _description,
 				creatorDid, _functionType, functionParams, reserveTokens,
 				txFeePercentage, exitFeePercentage, feeAddress, maxSupply,
 				orderQuantityLimits, sanityRate, sanityMarginPercentage,
-				_allowSells, batchBlocks, _bondDid)
+				_allowSells, batchBlocks, bondDid)
 
-		    //return dap.SignAndBroadcastTxCli(cliCtx, msg, creatorDid)
+			//return dap.SignAndBroadcastTxCli(cliCtx, msg, creatorDid)
 			return dap.NewDidTxBuild(cliCtx, msg, creatorDid).CompleteAndBroadcastTxCLI()
 
 		},
@@ -189,7 +200,7 @@ func GetCmdEditBond(cdc *codec.Codec) *cobra.Command {
 				_token, _name, _description, _orderQuantityLimits, _sanityRate,
 				_sanityMarginPercentage, editorDid, _bondDid)
 
-		//	return dap.SignAndBroadcastTxCli(cliCtx, msg, editorDid)
+			//	return dap.SignAndBroadcastTxCli(cliCtx, msg, editorDid)
 			return dap.NewDidTxBuild(cliCtx, msg, editorDid).CompleteAndBroadcastTxCLI()
 		},
 	}
@@ -234,7 +245,7 @@ func GetCmdBuy(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgBuy(buyerDid.Did, bondCoinWithAmount, maxPrices, args[2])
 
-//			return dap.SignAndBroadcastTxCli(cliCtx, msg, buyerDid)
+			//			return dap.SignAndBroadcastTxCli(cliCtx, msg, buyerDid)
 			return dap.NewDidTxBuild(cliCtx, msg, buyerDid).CompleteAndBroadcastTxCLI()
 		},
 	}
@@ -298,7 +309,6 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 			msg := types.NewMsgSwap(swapperDid, from, args[2], args[3])
 
 			//return dap.SignAndBroadcastTxCli(cliCtx, msg, swapperDid)
-
 
 			return dap.NewDidTxBuild(cliCtx, msg, swapperDid).CompleteAndBroadcastTxCLI()
 

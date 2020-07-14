@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
@@ -102,12 +103,13 @@ func NewMsgCreateBond(token, name, description string, creatorDid exported.IxoDi
 	txFeePercentage, exitFeePercentage sdk.Dec, feeAddress sdk.AccAddress, maxSupply sdk.Coin,
 	orderQuantityLimits sdk.Coins, sanityRate, sanityMarginPercentage sdk.Dec,
 	allowSell string, batchBlocks sdk.Uint, bondDid exported.Did) MsgCreateBond {
+
 	return MsgCreateBond{
+		CreatorDid:             creatorDid.Did,
 		BondDid:                bondDid,
 		Token:                  token,
 		Name:                   name,
 		Description:            description,
-		CreatorDid:             creatorDid.Did,
 		FunctionType:           functionType,
 		FunctionParameters:     functionParameters,
 		ReserveTokens:          reserveTokens,
@@ -207,10 +209,14 @@ func (msg MsgCreateBond) ValidateBasic() error {
 	// Note: uniqueness of reserve tokens checked when parsing
 
 	// Check that DIDs valid
+	fmt.Println("=== check bond did ===>")
+	fmt.Println(msg.BondDid)
 	if !exported.IsValidDid(msg.BondDid) {
-		return x.ErrInvalidDid("bond did is invalid")
-	} else if !exported.IsValidDid(msg.CreatorDid) {
-		return x.ErrInvalidDid("creator did is invalid")
+		return x.ErrInvalidDid(fmt.Sprintf("bond did is invalid. got - %s", msg.BondDid))
+	}
+
+	if !exported.IsValidDid(msg.CreatorDid) {
+		return x.ErrInvalidDid(fmt.Sprintf("creator did is invalid. got - %s", msg.CreatorDid))
 	}
 
 	return nil

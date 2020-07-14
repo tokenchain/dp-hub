@@ -17,19 +17,19 @@ type (
 
 var (
 	// Auth
-	NewDefaultPubKeyGetter            = types.NewDefaultPubKeyGetter
-	DefaultSigVerificationGasConsumer = types.DefaultSigVerificationGasConsumer
-	NewDefaultAnteHandler             = types.NewDapAnteHandler
-	ApproximateFeeForTx               = types.ApproximateFeeForTx
-	GenerateOrBroadcastMsgs           = types.GenerateOrBroadcastMsgs
-	CompleteAndBroadcastTxRest        = types.CompleteAndBroadcastTxRest
-	SignAndBroadcastTxFromStdSignMsg  = types.SignAndBroadcastTxFromStdSignMsg
-	NewSignature                      = types.NewSignature
-	ProcessSig                        = types.ProcessSig
-	RegisterCodec                     = types.RegisterCodec
-	SignAndBroadcastTxCli             = types.SignAndBroadcastTxCli
-	SignAndBroadcastTxRest            = types.SignAndBroadcastTxRest
-	NewDidTxBuild                     = types.NewDidTxBuild
+	NewDefaultPubKeyGetter           = types.NewDefaultPubKeyGetter
+	DefaultAnteHandler               = types.DefaultAnteHandler
+	DidAnteHandler                   = types.DidAnteHandler
+	ApproximateFeeForTx              = types.ApproximateFeeForTx
+	GenerateOrBroadcastMsgs          = types.GenerateOrBroadcastMsgs
+	CompleteAndBroadcastTxRest       = types.CompleteAndBroadcastTxRest
+	SignAndBroadcastTxFromStdSignMsg = types.SignAndBroadcastTxFromStdSignMsg
+	NewSignature                     = types.NewSignature
+	ProcessSig                       = types.ProcessSig
+	RegisterCodec                    = types.RegisterCodec
+	SignAndBroadcastTxCli            = types.SignAndBroadcastTxCli
+	SignAndBroadcastTxRest           = types.SignAndBroadcastTxRest
+	NewDidTxBuild                    = types.NewDidTxBuild
 
 	// Types
 	IxoDecimals = types.IxoDecimals

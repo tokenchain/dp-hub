@@ -552,14 +552,10 @@ func initAnteHandler(app *DpApp) sdk.AnteHandler {
 	didPubKeyGetter := did.GetPubKeyGetter(app.didKeeper)
 	projectPubKeyGetter := project.GetPubKeyGetter(app.projectKeeper, app.didKeeper)
 
-	defaultIxoAnteHandler := dap.NewDefaultAnteHandler(
-		app.accountKeeper, app.bankKeeper, app.supplyKeeper, defaultPubKeyGetter, dap.DefaultSigVerificationGasConsumer)
-	didAnteHandler := dap.NewDefaultAnteHandler(
-		app.accountKeeper, app.bankKeeper, app.supplyKeeper, didPubKeyGetter, dap.DefaultSigVerificationGasConsumer)
-	projectAnteHandler := dap.NewDefaultAnteHandler(
-		app.accountKeeper, app.bankKeeper, app.supplyKeeper, projectPubKeyGetter, dap.DefaultSigVerificationGasConsumer)
-	cosmosAnteHandler := auth.NewAnteHandler(
-		app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer)
+	defaultDxpAnteHandler := dap.DefaultAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, defaultPubKeyGetter)
+	didAnteHandler := dap.DidAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, didPubKeyGetter)
+	projectAnteHandler := dap.DefaultAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, projectPubKeyGetter)
+	cosmosAnteHandler := auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer)
 
 	projectCreationAnteHandler := project.NewProjectCreationAnteHandler(
 		app.accountKeeper, app.supplyKeeper, app.bankKeeper,
@@ -569,7 +565,7 @@ func initAnteHandler(app *DpApp) sdk.AnteHandler {
 		msg := tx.GetMsgs()[0]
 		switch msg.Route() {
 		case did.RouterKey:
-			fmt.Println("node did tx handler")
+
 			return didAnteHandler(ctx, tx, simulate)
 		case project.RouterKey:
 			switch msg.Type() {
@@ -579,11 +575,12 @@ func initAnteHandler(app *DpApp) sdk.AnteHandler {
 				return projectAnteHandler(ctx, tx, simulate)
 			}
 		case bonds.RouterKey:
-			return defaultIxoAnteHandler(ctx, tx, simulate)
+			fmt.Println("node bonds tx handler")
+			return defaultDxpAnteHandler(ctx, tx, simulate)
 		case treasury.RouterKey:
-			return defaultIxoAnteHandler(ctx, tx, simulate)
+			return defaultDxpAnteHandler(ctx, tx, simulate)
 		case payments.RouterKey:
-			return defaultIxoAnteHandler(ctx, tx, simulate)
+			return defaultDxpAnteHandler(ctx, tx, simulate)
 		default:
 			fmt.Println("node cosmos tx handler")
 			return cosmosAnteHandler(ctx, tx, simulate)

@@ -390,7 +390,7 @@ func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {
 			return err
 		}
 	}
-
+	//will print the message  check signed message ==
 	signTxMsg := tb.CollectSignedMessage(stdSignMsg)
 	/*
 		fmt.Println("=============== pre-tx-signature ==============")
