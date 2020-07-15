@@ -150,7 +150,7 @@ func RunGenerationOffline(cdc *codec.Codec) CommandDo {
 
 		algo := keys.SigningAlgo(viper.GetString(flagKeyAlgo))
 		if algo == keys.SigningAlgo("") {
-			algo = keys.Secp256k1
+			algo = keys.Ed25519
 		}
 
 		//userEntropy, _ := flags.GetBool(flagUserEntropy)
@@ -165,7 +165,7 @@ func RunGenerationOffline(cdc *codec.Codec) CommandDo {
 		if err != nil {
 			return err
 		}
-		privKey, err := keys.StdPrivKeyGen(derivedPriv, algo)
+	    //privKey, err := keys.StdPrivKeyGen(derivedPriv, algo)
 		if err != nil {
 			return err
 		}
@@ -183,21 +183,31 @@ func RunGenerationOffline(cdc *codec.Codec) CommandDo {
 			}
 		}
 
-		info, err := kb.CreateOffline(name, privKey.PubKey(), keys.Ed25519)
-
+		docCombine := exported.InfoToDidEd25519(name, derivedPriv, true)
+		docInfo, err := kb.CreateOffline(name, docCombine.FromPubKeyDx0(), keys.Ed25519)
 		if err != nil {
-			return err
+			fmt.Println("failed to register key with name: ", name)
 		}
-
-		did_document := exported.InfoToDidEd25519(info, derivedPriv)
-
+		cmd.Println("")
+		cmd.Println("")
+		cmd.Println("")
+		cmd.Println("")
+		cmd.Println("")
+		cmd.Println("")
 		cmd.Println("========🔑 Account Info Save This To a secured place===============================================")
-		cmd.Println(did_document)
+		cmd.Println(docCombine)
 
 		cmd.Println("=======🔑  The passphrase please keep in the secured place. Its an important private key! ")
 		cmd.Println(mnemonic)
 
-		response, err2 := input.GetConfirmation(fmt.Sprintf("🔐  Do you want to go ahead and make this on the block? %s", name), inBuf)
+		cmd.Println("")
+		cmd.Println("")
+		cmd.Println("")
+		cmd.Println("")
+		cmd.Println("")
+		cmd.Println("")
+
+		response, err2 := input.GetConfirmation(fmt.Sprintf("🔐  Do you want to go ahead and make this on the block? %s", docInfo.GetName()), inBuf)
 		if err2 != nil {
 			return err2
 		}
@@ -205,9 +215,9 @@ func RunGenerationOffline(cdc *codec.Codec) CommandDo {
 			return errors.New("aborted.")
 		}
 
-		cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(did_document.Address())
-		msg := types.NewMsgAddDid(did_document.Did, did_document.GetPubKey())
-		return dap.SignAndBroadcastTxCli(cliCtx, msg, did_document)
+		cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(docCombine.Address())
+		msg := types.NewMsgAddDid(docCombine.Did, docCombine.GetPubKey())
+		return dap.SignAndBroadcastTxCli(cliCtx, msg, docCombine)
 	}
 }
 

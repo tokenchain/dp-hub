@@ -1,14 +1,12 @@
 package exported
 
 import (
-	"crypto"
 	"encoding/json"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	tmcrypto "github.com/tendermint/tendermint/crypto"
 )
-
-var _ IdpDid = IxoDid{}
 
 type (
 	Did    = string
@@ -19,16 +17,6 @@ type (
 		GetPubKey() string
 		Address() sdk.AccAddress
 		AddressUnverified() sdk.AccAddress
-	}
-	IdpDid interface {
-		String() string
-		AddressEd() sdk.AccAddress
-		FromAddressDx0() sdk.AccAddress
-		FromPubKeyDx0() crypto.PublicKey
-		Address() sdk.AccAddress
-		DidAddress() string
-		MarshaDid() ([]byte, error)
-		GetPubKey() string
 	}
 	Claim struct {
 		Id           Did  `json:"id" yaml:"id"`
@@ -103,7 +91,7 @@ func (id IxoDid) FromAddressDx0() sdk.AccAddress {
 	address, _ := sdk.AccAddressFromBech32(id.Dpinfo.DpAddress)
 	return address
 }
-func (id IxoDid) FromPubKeyDx0() crypto.PublicKey {
+func (id IxoDid) FromPubKeyDx0() tmcrypto.PubKey {
 	address, e := sdk.GetPubKeyFromBech32(sdk.Bech32PubKeyTypeAccPub, id.Dpinfo.PubKey)
 	//address, _ := sdk.AccAddressFromBech32( id.VerifyKey)
 	if e != nil {
@@ -122,6 +110,7 @@ func (id IxoDid) AddressEd() sdk.AccAddress {
 func (id IxoDid) DidAddress() string {
 	return id.Did
 }
+
 func (id IxoDid) String() string {
 	output, err := json.MarshalIndent(id, "", "  ")
 	if err != nil {

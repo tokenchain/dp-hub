@@ -95,28 +95,34 @@ func GenDidInfoExperiment(doc keys.Info, privateKey tmcrypto.PrivKey, x keys.Sig
 	return sovDid
 
 }
-
-func InfoToDidEd25519(doc keys.Info, derivedPriv []byte) IxoDid {
+func makePubKey(bt *[32]byte) (pubKey tmcrypto.PubKey) {
+	var pubKeyRaw ed25519tm.PubKeyEd25519
+	copy(pubKeyRaw[:], bt[:])
+	return pubKeyRaw
+}
+func InfoToDidEd25519(docName string, derivedPriv []byte, debug bool) IxoDid {
 	pubEd25519, priEd25519, _ := edgen.GenerateKey(bytes.NewReader(derivedPriv[0:32]))
-	pk, _ := sdk.Bech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, doc.GetPubKey())
 	keyPairPublicKey, keyPairPrivateKey, _ := naclBox.GenerateKey(bytes.NewReader(priEd25519[:]))
 
-	fmt.Println("========pair1 key  =========")
-	fmt.Println("pub", len(pubEd25519), pubEd25519)
-	fmt.Println("pri", len(priEd25519), priEd25519)
-	fmt.Println("========pair2 key  =========")
-	fmt.Println("pub", len(keyPairPublicKey), keyPairPublicKey)
-	fmt.Println("pri", len(keyPairPrivateKey), keyPairPrivateKey)
-	fmt.Println("========Derived private key  =========")
-	fmt.Println(len(derivedPriv), derivedPriv)
-	fmt.Println("================================")
-
+	if debug {
+		fmt.Println("========pair1 key  =========")
+		fmt.Println("pub", len(pubEd25519), pubEd25519)
+		fmt.Println("pri", len(priEd25519), priEd25519)
+		fmt.Println("========pair2 key  =========")
+		fmt.Println("pub", len(keyPairPublicKey), keyPairPublicKey)
+		fmt.Println("pri", len(keyPairPrivateKey), keyPairPrivateKey)
+		fmt.Println("========Derived private key  =========")
+		fmt.Println(len(derivedPriv), derivedPriv)
+		fmt.Println("================================")
+	}
 	sovDid := IxoDid{
 		Dpinfo: DpInfo{
-			DpAddress: doc.GetAddress().String(),
-			PubKey:    pk,
-			Name:      doc.GetName(),
-			Algo:      "secp256k1",
+			DpAddress: VerifyKeyToAddrEd25519(base58.Encode(pubEd25519[:])).String(),
+			PubKey:    sdk.MustBech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, makePubKey(pubEd25519)),
+			Name:      docName,
+			Algo:      "ed25519",
+			//DpAddress: doc.GetAddress().String(),
+			//Algo:      "secp256k1",
 		},
 		Did:                 dxpDidAddress(base58.Encode(pubEd25519[:16])),
 		VerifyKey:           base58.Encode(pubEd25519[:]),

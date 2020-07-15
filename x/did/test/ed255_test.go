@@ -113,11 +113,12 @@ func Test_ed25519_development(t *testing.T) {
 
 	// create master key and derive first key for keyring
 	derivedPriv, err := keys.StdDeriveKey(mnemonic, "", hdPath, algo)
-	privKey, err := keys.StdPrivKeyGen(derivedPriv, algo)
-	info, err := kb.CreateOffline(name, privKey.PubKey(), algo)
-
-	docCombine := exported.InfoToDidEd25519(info, derivedPriv)
-
+	//privKey, err := keys.StdPrivKeyGen(derivedPriv, algo)
+	docCombine := exported.InfoToDidEd25519(name, derivedPriv, true)
+	info, err := kb.CreateOffline(name, docCombine.FromPubKeyDx0(), keys.Ed25519)
+	if err != nil {
+		fmt.Println("failed to register key with name: ", name)
+	}
 	//	privKey_orginal := exported.PrivateKeyToSecp256k1(privKey)
 	//	privkey_v3 := exported.SecpPrivKey(derivedPriv)
 	//privateRecover := exported.RecoverDidToPrivateKeyClassic(docCombine)
@@ -135,7 +136,7 @@ func Test_ed25519_development(t *testing.T) {
 	fmt.Println("========cosmos private key check  =========")
 
 	fmt.Println(len(derivedPriv), derivedPriv)
-	fmt.Println(len(privKey.Bytes()), privKey)
+	//fmt.Println(len(privKey.Bytes()), privKey)
 	//fmt.Println(len(cosmosPrivateKey), cosmosPrivateKey.PubKey().Address().Bytes())
 	//fmt.Println(privKey.Equals(secp256k1.PrivKeySecp256k1(cosmosPrivateKey)))
 
