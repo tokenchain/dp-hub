@@ -13,7 +13,7 @@ var _ exported.DidDoc = (*BaseDidDoc)(nil)
 type BaseDidDoc struct {
 	Did         exported.Did             `json:"did" yaml:"did"`
 	PubKey      string                   `json:"pubKey" yaml:"pubKey"`
-	Credentials []exported.DidCredential `json:"credentials" yaml:"credentials"`
+	Credentials []exported.DidCredential `json:"credentials,omitempty" yaml:"credentials"`
 }
 
 func NewBaseDidDoc(did exported.Did, pubKey string) BaseDidDoc {

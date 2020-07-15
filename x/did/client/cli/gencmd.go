@@ -130,7 +130,7 @@ func getKeybase(transient bool, buf io.Reader) (keys.Keybase, error) {
 	return keys.NewKeyring(sdk.KeyringServiceName(), viper.GetString(flags.FlagKeyringBackend), viper.GetString(flags.FlagHome), buf)
 }
 
-func RunGenerationOffline(cdc *codec.Codec) CommandDo {
+func runGenerationOffline(cdc *codec.Codec) CommandDo {
 	return func(cmd *cobra.Command, args []string) error {
 		inBuf := bufio.NewReader(cmd.InOrStdin())
 

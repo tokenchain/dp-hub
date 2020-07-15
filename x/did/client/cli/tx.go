@@ -24,11 +24,9 @@ func GetCmdAddDidDoc(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(sovrinDid.Address())
-			//msg := types.NewMsgAddDid(sovrinDid.Did, sovrinDid.Dpinfo.PubKey)
+			fmt.Println(sovrinDid)
 			msg := types.NewMsgAddDid(sovrinDid.Did, sovrinDid.GetPubKey())
-			//return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
-			//return dap.NewDidTxBuild(cliCtx, msg, ixoDid).CompleteAndBroadcastTxCLI()
+			cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(sovrinDid.Address())
 			return ante.NewDidTxBuild(cliCtx, msg, sovrinDid).CompleteAndBroadcastTxCLI()
 		},
 	}
@@ -70,6 +68,6 @@ func GetCmdAccDidGenerate(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "generate-offline [name]",
 		Short: "Generate did document offline",
-		RunE:  RunGenerationOffline(cdc),
+		RunE:  runGenerationOffline(cdc),
 	}
 }
