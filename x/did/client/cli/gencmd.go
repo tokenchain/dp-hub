@@ -40,6 +40,7 @@ const (
 )
 
 type CommandDo func(cmd *cobra.Command, args []string) error
+
 /*
 func RunGenerationNewDoc(cdc *codec.Codec) CommandDo {
 	cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -159,7 +160,7 @@ func RunGenerationOffline(cdc *codec.Codec) CommandDo {
 		kb, err := getKeybase(isDryRun, inBuf)
 
 		entropySeed, err := bip39.NewEntropy(mnemonicEntropySize)
-		cmd.Println("========Seed====================================================")
+		cmd.Println("=> Seed===============================")
 		mnemonic, err := bip39.NewMnemonic(entropySeed)
 		// create master key and derive first key for keyring
 		derivedPriv, err := keys.StdDeriveKey(mnemonic, "", hdPath, algo)
@@ -171,7 +172,7 @@ func RunGenerationOffline(cdc *codec.Codec) CommandDo {
 		_, err = kb.Get(name)
 		if err == nil {
 			// account exists, ask for user confirmation
-			response, err2 := input.GetConfirmation(fmt.Sprintf("override the existing name %s", name), inBuf)
+			response, err2 := input.GetConfirmation(fmt.Sprintf("Override the existing name %s", name), inBuf)
 			if err2 != nil {
 				return err2
 			}
@@ -204,10 +205,6 @@ func RunGenerationOffline(cdc *codec.Codec) CommandDo {
 		cmd.Println("")
 		cmd.Println("")
 
-		if generateOnly {
-			return nil
-		}
-
 		msg2i := fmt.Sprintf("🔐  Do you want to go ahead and make this on the block? %s please go ahead and make the first transaction and send DAPs to the below account\n%s", docInfo.GetName(), docInfo.GetAddress().String())
 
 		response, err2 := input.GetConfirmation(msg2i, inBuf)
@@ -217,11 +214,15 @@ func RunGenerationOffline(cdc *codec.Codec) CommandDo {
 		if !response {
 			return errors.New("aborted.")
 		}
-
-		cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(docCombine.Address())
 		msg := types.NewMsgAddDid(docCombine.Did, docCombine.GetPubKey())
-		//return dap.SignAndBroadcastTxCli(cliCtx, msg, docCombine)
-		return aute2.NewDidTxBuild(cliCtx, msg, docCombine).CompleteAndBroadcastTxCLI()
+		cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(docCombine.Address())
+		preheat := aute2.NewDidTxBuild(cliCtx, msg, docCombine)
+
+		if generateOnly {
+			return preheat.DebugTxDecode()
+		}
+
+		return preheat.CompleteAndBroadcastTxCLI()
 	}
 }
 

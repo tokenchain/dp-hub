@@ -3,6 +3,7 @@ package exported
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	tmcrypto "github.com/tendermint/tendermint/crypto"
@@ -57,12 +58,20 @@ type (
 	Credential struct{}
 )
 
+func RegisterCodec(cdc *codec.Codec) {
+	cdc.RegisterInterface((*DidDoc)(nil), nil)
+	cdc.RegisterConcrete(&IxoDid{}, "darkpool/IxoDid", nil)
+	cdc.RegisterConcrete(&DpInfo{}, "darkpool/DpInfo", nil)
+	cdc.RegisterConcrete(&Secret{}, "darkpool/Secret", nil)
+	cdc.RegisterConcrete(&DidCredential{}, "darkpool/DidCredential", nil)
+	cdc.RegisterConcrete(&Claim{}, "darkpool/Claim", nil)
+}
+
 func (s Secret) String() string {
 	output, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		panic(err)
 	}
-
 	return fmt.Sprintf("%v", string(output))
 }
 

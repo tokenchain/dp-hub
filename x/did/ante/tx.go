@@ -39,6 +39,8 @@ func DidToAddr(did exported.Did) sdk.AccAddress {
 	return StringToAddr(did)
 }
 
+var _ sdk.Tx = (*IxoTx)(nil)
+
 type (
 	IxoMsg interface {
 		sdk.Msg
@@ -48,13 +50,14 @@ type (
 		SignatureValue []byte    `json:"signatureValue" yaml:"signatureValue"`
 		Created        time.Time `json:"created" yaml:"created"`
 	}
+
 	IxoTx struct {
-		sdk.Tx
-		Memo       string         `json:"memo" yaml:"memo"`
 		Msgs       []sdk.Msg      `json:"payload" yaml:"payload"`
 		Fee        auth.StdFee    `json:"fee" yaml:"fee"`
 		Signatures []IxoSignature `json:"signatures" yaml:"signatures"`
+		Memo       string         `json:"memo" yaml:"memo"`
 	}
+
 	TxActor interface {
 		GetMsgs() []sdk.Msg
 		ValidateBasic() error
@@ -69,6 +72,12 @@ type (
 		GetFirstSignature() []byte
 	}
 )
+
+func RegisterCodec(cdc *codec.Codec) {
+	cdc.RegisterInterface((*TxActor)(nil), nil)
+	cdc.RegisterConcrete(&IxoTx{}, "darkpool/IxoTx", nil)
+	cdc.RegisterConcrete(&IxoSignature{}, "darkpool/IxoSignature", nil)
+}
 
 // MarshalYAML returns the YAML representation of the signature.
 func (is IxoSignature) MarshalYAML() (interface{}, error) {
@@ -225,31 +234,35 @@ func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 	return func(txBytes []byte) (sdk.Tx, error) {
 
 		if len(txBytes) == 0 {
-			return nil, errors.Wrap(errors.ErrTxDecode, "txBytes are empty")
+			return nil, InvalidTxDecodeMsg("txBytes are empty")
 		}
 
 		if string(txBytes[0:1]) == "{" {
+
 			var upTx map[string]interface{}
 			er := json.Unmarshal(txBytes, &upTx)
 			if er != nil {
-				return nil, errors.Wrap(errors.ErrTxDecode, er.Error())
+				return nil, InvalidTxDecodeMsg(er.Error())
 			}
 
 			payloadArray := upTx["payload"].([]interface{})
 			if len(payloadArray) != 1 {
-				return nil, errors.Wrap(errors.ErrTxDecode, "Multiple messages not supported")
+				return nil, InvalidTxDecodeMsg("Multiple messages not supported")
 			}
 			var tx IxoTx
+			fmt.Println("--- Darkpool Transaction")
 			er = cdc.UnmarshalJSON(txBytes, &tx)
 			if er != nil {
-				return nil, errors.Wrap(errors.ErrTxDecode, er.Error())
+				return nil, InvalidTxDecodeMsg(er.Error())
 			}
 			return tx, nil
 		} else {
 			var tx = auth.StdTx{}
+
+			fmt.Println("--- Standard Cosmos Transaction")
 			er := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &tx)
 			if er != nil {
-				return nil, errors.Wrap(errors.ErrTxDecode, er.Error())
+				return nil, InvalidTxDecodeMsg(er.Error())
 			}
 			return tx, nil
 		}
@@ -340,6 +353,42 @@ func (tb SignTxPack) doSimulate() error {
 		gasEst := utils.GasEstimateResponse{GasEstimate: txBldr.Gas()}
 		_, _ = fmt.Fprintf(os.Stderr, "%s\n", gasEst.String())
 	}
+	return nil
+}
+func (tb SignTxPack) DebugTxDecode() error {
+
+	txBldr, err := utils.PrepareTxBuilder(tb.txBldr, tb.ctxCli)
+	if err != nil {
+		return err
+	}
+
+	stdSignMsg, err := txBldr.BuildSignMsg([]sdk.Msg{tb.msg})
+	if err != nil {
+		return err
+	}
+
+	if tb.ctxCli.Simulate {
+		if err := tb.printUnsignedStdTx(stdSignMsg); err != nil {
+			return err
+		}
+		return nil
+	}
+	//will print the message  check signed message ==
+	signTxMsg := tb.CollectSignedMessage(stdSignMsg)
+	bz, err := tb.ctxCli.Codec.MarshalJSON(signTxMsg)
+	if err != nil {
+		return fmt.Errorf("Could not marshall tx to binary. Error: %s! ", err.Error())
+	}
+
+	tx, err := DefaultTxDecoder(tb.ctxCli.Codec)(bz)
+	if err != nil {
+		return fmt.Errorf("Could not marshall tx to binary. Error: %s! ", err.Error())
+	}
+
+	fmt.Println("=============== signed bytes==============")
+	fmt.Println(signTxMsg.GetFirstSignature())
+	fmt.Println("=============== decoded signed bytes==============")
+	fmt.Println(tx)
 	return nil
 }
 func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {

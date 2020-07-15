@@ -33,6 +33,7 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x/bonds"
 	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 
 	"github.com/tokenchain/ixo-blockchain/x/nameservice"
 	"github.com/tokenchain/ixo-blockchain/x/oracles"
@@ -106,6 +107,8 @@ var (
 func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
 	ModuleBasics.RegisterCodec(cdc)
+	ante.RegisterCodec(cdc)
+	exported.RegisterCodec(cdc)
 	vesting.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
@@ -158,7 +161,13 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 
 	cdc := MakeCodec()
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
-	bApp := bam.NewBaseApp(appName, logger, db, ante.DefaultTxDecoder(cdc), baseAppOptions...)
+	bApp := bam.NewBaseApp(
+		appName,
+		logger,
+		db,
+		ante.DefaultTxDecoder(cdc),
+		baseAppOptions...,
+	)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	//bApp.SetAppVersion(version.NewVersion("v0.1.1"))
 
@@ -565,7 +574,7 @@ func initAnteHandler(app *DpApp) sdk.AnteHandler {
 		msg := tx.GetMsgs()[0]
 		switch msg.Route() {
 		case did.RouterKey:
-
+			fmt.Println("darkpool did tx handler")
 			return didAnteHandler(ctx, tx, simulate)
 		case project.RouterKey:
 			switch msg.Type() {
