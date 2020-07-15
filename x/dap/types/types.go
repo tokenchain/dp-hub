@@ -9,5 +9,5 @@ var (
 )
 
 const (
-	NativeToken         = "dap"
+	NativeToken         = "mdap"
 )

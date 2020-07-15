@@ -101,7 +101,7 @@ func RunGenerationNewDoc(cdc *codec.Codec) CommandDo {
 
 		exported.AddAccountEd25519ByDid(kb, name, did_document)
 		//app.BankKeeper.SendCoins(ctx, addr, addr2, sdk.NewCoins(sdk.NewInt64Coin("barcoin", 10), sdk.NewInt64Coin("foocoin", 5)))
-		cmd.Println("========🔑 Account Info Save This To a secured place===============================================")
+		cmd.Println("========🔑 Account Info Save this To a secured place===============================================")
 		cmd.Println(did_document)
 
 		cmd.Println("=======🔑  The passphrase please keep in the secured place. Its an important private key! ")

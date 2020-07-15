@@ -18,7 +18,7 @@ import (
 func GetCmdAddDidDoc(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "add-did-doc [sovrin-did]",
-		Short: "Add a new SovrinDid",
+		Short: "Add a new SovrinDid from the full json document",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			sovrinDid, err := exported.UnmarshalDxpDid(args[0])
