@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"github.com/tokenchain/ixo-blockchain/x/dap"
 	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"time"
@@ -52,13 +51,13 @@ func GetCmdAddCredential(cdc *codec.Codec) *cobra.Command {
 			issued := t.Format(time.RFC3339)
 			credTypes := []string{"Credential", "ProofOfKYC"}
 			cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(sovrinDid.Address())
-
 			msg := types.NewMsgAddCredential(didAddr, credTypes, sovrinDid.Did, issued)
-			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			return ante.NewDidTxBuild(cliCtx, msg, sovrinDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 }
 
+/*
 func GetCmdDidGenerate(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "generate-doc [username]",
@@ -66,7 +65,7 @@ func GetCmdDidGenerate(cdc *codec.Codec) *cobra.Command {
 		RunE:  RunGenerationNewDoc(cdc),
 	}
 }
-
+*/
 func GetCmdAccDidGenerate(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "generate-offline [name]",

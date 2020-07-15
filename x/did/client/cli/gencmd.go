@@ -2,7 +2,6 @@ package cli
 
 import (
 	"bufio"
-	"crypto/sha256"
 	"errors"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -10,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/input"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
-	"github.com/tokenchain/ixo-blockchain/x/dap"
+	aute2 "github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,17 +21,18 @@ import (
 )
 
 const (
-	flagDryRun      = "dry-run"
-	flagUserEntropy = "unsafe-entropy"
-	flagInteractive = "interactive"
-	flagRecover     = "recover"
-	flagNoBackup    = "no-backup"
-	flagAccount     = "account"
-	flagIndex       = "index"
-	flagMultisig    = "multisig"
-	flagNoSort      = "nosort"
-	flagHDPath      = "hd-path"
-	flagKeyAlgo     = "algo"
+	flagDryRun       = "dry-run"
+	flagUserEntropy  = "unsafe-entropy"
+	flagInteractive  = "interactive"
+	flagRecover      = "recover"
+	flagNoBackup     = "no-backup"
+	flagAccount      = "account"
+	flagIndex        = "index"
+	flagMultisig     = "multisig"
+	flagNoSort       = "nosort"
+	flagHDPath       = "hd-path"
+	flagGenerateOnly = "generate-only"
+	flagKeyAlgo      = "algo"
 
 	// DefaultKeyPass contains the default key password for genesis transactions
 	DefaultKeyPass      = "12345678"
@@ -40,7 +40,7 @@ const (
 )
 
 type CommandDo func(cmd *cobra.Command, args []string) error
-
+/*
 func RunGenerationNewDoc(cdc *codec.Codec) CommandDo {
 	cliCtx := context.NewCLIContext().WithCodec(cdc)
 	return func(cmd *cobra.Command, args []string) error {
@@ -51,7 +51,7 @@ func RunGenerationNewDoc(cdc *codec.Codec) CommandDo {
 		kb, err := getKeybase(isDryRun, inBuf)
 		var entropySeed []byte
 		if userEntropy {
-			// prompt the user to enter some entropy
+
 			buf := bufio.NewReader(cmd.InOrStdin())
 			inputEntropy, err := input.GetString("> WARNING: Generate at least 256-bits of entropy and enter the results here:", buf)
 			if err != nil {
@@ -120,7 +120,7 @@ func RunGenerationNewDoc(cdc *codec.Codec) CommandDo {
 		msg := types.NewMsgAddDid(did_document.Did, did_document.GetPubKey())
 		return dap.SignAndBroadcastTxCli(cliCtx, msg, did_document)
 	}
-}
+}*/
 
 func getKeybase(transient bool, buf io.Reader) (keys.Keybase, error) {
 	if transient {
@@ -138,6 +138,7 @@ func RunGenerationOffline(cdc *codec.Codec) CommandDo {
 
 		account := uint32(viper.GetInt(flagAccount))
 		index := uint32(viper.GetInt(flagIndex))
+		generateOnly, _ := flags.GetBool(flagGenerateOnly)
 
 		useBIP44 := !viper.IsSet(flagHDPath)
 		var hdPath string
@@ -150,7 +151,7 @@ func RunGenerationOffline(cdc *codec.Codec) CommandDo {
 
 		algo := keys.SigningAlgo(viper.GetString(flagKeyAlgo))
 		if algo == keys.SigningAlgo("") {
-			algo = keys.Ed25519
+			algo = keys.Secp256k1
 		}
 
 		//userEntropy, _ := flags.GetBool(flagUserEntropy)
@@ -165,11 +166,7 @@ func RunGenerationOffline(cdc *codec.Codec) CommandDo {
 		if err != nil {
 			return err
 		}
-	    //privKey, err := keys.StdPrivKeyGen(derivedPriv, algo)
-		if err != nil {
-			return err
-		}
-
+		//privKey, err := keys.StdPrivKeyGen(derivedPriv, algo)
 		name := args[0]
 		_, err = kb.Get(name)
 		if err == nil {
@@ -207,7 +204,13 @@ func RunGenerationOffline(cdc *codec.Codec) CommandDo {
 		cmd.Println("")
 		cmd.Println("")
 
-		response, err2 := input.GetConfirmation(fmt.Sprintf("🔐  Do you want to go ahead and make this on the block? %s", docInfo.GetName()), inBuf)
+		if generateOnly {
+			return nil
+		}
+
+		msg2i := fmt.Sprintf("🔐  Do you want to go ahead and make this on the block? %s please go ahead and make the first transaction and send DAPs to the below account\n%s", docInfo.GetName(), docInfo.GetAddress().String())
+
+		response, err2 := input.GetConfirmation(msg2i, inBuf)
 		if err2 != nil {
 			return err2
 		}
@@ -217,7 +220,8 @@ func RunGenerationOffline(cdc *codec.Codec) CommandDo {
 
 		cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(docCombine.Address())
 		msg := types.NewMsgAddDid(docCombine.Did, docCombine.GetPubKey())
-		return dap.SignAndBroadcastTxCli(cliCtx, msg, docCombine)
+		//return dap.SignAndBroadcastTxCli(cliCtx, msg, docCombine)
+		return aute2.NewDidTxBuild(cliCtx, msg, docCombine).CompleteAndBroadcastTxCLI()
 	}
 }
 
