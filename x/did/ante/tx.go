@@ -55,7 +55,7 @@ type (
 		Msgs       []sdk.Msg      `json:"payload" yaml:"payload"`
 		Fee        auth.StdFee    `json:"fee" yaml:"fee"`
 		Signatures []IxoSignature `json:"signatures" yaml:"signatures"`
-		Memo       string         `json:"memo" yaml:"memo"`
+		Memo       string         `json:"memo,omitempty" yaml:"memo"`
 	}
 
 	TxActor interface {
