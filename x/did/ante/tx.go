@@ -75,9 +75,9 @@ type (
 
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterInterface((*TxActor)(nil), nil)
-	//cdc.RegisterInterface((*interface{})(nil), nil)
+	cdc.RegisterInterface((*[]interface{})(nil), nil)
 	cdc.RegisterConcrete(&IxoTx{}, "darkpool/IxoTx", nil)
-	cdc.RegisterConcrete(&[]IxoSignature{}, "darkpool/IxoSignature", nil)
+	cdc.RegisterConcrete(&IxoSignature{}, "darkpool/IxoSignature", nil)
 
 }
 
@@ -246,13 +246,13 @@ func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 			if er != nil {
 				return nil, InvalidTxDecodeMsg(er.Error())
 			}
-
+			fmt.Println("--- Darkpool Transaction -1")
 			payloadArray := upTx["payload"].([]interface{})
 			if len(payloadArray) != 1 {
 				return nil, InvalidTxDecodeMsg("Multiple messages not supported")
 			}
 			var tx IxoTx
-			fmt.Println("--- Darkpool Transaction")
+			fmt.Println("--- Darkpool Transaction -2")
 			er = cdc.UnmarshalJSON(txBytes, &tx)
 			if er != nil {
 				return nil, InvalidTxDecodeMsg(er.Error())
