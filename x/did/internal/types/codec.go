@@ -5,10 +5,10 @@ import (
 )
 
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(&MsgAddDid{}, "did/MsgAddDid", nil)
-	cdc.RegisterConcrete(&MsgAddCredential{}, "did/MsgAddCredential", nil)
+	cdc.RegisterConcrete(MsgAddDid{}, "did/MsgAddDid", nil)
+	cdc.RegisterConcrete(MsgAddCredential{}, "did/MsgAddCredential", nil)
 	// TODO: https://github.com/tokenchain/ixo-blockchain/issues/76
-	cdc.RegisterConcrete(&BaseDidDoc{}, "did/BaseDidDoc", nil)
+	cdc.RegisterConcrete(BaseDidDoc{}, "did/BaseDidDoc", nil)
 	//cdc.RegisterConcrete(ante.IxoTx{}, "darkpool/IxoTx", nil)
 	//cdc.RegisterConcrete(DidCredential{}, "did/DidCredential", nil)
 
