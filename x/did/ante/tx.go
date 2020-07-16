@@ -275,11 +275,9 @@ func DefaultTxDecoderV2(cdc *codec.Codec) sdk.TxDecoder {
 
 func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 	return func(txBytes []byte) (sdk.Tx, error) {
-
 		if len(txBytes) == 0 {
 			return nil, InvalidTxDecodeMsg("txBytes are empty")
 		}
-
 		if string(txBytes[0:1]) == "{" {
 			var tx IxoTx
 			err := cdc.UnmarshalJSON(txBytes, &tx)
