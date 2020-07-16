@@ -75,8 +75,10 @@ type (
 
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterInterface((*TxActor)(nil), nil)
+	//cdc.RegisterInterface((*interface{})(nil), nil)
 	cdc.RegisterConcrete(&IxoTx{}, "darkpool/IxoTx", nil)
-	cdc.RegisterConcrete(&IxoSignature{}, "darkpool/IxoSignature", nil)
+	cdc.RegisterConcrete(&[]IxoSignature{}, "darkpool/IxoSignature", nil)
+
 }
 
 // MarshalYAML returns the YAML representation of the signature.
