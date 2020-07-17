@@ -33,6 +33,9 @@ func Unauthorized(m string) error {
 func InvalidTxDecode() error {
 	return errors.Wrap(errors.ErrTxDecode, "invalid tx type")
 }
+func InvalidTxDecodeMsgf(r string, a ...interface{}) error {
+	return errors.Wrap(errors.ErrTxDecode, fmt.Sprintf(r, a...))
+}
 func InvalidTxDecodeMsg(ar string) error {
 	return errors.Wrap(errors.ErrTxDecode, ar)
 }

@@ -276,14 +276,14 @@ func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 			var tx IxoTx
 			err := cdc.UnmarshalJSON(txBytes, &tx)
 			if err != nil {
-				return nil, exported.InvalidTxDecodeMsg(err.Error())
+				return nil, exported.InvalidTxDecodeMsgf("tx decoder %s", err.Error())
 			}
 			return tx, nil
 		} else {
 			var tx auth.StdTx
 			err := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &tx)
 			if err != nil {
-				return nil, exported.InvalidTxDecodeMsg(err.Error())
+				return nil, exported.InvalidTxDecodeMsgf("tx decoder std msg %s", err.Error())
 			}
 			return tx, nil
 		}
