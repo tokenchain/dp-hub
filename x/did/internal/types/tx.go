@@ -224,7 +224,7 @@ func (tx IxoTx) GetFirstSignature() []byte {
 /*
 GetGas() uint64
 GetFee() sdk.Coins
-FeePayer() sdk.AccAddress*/
+FeePayer() sdk.AccAddress
 
 func DefaultTxDecoderV2(cdc *codec.Codec) sdk.TxDecoder {
 	return func(txBytes []byte) (sdk.Tx, error) {
@@ -266,6 +266,8 @@ func DefaultTxDecoderV2(cdc *codec.Codec) sdk.TxDecoder {
 		}
 	}
 }
+
+*/
 
 func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 	return func(txBytes []byte) (sdk.Tx, error) {
@@ -324,7 +326,7 @@ func (tb SignTxPack) SignMsgForSignature(msg auth.StdSignMsg) IxoSignature {
 	signatureBytes := ed25519.Sign(privateKey[:], msg.Bytes())
 	fmt.Println("===> ⚠️ check signed message =====")
 	fmt.Println(msg.Bytes())
-
+	fmt.Println("===> ⚠️ <===")
 	//return NewSignature(time.Now(), signatureBytes[:])
 	return NewSignature(time.Now(), signatureBytes)
 }

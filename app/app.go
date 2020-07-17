@@ -579,9 +579,12 @@ func initAnteHandler(app *DpApp) sdk.AnteHandler {
 			return didAnteHandler(ctx, tx, simulate)
 		case project.RouterKey:
 			switch msg.Type() {
+
 			case project.TypeMsgCreateProject:
+				fmt.Println("darkpool project tx creation")
 				return projectCreationAnteHandler(ctx, tx, simulate)
 			default:
+				fmt.Println("darkpool project tx operation")
 				return projectAnteHandler(ctx, tx, simulate)
 			}
 		case bonds.RouterKey:

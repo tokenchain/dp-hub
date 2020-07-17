@@ -142,7 +142,6 @@ func GetCmdCreateBond(cdc *codec.Codec) *cobra.Command {
 				orderQuantityLimits, sanityRate, sanityMarginPercentage,
 				_allowSells, batchBlocks, bondDid)
 
-			//return dap.SignAndBroadcastTxCli(cliCtx, msg, creatorDid)
 			return did.NewDidTxBuild(cliCtx, msg, creatorDid).CompleteAndBroadcastTxCLI()
 
 		},

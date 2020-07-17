@@ -44,8 +44,8 @@ var (
 	NewDidTxBuild       = types.NewDidTxBuild
 	NewIxoTxSingleMsg   = types.NewIxoTxSingleMsg
 	NewSignature        = types.NewSignature
-	NewMsgAddCredential = types.NewMsgAddCredential
-	NewMsgAddDid        = types.NewMsgAddDid
+	//NewMsgAddCredential = types.NewMsgAddCredential
+	//NewMsgAddDid        = types.NewMsgAddDid
 	CastTypeSdkTx        = types.CastTypeSdkTx
 	DefaultTxDecoder        = types.DefaultTxDecoder
 

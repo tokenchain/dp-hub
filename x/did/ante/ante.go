@@ -17,7 +17,7 @@ func DefaultAnteHandler(ak auth.AccountKeeper, bk bank.Keeper, sk supply.Keeper,
 		ante.NewValidateBasicDecorator(),
 		ante.NewValidateMemoDecorator(ak),
 		NewDapConsumeGasForTxSizeDecorator(ak, dk),
-		NewDapPubKeyDecorator(ak, dk), // SetPubKeyDecorator must be called before all signature verification decorators
+		//NewDapPubKeyDecorator(ak, dk),
 		//ante.NewValidateSigCountDecorator(ak),
 		NewDeductFeeDecorator(ak, sk, dk),
 		NewConsumeVerSignGasDecorator(ak, dk),
@@ -27,7 +27,6 @@ func DefaultAnteHandler(ak auth.AccountKeeper, bk bank.Keeper, sk supply.Keeper,
 		//ante.NewIncrementSequenceDecorator(ak),
 	)
 }
-
 
 func DidAnteHandler(ak auth.AccountKeeper, bk bank.Keeper, sk supply.Keeper, dk exported.DidKeeper) sdk.AnteHandler {
 	return sdk.ChainAnteDecorators(
