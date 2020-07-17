@@ -2,7 +2,7 @@ package cli
 
 import (
 	"fmt"
-	"github.com/tokenchain/ixo-blockchain/x/dap"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	exported "github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
 
@@ -26,7 +26,7 @@ func parseBool(boolStr, boolName string) (bool, error) {
 	} else if boolStr == FALSE {
 		return false, nil
 	} else {
-		return false, types.ErrInvalidArgument(fmt.Sprintf("%s is not a valid bool (true/false)", boolName))
+		return false, exported.ErrInvalidArgument(fmt.Sprintf("%s is not a valid bool (true/false)", boolName))
 	}
 }
 
@@ -55,7 +55,7 @@ func GetCmdCreatePaymentTemplate(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgCreatePaymentTemplate(template, sovrinDid.Did)
 
-			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			return did.NewDidTxBuild(cliCtx,msg,sovrinDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 }
@@ -101,7 +101,7 @@ func GetCmdCreatePaymentContract(cdc *codec.Codec) *cobra.Command {
 				templateIdStr, contractIdStr, payerAddr,
 				canDeauthorise, discountId, sovrinDid.Did)
 
-			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+				return did.NewDidTxBuild(cliCtx,msg,sovrinDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 }
@@ -141,7 +141,7 @@ func GetCmdCreateSubscription(cdc *codec.Codec) *cobra.Command {
 			msg := types.NewMsgCreateSubscription(subIdStr,
 				contractIdStr, maxPeriods, period, sovrinDid.Did)
 
-			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+				return did.NewDidTxBuild(cliCtx,msg,sovrinDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 }
@@ -173,7 +173,7 @@ func GetCmdSetPaymentContractAuthorisation(cdc *codec.Codec) *cobra.Command {
 			msg := types.NewMsgSetPaymentContractAuthorisation(
 				contractIdStr, authorised, sovrinDid.Did)
 
-			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+				return did.NewDidTxBuild(cliCtx,msg,sovrinDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 }
@@ -211,7 +211,7 @@ func GetCmdGrantPaymentDiscount(cdc *codec.Codec) *cobra.Command {
 			msg := types.NewMsgGrantDiscount(
 				contractIdStr, discountId, recipientAddr, sovrinDid.Did)
 
-			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+				return did.NewDidTxBuild(cliCtx,msg,sovrinDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 }
@@ -242,7 +242,7 @@ func GetCmdRevokePaymentDiscount(cdc *codec.Codec) *cobra.Command {
 			msg := types.NewMsgRevokeDiscount(
 				contractIdStr, holderAddr, sovrinDid.Did)
 
-			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+				return did.NewDidTxBuild(cliCtx,msg,sovrinDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 }
@@ -265,7 +265,7 @@ func GetCmdEffectPayment(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgEffectPayment(contractIdStr, sovrinDid.Did)
 
-			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+				return did.NewDidTxBuild(cliCtx,msg,sovrinDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 }

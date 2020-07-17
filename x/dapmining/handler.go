@@ -13,7 +13,7 @@ func NewHandler(keeper Keeper) sdk.Handler {
 
 		default:
 			errMsg := fmt.Sprintf("Unrecognized bonds Msg type: %v", msg.Type())
-			return nil, x.UnknownRequest(errMsg)
+			return nil,exported.UnknownRequest(errMsg)
 		}
 	}
 }

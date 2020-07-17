@@ -17,6 +17,7 @@ import (
 	"github.com/tendermint/tmlibs/cli"
 	"github.com/tokenchain/ixo-blockchain/app"
 	cli2 "github.com/tokenchain/ixo-blockchain/client/cli"
+	clientTx "github.com/tokenchain/ixo-blockchain/client/tx"
 	/*	distRest "github.com/cosmos/cosmos-sdk/x/distribution/client/rest"
 		distcmd "github.com/cosmos/cosmos-sdk/x/distribution"
 		distClient "github.com/cosmos/cosmos-sdk/x/distribution/client"*/
@@ -120,5 +121,6 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 func registerRoutes(rs *lcd.RestServer) {
 	client.RegisterRoutes(rs.CliCtx, rs.Mux)
 	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
+	clientTx.RegisterTxRoutes(rs.CliCtx, rs.Mux)
 	app.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }

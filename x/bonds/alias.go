@@ -1,9 +1,9 @@
 package bonds
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
 //noinspection GoNameStartsWithPackageName
@@ -41,7 +41,7 @@ var (
 type (
 	Keeper        = keeper.Keeper
 	Bond          = types.Bond
-	CodeType      = x.CodeType
+	CodeType      = exported.CodeType
 	MsgCreateBond = types.MsgCreateBond
 	MsgEditBond   = types.MsgEditBond
 	MsgBuy        = types.MsgBuy

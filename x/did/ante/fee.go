@@ -10,6 +10,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/multisig"
+	didexported"github.com/tokenchain/ixo-blockchain/x/did/exported"
+	types2 "github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 )
 
 type DeductFeeDecorator struct {
@@ -17,7 +19,7 @@ type DeductFeeDecorator struct {
 	SigVerification
 }
 
-func NewDeductFeeDecorator(ak keeper.AccountKeeper, sk types.SupplyKeeper, p PubKeyGetter) DeductFeeDecorator {
+func NewDeductFeeDecorator(ak keeper.AccountKeeper, sk types.SupplyKeeper, p didexported.DidKeeper) DeductFeeDecorator {
 	return DeductFeeDecorator{
 		SigVerification: NewSigVerification(ak, p),
 		supplyKeeper:    sk,
@@ -96,7 +98,7 @@ type ConsumeTxSizeGasDecorator struct {
 	SigVerification
 }
 
-func NewDapConsumeGasForTxSizeDecorator(ak keeper.AccountKeeper, p PubKeyGetter) ConsumeTxSizeGasDecorator {
+func NewDapConsumeGasForTxSizeDecorator(ak keeper.AccountKeeper, p didexported.DidKeeper) ConsumeTxSizeGasDecorator {
 	return ConsumeTxSizeGasDecorator{
 		NewSigVerification(ak, p),
 	}
@@ -135,7 +137,7 @@ type ConsumeVerSignGasDecorator struct {
 	SigVerification
 }
 
-func NewConsumeVerSignGasDecorator(ak keeper.AccountKeeper, p PubKeyGetter) ConsumeVerSignGasDecorator {
+func NewConsumeVerSignGasDecorator(ak keeper.AccountKeeper, p didexported.DidKeeper) ConsumeVerSignGasDecorator {
 	return ConsumeVerSignGasDecorator{
 		NewSigVerification(ak, p),
 	}
@@ -159,7 +161,7 @@ func (svc ConsumeVerSignGasDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, sim
 // contain a pubkey, so we must account for tx size of including an
 // IxoSignature and simulate gas consumption (assuming an ED25519 key).
 func (svc ConsumeVerSignGasDecorator) consumeSimSigGas(signctx SigVerification, gasmeter sdk.GasMeter, params auth.Params, pubKey crypto.PubKey) {
-	simSig := IxoSignature{}
+	simSig := types2.IxoSignature{}
 	if len(signctx.stdSignature.Signature) == 0 {
 		simSig.SignatureValue = simEd25519Sig[:]
 	}

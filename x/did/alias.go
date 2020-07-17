@@ -1,7 +1,6 @@
 package did
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did/ed25519"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
@@ -13,33 +12,23 @@ const (
 	RouterKey        = types.RouterKey
 	StoreKey         = types.StoreKey
 	DefaultCodespace = types.ModuleName
+	QueryDidDoc      = keeper.QueryDidDoc
+	QueryAllDids     = keeper.QueryAllDids
+	QueryAllDidDocs  = keeper.QueryAllDidDocs
 )
 
 type (
-	Keeper       = keeper.Keeper
-	GenesisState = types.GenesisState
-/*	Did          = exported.Did
-	DidDoc       = exported.DidDoc
-	IxoDid       = exported.IxoDid*/
-
+	Keeper           = keeper.Keeper
+	GenesisState     = types.GenesisState
 	MsgAddDid        = types.MsgAddDid
 	MsgAddCredential = types.MsgAddCredential
-
-/*	IxoTx        = ante.IxoTx
-	IxoSignature = ante.IxoSignature
-	IxoMsg       = ante.IxoMsg
-	PubKeyGetter = ante.PubKeyGetter*/
+	IxoMsg           = types.IxoMsg
+	IxoTx            = types.IxoTx
+	IxoSignature     = types.IxoSignature
+	BaseDidDoc       = types.BaseDidDoc
 )
 
 var (
-/*	NewDefaultPubKeyGetter = ante.NewDefaultPubKeyGetter
-	DefaultAnteHandler     = ante.DefaultAnteHandler
-	DidAnteHandler         = ante.DidAnteHandler
-	NewDidTxBuild          = ante.NewDidTxBuild
-	NewSignature           = ante.NewSignature
-	DefaultTxDecoder       = ante.DefaultTxDecoder
-	NewIxoTxSingleMsg      = ante.NewIxoTxSingleMsg
-	DidToAddr              = ante.DidToAddr*/
 
 	// function aliases
 	NewKeeper     = keeper.NewKeeper
@@ -49,13 +38,17 @@ var (
 
 	// Tx
 
-	NewGenesisState     = types.NewGenesisState
 	DefaultGenesisState = types.DefaultGenesisState
 	ValidateGenesis     = types.ValidateGenesis
 	UnmarshalIxoDid     = types.UnmarshalIxoDid
+	NewDidTxBuild       = types.NewDidTxBuild
+	NewIxoTxSingleMsg   = types.NewIxoTxSingleMsg
+	NewSignature        = types.NewSignature
+	NewMsgAddCredential = types.NewMsgAddCredential
+	NewMsgAddDid        = types.NewMsgAddDid
+	CastTypeSdkTx        = types.CastTypeSdkTx
+	DefaultTxDecoder        = types.DefaultTxDecoder
 
 	// variable aliases
 	ModuleCdc = types.ModuleCdc
-
-	ErrorInvalidDid = x.ErrorInvalidDidE
 )

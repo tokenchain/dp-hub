@@ -5,8 +5,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
-	"github.com/tokenchain/ixo-blockchain/x/dap"
-
 	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/types"
 )
@@ -35,7 +33,7 @@ func GetCmdSend(cdc *codec.Codec) *cobra.Command {
 
 			msg := types.NewMsgSend(toDidOrAddr, coins, ixoDid.Did)
 
-			return dap.GenerateOrBroadcastMsgs(cliCtx, msg, ixoDid)
+			return did.NewDidTxBuild(cliCtx, msg, ixoDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 }
@@ -68,7 +66,7 @@ func GetCmdOracleTransfer(cdc *codec.Codec) *cobra.Command {
 			msg := types.NewMsgOracleTransfer(
 				fromDid, toDidOrAddr, coins, ixoDid.Did, proof)
 
-			return dap.GenerateOrBroadcastMsgs(cliCtx, msg, ixoDid)
+			return did.NewDidTxBuild(cliCtx, msg, ixoDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 }
@@ -100,7 +98,7 @@ func GetCmdOracleMint(cdc *codec.Codec) *cobra.Command {
 			msg := types.NewMsgOracleMint(
 				toDidOrAddr, coins, ixoDid.Did, proof)
 
-			return dap.GenerateOrBroadcastMsgs(cliCtx, msg, ixoDid)
+			return did.NewDidTxBuild(cliCtx, msg, ixoDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 }
@@ -132,7 +130,7 @@ func GetCmdOracleBurn(cdc *codec.Codec) *cobra.Command {
 			msg := types.NewMsgOracleBurn(
 				fromDid, coins, ixoDid.Did, proof)
 
-			return dap.GenerateOrBroadcastMsgs(cliCtx, msg, ixoDid)
+			return did.NewDidTxBuild(cliCtx, msg, ixoDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 }

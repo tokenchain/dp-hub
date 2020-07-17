@@ -6,9 +6,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/spf13/viper"
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/dap/types"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
@@ -26,13 +25,13 @@ const (
 )
 
 var (
-	_ ante.IxoMsg = MsgCreateProject{}
-	_ ante.IxoMsg = MsgUpdateProjectStatus{}
-	_ ante.IxoMsg = MsgCreateAgent{}
-	_ ante.IxoMsg = MsgUpdateAgent{}
-	_ ante.IxoMsg = MsgCreateClaim{}
-	_ ante.IxoMsg = MsgCreateEvaluation{}
-	_ ante.IxoMsg = MsgWithdrawFunds{}
+	_ did.IxoMsg = MsgCreateProject{}
+	_ did.IxoMsg = MsgUpdateProjectStatus{}
+	_ did.IxoMsg = MsgCreateAgent{}
+	_ did.IxoMsg = MsgUpdateAgent{}
+	_ did.IxoMsg = MsgCreateClaim{}
+	_ did.IxoMsg = MsgCreateEvaluation{}
+	_ did.IxoMsg = MsgWithdrawFunds{}
 
 	_ StoredProjectDoc = (*MsgCreateProject)(nil)
 )
@@ -82,9 +81,9 @@ func (msg MsgCreateProject) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.ProjectDid) {
-		return x.ErrInvalidDid("project did is invalid")
+		return exported.Invalid("project did is invalid")
 	} else if !exported.IsValidDid(msg.SenderDid) {
-		return x.ErrInvalidDid("sender did is invalid")
+		return exported.Invalid("sender did is invalid")
 	}
 
 	return nil
@@ -94,7 +93,7 @@ func (msg MsgCreateProject) GetProjectDid() exported.Did { return msg.ProjectDid
 func (msg MsgCreateProject) GetSenderDid() exported.Did  { return msg.SenderDid }
 func (msg MsgCreateProject) GetSignerDid() exported.Did  { return msg.ProjectDid }
 func (msg MsgCreateProject) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateProject) GetPubKey() string        { return msg.PubKey }
@@ -142,9 +141,9 @@ func (msg MsgUpdateProjectStatus) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.ProjectDid) {
-		return x.ErrInvalidDid("project did is invalid")
+		return exported.Invalid("project did is invalid")
 	} else if !exported.IsValidDid(msg.SenderDid) {
-		return x.ErrInvalidDid("sender did is invalid")
+		return exported.Invalid("sender did is invalid")
 	}
 
 	// IsValidProgressionFrom checked by the handler
@@ -187,11 +186,11 @@ func (msg MsgCreateAgent) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.ProjectDid) {
-		return x.ErrInvalidDid("project did is invalid")
+		return exported.Invalid("project did is invalid")
 	} else if !exported.IsValidDid(msg.SenderDid) {
-		return x.ErrInvalidDid("sender did is invalid")
+		return exported.Invalid("sender did is invalid")
 	} else if !exported.IsValidDid(msg.Data.AgentDid) {
-		return x.ErrInvalidDid("agent did is invalid")
+		return exported.Invalid("agent did is invalid")
 	}
 
 	return nil
@@ -199,7 +198,7 @@ func (msg MsgCreateAgent) ValidateBasic() error {
 
 func (msg MsgCreateAgent) GetSignerDid() exported.Did { return msg.ProjectDid }
 func (msg MsgCreateAgent) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateAgent) GetSignBytes() []byte {
@@ -239,11 +238,11 @@ func (msg MsgUpdateAgent) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.ProjectDid) {
-		return x.ErrInvalidDid("project did is invalid")
+		return exported.Invalid("project did is invalid")
 	} else if !exported.IsValidDid(msg.SenderDid) {
-		return x.ErrInvalidDid("sender did is invalid")
+		return exported.Invalid("sender did is invalid")
 	} else if !exported.IsValidDid(msg.Data.Did) {
-		return x.ErrInvalidDid("agent did is invalid")
+		return exported.Invalid("agent did is invalid")
 	}
 
 	return nil
@@ -251,7 +250,7 @@ func (msg MsgUpdateAgent) ValidateBasic() error {
 
 func (msg MsgUpdateAgent) GetSignerDid() exported.Did { return msg.ProjectDid }
 func (msg MsgUpdateAgent) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgUpdateAgent) GetSignBytes() []byte {
@@ -293,9 +292,9 @@ func (msg MsgCreateClaim) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.ProjectDid) {
-		return x.ErrInvalidDid("project did is invalid")
+		return exported.Invalid("project did is invalid")
 	} else if !exported.IsValidDid(msg.SenderDid) {
-		return x.ErrInvalidDid("sender did is invalid")
+		return exported.Invalid("sender did is invalid")
 	}
 
 	return nil
@@ -346,9 +345,9 @@ func (msg MsgCreateEvaluation) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.ProjectDid) {
-		return x.ErrInvalidDid("project did is invalid")
+		return exported.Invalid("project did is invalid")
 	} else if !exported.IsValidDid(msg.SenderDid) {
-		return x.ErrInvalidDid("sender did is invalid")
+		return exported.Invalid("sender did is invalid")
 	}
 
 	return nil
@@ -399,21 +398,21 @@ func (msg MsgWithdrawFunds) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.SenderDid) {
-		return x.ErrInvalidDid("sender did is invalid")
+		return exported.Invalid("sender did is invalid")
 	} else if !exported.IsValidDid(msg.Data.ProjectDid) {
-		return x.ErrInvalidDid("project did is invalid")
+		return exported.Invalid("project did is invalid")
 	} else if !exported.IsValidDid(msg.Data.RecipientDid) {
-		return x.ErrInvalidDid("recipient did is invalid")
+		return exported.Invalid("recipient did is invalid")
 	}
 
 	// Check that the sender is also the recipient
 	if msg.SenderDid != msg.Data.RecipientDid {
-		return x.IntErr("sender did must match recipient did")
+		return exported.IntErr("sender did must match recipient did")
 	}
 
 	// Check that amount is positive
 	if !msg.Data.Amount.IsPositive() {
-		return x.IntErr("amount should be positive")
+		return exported.IntErr("amount should be positive")
 	}
 
 	return nil

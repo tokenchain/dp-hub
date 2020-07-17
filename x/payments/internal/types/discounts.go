@@ -1,6 +1,9 @@
 package types
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+)
 
 // --------------------------------------------- Discounts
 
@@ -20,7 +23,7 @@ func (ds Discounts) Validate() error {
 	id := sdk.OneUint()
 	for _, d := range ds {
 		if !d.Id.Equal(id) {
-			return ErrDiscountIDsBeSequentialFrom1()
+			return exported.ErrDiscountIDsBeSequentialFrom1()
 		}
 		id = id.Add(sdk.OneUint())
 	}
@@ -49,9 +52,9 @@ func NewDiscount(id sdk.Uint, percent sdk.Dec) Discount {
 
 func (d Discount) Validate() error {
 	if !d.Percent.IsPositive() {
-		return ErrNegativeDiscountPercentage()
+		return exported.ErrNegativeDiscountPercentage()
 	} else if d.Percent.GT(sdk.NewDec(100)) {
-		return ErrDiscountPercentageGreaterThan100()
+		return exported.ErrDiscountPercentageGreaterThan100()
 	}
 
 	return nil

@@ -3,10 +3,7 @@ package types
 import (
 	"encoding/json"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/pkg/errors"
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
@@ -21,13 +18,13 @@ const (
 )
 
 var (
-	_ ante.IxoMsg = MsgCreatePaymentTemplate{}
-	_ ante.IxoMsg = MsgCreatePaymentContract{}
-	_ ante.IxoMsg = MsgCreateSubscription{}
-	_ ante.IxoMsg = MsgSetPaymentContractAuthorisation{}
-	_ ante.IxoMsg = MsgGrantDiscount{}
-	_ ante.IxoMsg = MsgRevokeDiscount{}
-	_ ante.IxoMsg = MsgEffectPayment{}
+	_ did.IxoMsg = MsgCreatePaymentTemplate{}
+	_ did.IxoMsg = MsgCreatePaymentContract{}
+	_ did.IxoMsg = MsgCreateSubscription{}
+	_ did.IxoMsg = MsgSetPaymentContractAuthorisation{}
+	_ did.IxoMsg = MsgGrantDiscount{}
+	_ did.IxoMsg = MsgRevokeDiscount{}
+	_ did.IxoMsg = MsgEffectPayment{}
 )
 
 type MsgCreatePaymentTemplate struct {
@@ -45,7 +42,7 @@ func (msg MsgCreatePaymentTemplate) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.CreatorDid) {
-		return errors.Wrap(x.ErrorInvalidDidE, "creator did is invalid")
+		return exported.Invalid( "creator did is invalid")
 	}
 
 	// Validate PaymentTemplate
@@ -58,7 +55,7 @@ func (msg MsgCreatePaymentTemplate) ValidateBasic() error {
 
 func (msg MsgCreatePaymentTemplate) GetSignerDid() exported.Did { return msg.CreatorDid }
 func (msg MsgCreatePaymentTemplate) GetSigners() []sdk.AccAddress {
-	//return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	//return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 	panic("tried to use unimplemented GetSigners function")
 }
 
@@ -71,11 +68,7 @@ func (msg MsgCreatePaymentTemplate) String() string {
 }
 
 func (msg MsgCreatePaymentTemplate) GetSignBytes() []byte {
-	if bz, err := json.Marshal(msg); err != nil {
-		panic(err)
-	} else {
-		return sdk.MustSortJSON(bz)
-	}
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 type MsgCreatePaymentContract struct {
@@ -94,19 +87,19 @@ func (msg MsgCreatePaymentContract) ValidateBasic() error {
 	if valid, err := CheckNotEmpty(msg.CreatorDid, "CreatorDid"); !valid {
 		return err
 	} else if msg.Payer.Empty() {
-		return x.ErrInvalidAddress("payer address is empty")
+		return exported.InvalidAddress("payer address is empty")
 	}
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.CreatorDid) {
-		return errors.Wrap(did.ErrorInvalidDid, "creator did is invalid")
+		return exported.InvalidDidMsg("creator did is invalid")
 	}
 
 	// Check that IDs valid
 	if !IsValidPaymentTemplateId(msg.PaymentTemplateId) {
-		return ErrInvalidId("payment template id invalid")
+		return exported.InvalidDidMsg("payment template id invalid")
 	} else if !IsValidPaymentContractId(msg.PaymentContractId) {
-		return ErrInvalidId("payment contract id invalid")
+		return exported.ErrInvalidId("payment contract id invalid")
 	}
 
 	return nil
@@ -114,7 +107,7 @@ func (msg MsgCreatePaymentContract) ValidateBasic() error {
 
 func (msg MsgCreatePaymentContract) GetSignerDid() exported.Did { return msg.CreatorDid }
 func (msg MsgCreatePaymentContract) GetSigners() []sdk.AccAddress {
-	//return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	//return []sdk.AccAddress{did.DidToAddr(msg.GetSignerDid())}
 	panic("tried to use unimplemented GetSigners function")
 }
 
@@ -127,11 +120,7 @@ func (msg MsgCreatePaymentContract) String() string {
 }
 
 func (msg MsgCreatePaymentContract) GetSignBytes() []byte {
-	if bz, err := json.Marshal(msg); err != nil {
-		panic(err)
-	} else {
-		return sdk.MustSortJSON(bz)
-	}
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 type MsgCreateSubscription struct {
@@ -155,12 +144,12 @@ func (msg MsgCreateSubscription) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.CreatorDid) {
-		return errors.Wrap(did.ErrorInvalidDid, "creator did is invalid")
+		return exported.InvalidDidMsg("creator did is invalid")
 	}
 
 	// Check that IDs valid
 	if !IsValidSubscriptionId(msg.SubscriptionId) {
-		return ErrInvalidId("payment template id invalid")
+		return exported.ErrInvalidId("payment template id invalid")
 	}
 
 	// Validate Period
@@ -173,7 +162,7 @@ func (msg MsgCreateSubscription) ValidateBasic() error {
 
 func (msg MsgCreateSubscription) GetSignerDid() exported.Did { return msg.CreatorDid }
 func (msg MsgCreateSubscription) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateSubscription) String() string {
@@ -185,11 +174,7 @@ func (msg MsgCreateSubscription) String() string {
 }
 
 func (msg MsgCreateSubscription) GetSignBytes() []byte {
-	if bz, err := json.Marshal(msg); err != nil {
-		panic(err)
-	} else {
-		return sdk.MustSortJSON(bz)
-	}
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 type MsgSetPaymentContractAuthorisation struct {
@@ -210,12 +195,12 @@ func (msg MsgSetPaymentContractAuthorisation) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.PayerDid) {
-		return errors.Wrap(did.ErrorInvalidDid, "payer did is invalid")
+		return exported.InvalidDidMsg("payer did is invalid")
 	}
 
 	// Check that IDs valid
 	if !IsValidPaymentContractId(msg.PaymentContractId) {
-		return ErrInvalidId("payment contract id invalid")
+		return exported.ErrInvalidId("payment contract id invalid")
 	}
 
 	return nil
@@ -223,7 +208,7 @@ func (msg MsgSetPaymentContractAuthorisation) ValidateBasic() error {
 
 func (msg MsgSetPaymentContractAuthorisation) GetSignerDid() exported.Did { return msg.PayerDid }
 func (msg MsgSetPaymentContractAuthorisation) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgSetPaymentContractAuthorisation) String() string {
@@ -259,17 +244,17 @@ func (msg MsgGrantDiscount) ValidateBasic() error {
 	} else if valid, err = CheckNotEmpty(msg.SenderDid, "SenderDid"); !valid {
 		return err
 	} else if msg.Recipient.Empty() {
-		return x.ErrInvalidAddress("recipient address is empty")
+		return exported.InvalidAddress("recipient address is empty")
 	}
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.SenderDid) {
-		return errors.Wrap(did.ErrorInvalidDid, "sender did is invalid")
+		return exported.InvalidDidMsg("sender did is invalid")
 	}
 
 	// Check that IDs valid
 	if !IsValidPaymentContractId(msg.PaymentContractId) {
-		return ErrInvalidId("payment contract id invalid")
+		return exported.ErrInvalidId("payment contract id invalid")
 	}
 
 	return nil
@@ -277,7 +262,7 @@ func (msg MsgGrantDiscount) ValidateBasic() error {
 
 func (msg MsgGrantDiscount) GetSignerDid() exported.Did { return msg.SenderDid }
 func (msg MsgGrantDiscount) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgGrantDiscount) String() string {
@@ -289,11 +274,7 @@ func (msg MsgGrantDiscount) String() string {
 }
 
 func (msg MsgGrantDiscount) GetSignBytes() []byte {
-	if bz, err := json.Marshal(msg); err != nil {
-		panic(err)
-	} else {
-		return sdk.MustSortJSON(bz)
-	}
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 type MsgRevokeDiscount struct {
@@ -312,17 +293,17 @@ func (msg MsgRevokeDiscount) ValidateBasic() error {
 	} else if valid, err = CheckNotEmpty(msg.SenderDid, "SenderDid"); !valid {
 		return err
 	} else if msg.Holder.Empty() {
-		return x.ErrInvalidAddress("holder address is empty")
+		return exported.InvalidAddress("holder address is empty")
 	}
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.SenderDid) {
-		return errors.Wrap(did.ErrorInvalidDid, "sender did is invalid")
+		return exported.InvalidDidMsg("sender did is invalid")
 	}
 
 	// Check that IDs valid
 	if !IsValidPaymentContractId(msg.PaymentContractId) {
-		return ErrInvalidId("payment contract id invalid")
+		return exported.ErrInvalidId("payment contract id invalid")
 	}
 
 	return nil
@@ -330,7 +311,7 @@ func (msg MsgRevokeDiscount) ValidateBasic() error {
 
 func (msg MsgRevokeDiscount) GetSignerDid() exported.Did { return msg.SenderDid }
 func (msg MsgRevokeDiscount) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgRevokeDiscount) String() string {
@@ -342,11 +323,7 @@ func (msg MsgRevokeDiscount) String() string {
 }
 
 func (msg MsgRevokeDiscount) GetSignBytes() []byte {
-	if bz, err := json.Marshal(msg); err != nil {
-		panic(err)
-	} else {
-		return sdk.MustSortJSON(bz)
-	}
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 type MsgEffectPayment struct {
@@ -367,12 +344,12 @@ func (msg MsgEffectPayment) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.SenderDid) {
-		return errors.Wrap(did.ErrorInvalidDid, "sender did is invalid")
+		return exported.InvalidDidMsg("sender did is invalid")
 	}
 
 	// Check that IDs valid
 	if !IsValidPaymentContractId(msg.PaymentContractId) {
-		return ErrInvalidId("payment contract id invalid")
+		return exported.ErrInvalidId("payment contract id invalid")
 	}
 
 	return nil
@@ -380,7 +357,7 @@ func (msg MsgEffectPayment) ValidateBasic() error {
 
 func (msg MsgEffectPayment) GetSignerDid() exported.Did { return msg.SenderDid }
 func (msg MsgEffectPayment) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgEffectPayment) String() string {
@@ -392,9 +369,5 @@ func (msg MsgEffectPayment) String() string {
 }
 
 func (msg MsgEffectPayment) GetSignBytes() []byte {
-	if bz, err := json.Marshal(msg); err != nil {
-		panic(err)
-	} else {
-		return sdk.MustSortJSON(bz)
-	}
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }

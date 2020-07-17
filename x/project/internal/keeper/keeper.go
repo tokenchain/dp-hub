@@ -8,8 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/params"
-	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+
 	exportedDid "github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/payments"
 
@@ -75,7 +74,7 @@ func (k Keeper) GetProjectDoc(ctx sdk.Context, projectDid exportedDid.Did) (type
 
 	bz := store.Get(key)
 	if bz == nil {
-		return nil, x.ErrInvalidDid("Invalid ProjectDid Address")
+		return nil, exportedDid.Invalid("Invalid ProjectDid Address")
 	}
 
 	var projectDoc types.MsgCreateProject
@@ -94,7 +93,7 @@ func (k Keeper) UpdateProjectDoc(ctx sdk.Context, newProjectDoc types.StoredProj
 	existedDoc, _ := k.GetProjectDoc(ctx, newProjectDoc.GetProjectDid())
 	if existedDoc == nil {
 
-		return nil, x.ErrInvalidDid("ProjectDoc details are not exist")
+		return nil, exportedDid.Invalid("ProjectDoc details are not exist")
 	} else {
 
 		existedDoc.SetStatus(newProjectDoc.GetStatus())
@@ -152,7 +151,7 @@ func (k Keeper) AddAccountToProjectAccounts(ctx sdk.Context, projectDid exported
 
 func (k Keeper) CreateNewAccount(ctx sdk.Context, projectDid exportedDid.Did,
 	accountId types.InternalAccountID) (exported.Account, error) {
-	address := ante.StringToAddr(accountId.ToAddressKey(projectDid))
+	address := exportedDid.StringToAddr(accountId.ToAddressKey(projectDid))
 
 	if k.AccountKeeper.GetAccount(ctx, address) != nil {
 		return nil, er.Wrap(er.ErrInvalidAddress, "Generate account already exists")
@@ -176,7 +175,7 @@ func (k Keeper) GetProjectWithdrawalTransactions(ctx sdk.Context, projectDid exp
 
 	bz := store.Get(key)
 	if bz == nil {
-		return []types.WithdrawalInfo{}, x.ErrInvalidDid("ProjectDoc doesn't exist")
+		return []types.WithdrawalInfo{}, exportedDid.Invalid("ProjectDoc doesn't exist")
 	} else {
 		var txs []types.WithdrawalInfo
 		k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &txs)

@@ -2,6 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"time"
 )
 
@@ -24,13 +25,13 @@ type Subscription struct {
 func (s Subscription) Validate() error {
 	// Validate IDs
 	if !IsValidSubscriptionId(s.Id) {
-		return ErrInvalidId("subscription id invalid")
+		return exported.ErrInvalidId("subscription id invalid")
 	} else if !IsValidPaymentContractId(s.PaymentContractId) {
-		return ErrInvalidId("payment contract id invalid")
+		return exported.ErrInvalidId("payment contract id invalid")
 	}
 	// Verify that periods so far <= max periods
 	if s.PeriodsSoFar.GT(s.MaxPeriods) {
-		return ErrInvalidPeriod("periods so far is greater than max periods")
+		return exported.ErrInvalidPeriod("periods so far is greater than max periods")
 	}
 	// Validate period
 	return s.Period.Validate()
@@ -127,9 +128,9 @@ func (p BlockPeriod) GetPeriodUnit() string {
 func (p BlockPeriod) Validate() error {
 	// Validate period-related values
 	if p.PeriodStartBlock > p.periodEndBlock() {
-		return ErrInvalidPeriod("start time is after end time")
+		return exported.ErrInvalidPeriod("start time is after end time")
 	} else if p.PeriodLength <= 0 {
-		return ErrInvalidPeriod("period length must be greater than zero")
+		return exported.ErrInvalidPeriod("period length must be greater than zero")
 	}
 	return nil
 }
@@ -174,9 +175,9 @@ func (p TimePeriod) GetPeriodUnit() string {
 func (p TimePeriod) Validate() error {
 	// Validate period-related values
 	if p.PeriodStartTime.After(p.periodEndTime()) {
-		return ErrInvalidPeriod("start time is after end time")
+		return exported.ErrInvalidPeriod("start time is after end time")
 	} else if p.PeriodDurationNs <= 0 {
-		return ErrInvalidPeriod("period duration cannot be zero")
+		return exported.ErrInvalidPeriod("period duration cannot be zero")
 	}
 	return nil
 }

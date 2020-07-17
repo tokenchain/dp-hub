@@ -20,10 +20,9 @@ import (
 	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/multisig"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
-
 	"os"
 	"time"
 )
@@ -33,7 +32,7 @@ const (
 )
 
 var (
-	expectedMinGasPrices       = "0.025" + types.NativeToken
+	expectedMinGasPrices       = "0.025mdap"
 	approximationGasAdjustment = float64(1.5)
 	// TODO: parameterise (or remove) hard-coded gas prices and adjustments
 
@@ -43,9 +42,6 @@ var (
 	simSecp256k1Pubkey secp256k1.PubKeySecp256k1
 	simSecp256k1Sig    [Ed25519SignatureLen]byte
 )
-
-
-
 
 /*
 
@@ -82,8 +78,8 @@ return newCtx, nil
 
 
 */
-func consumeSimSigGas(gasmeter sdk.GasMeter, pubkey crypto.PubKey, sig ante.IxoSignature, params auth.Params) {
-	simSig := ante.IxoSignature{}
+func consumeSimSigGas(gasmeter sdk.GasMeter, pubkey crypto.PubKey, sig did.IxoSignature, params auth.Params) {
+	simSig := did.IxoSignature{}
 	if binary.Size(sig.SignatureValue) == 0 {
 		simSig.SignatureValue = simEd25519Sig[:]
 	}
@@ -103,7 +99,7 @@ func consumeSimSigGas(gasmeter sdk.GasMeter, pubkey crypto.PubKey, sig ante.IxoS
 
 // verify the signature and increment the sequence. If the account doesn't have
 // a pubkey, set it.
-func ProcessSig(ctx sdk.Context, acc sdkexported.Account, sig ante.IxoSignature, signBytes []byte, simulate bool, p auth.Params) (updatedAcc sdkexported.Account, err error) {
+func processSign(ctx sdk.Context, acc sdkexported.Account, sig did.IxoSignature, signBytes []byte, simulate bool, p auth.Params) (updatedAcc sdkexported.Account, err error) {
 	pubKey, res := proccessPublicKey(acc, sig, simulate)
 	if res != nil {
 		return nil, res
@@ -236,7 +232,7 @@ func NewDefaultAnteHandler(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGetter
 		ixoSig := auth.StdSignature{PubKey: pubKey, Signature: ixoTx.GetSignatures()[0].SignatureValue[:]}
 		isGenesis := ctx.BlockHeight() == 0
 		signBytes := getSignBytes(newCtx.ChainID(), ixoTx, signerAcc, isGenesis)
-		signerAcc, res = ProcessSig(newCtx, signerAcc, ixoSig, signBytes, simulate, params)
+		signerAcc, res = processSign(newCtx, signerAcc, ixoSig, signBytes, simulate, params)
 		if !res.IsOK() {
 			return newCtx, res, true
 		}
@@ -247,7 +243,7 @@ func NewDefaultAnteHandler(ak auth.AccountKeeper, sk supply.Keeper, pubKeyGetter
 
 */
 
-func proccessPublicKey(acc sdkexported.Account, sig ante.IxoSignature, simulate bool) (crypto.PubKey, error) {
+func proccessPublicKey(acc sdkexported.Account, sig did.IxoSignature, simulate bool) (crypto.PubKey, error) {
 	// If pubkey is not known for account, set it from the types.StdSignature.
 	pubKey := acc.GetPubKey()
 	if simulate {
@@ -281,9 +277,9 @@ func signAndBroadcast(ctx context.CLIContext, msg auth.StdSignMsg, ixoDid export
 		panic("expected one message")
 	}
 	privKey := exported.RecoverDidEd25519ToPrivateKey(ixoDid)
-	signature := SignIxoMessageEd25519(msg.Bytes(), privKey)
+	signature := signIxoMessageEd25519(msg.Bytes(), privKey)
 
-	tx := ante.NewIxoTxSingleMsg(msg.Msgs[0], msg.Fee, signature, msg.Memo)
+	tx := did.NewIxoTxSingleMsg(msg.Msgs[0], msg.Fee, signature, msg.Memo)
 	fmt.Println(msg)
 	bz, err := ctx.Codec.MarshalJSON(tx)
 	if err != nil {
@@ -304,8 +300,8 @@ func simulateMsgs(txBldr auth.TxBuilder, cliCtx context.CLIContext, msgs []sdk.M
 	}
 
 	// Signature set to a blank signature
-	signature := ante.IxoSignature{}
-	tx := ante.NewIxoTxSingleMsg(
+	signature := did.IxoSignature{}
+	tx := did.NewIxoTxSingleMsg(
 		stdSignMsg.Msgs[0], stdSignMsg.Fee, signature, stdSignMsg.Memo)
 
 	bz, err := cliCtx.Codec.MarshalJSON(tx)
@@ -319,13 +315,13 @@ func simulateMsgs(txBldr auth.TxBuilder, cliCtx context.CLIContext, msgs []sdk.M
 	return
 }
 
-func ApproximateFeeForTx(cliCtx context.CLIContext, tx ante.IxoTx, chainId string) (auth.StdFee, error) {
+func ApproximateFeeForTx(cliCtx context.CLIContext, tx did.IxoTx, chainId string) (auth.StdFee, error) {
 
 	// Set up a transaction builder
 	cdc := cliCtx.Codec
 	txEncoder := auth.DefaultTxEncoder
 	gasAdjustment := approximationGasAdjustment
-	fees := sdk.NewCoins(sdk.NewCoin(types.NativeToken, sdk.OneInt()))
+	fees := sdk.NewCoins(sdk.NewCoin("mdap", sdk.OneInt()))
 	txBldr := auth.NewTxBuilder(txEncoder(cdc), 0, 0, 0, gasAdjustment, true, chainId, tx.Memo, fees, nil)
 
 	// Approximate gas consumption
@@ -351,7 +347,7 @@ func GenerateOrBroadcastMsgs(cliCtx context.CLIContext, msg sdk.Msg, ixoDid expo
 		return utils.PrintUnsignedStdTx(txBldr, cliCtx, msgs)
 	}
 
-	return CompleteAndBroadcastTxCLI(txBldr, cliCtx, msgs, ixoDid)
+	return completeAndBroadcastTxCLI(txBldr, cliCtx, msgs, ixoDid)
 }
 
 func CompleteAndBroadcastTxRest(cliCtx context.CLIContext, msg sdk.Msg, ixoDid exported.IxoDid) ([]byte, error) {
@@ -359,7 +355,7 @@ func CompleteAndBroadcastTxRest(cliCtx context.CLIContext, msg sdk.Msg, ixoDid e
 	// TODO: implement using txBldr or just remove function completely (ref: #123)
 
 	// Construct dummy tx and approximate and set fee
-	tx := ante.NewIxoTxSingleMsg(msg, auth.StdFee{}, ante.IxoSignature{}, "")
+	tx := did.NewIxoTxSingleMsg(msg, auth.StdFee{}, did.IxoSignature{}, "")
 	chainId := viper.GetString(flags.FlagChainID)
 	fee, err := ApproximateFeeForTx(cliCtx, tx, chainId)
 	if err != nil {
@@ -390,9 +386,9 @@ func SignAndBroadcastTxFromStdSignMsg(cliCtx context.CLIContext, msg auth.StdSig
 	return signAndBroadcast(cliCtx, msg, ixoDid)
 }
 
-func SignIxoMessageEd25519(signBytes []byte, privKey [ed25519.PrivateKeySize]byte) ante.IxoSignature {
+func signIxoMessageEd25519(signBytes []byte, privKey [ed25519.PrivateKeySize]byte) did.IxoSignature {
 	signatureBytes := ed25519.Sign(&privKey, signBytes)
-	return ante.NewSignature(time.Now(), signatureBytes[:])
+	return did.NewSignature(time.Now(), signatureBytes[:])
 }
 
 /*
@@ -475,7 +471,7 @@ func SignAndBroadcastTxCli(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid exp
 func SignAndBroadcastTxRest(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid exported.IxoDid) ([]byte, error) {
 	// TODO: implement using txBldr or just remove function completely (ref: #123)
 	// Construct dummy tx and approximate and set fee
-	tx := ante.NewIxoTxSingleMsg(msg, auth.StdFee{}, ante.IxoSignature{}, "")
+	tx := did.NewIxoTxSingleMsg(msg, auth.StdFee{}, did.IxoSignature{}, "")
 	chainId := viper.GetString(flags.FlagChainID)
 	fee, err := ApproximateFeeForTx(cliCtx, tx, chainId)
 	if err != nil {

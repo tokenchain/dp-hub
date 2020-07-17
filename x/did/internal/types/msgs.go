@@ -3,13 +3,10 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	er "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 const (
@@ -18,8 +15,8 @@ const (
 )
 
 var (
-	_ ante.IxoMsg = MsgAddDid{}
-	_ ante.IxoMsg = MsgAddCredential{}
+	_ IxoMsg = MsgAddDid{}
+	_ IxoMsg = MsgAddCredential{}
 )
 
 type MsgAddDid struct {
@@ -53,28 +50,28 @@ func (msg MsgAddDid) Type() string            { return TypeMsgAddDid }
 func (msg MsgAddDid) Route() string           { return RouterKey }
 func (msg MsgAddDid) GetSignerDid() exported.Did { return msg.DidDoc.Did }
 func (msg MsgAddDid) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{DidToAddr(msg.GetSignerDid())}
 }
 func (msg MsgAddDid) ValidateBasic() error {
 	// Check that not empty
 	if strings.TrimSpace(msg.DidDoc.Did) == "" {
-		return er.Wrap(x.ErrorInvalidDidE, "did should not be empty")
+		return exported.Invalid("did should not be empty")
 	} else if strings.TrimSpace(msg.DidDoc.PubKey) == "" {
-		return er.Wrap(x.ErrorInvalidPubKey, "pubKey should not be empty")
+		return exported.InvalidPubKey("pubKey should not be empty")
 	}
 
 	// Check DidDoc credentials for empty fields
 	for _, cred := range msg.DidDoc.Credentials {
 		if strings.TrimSpace(cred.Issuer) == "" {
-			return er.Wrap(x.ErrorInvalidIssuer, "issuer should not be empty")
+			return exported.InvalidIssuer( "issuer should not be empty")
 		} else if strings.TrimSpace(cred.Claim.Id) == "" {
-			return er.Wrap(x.ErrorInvalidDidE, "claim id should not be empty")
+			return exported.Invalid( "claim id should not be empty")
 		}
 	}
 
 	// Check that DID valid
 	if !exported.IsValidDid(msg.DidDoc.Did) {
-		return er.Wrap(x.ErrorInvalidDidE, "did is invalid")
+		return exported.Invalid( "did is invalid")
 	}
 
 	return nil
@@ -115,7 +112,7 @@ func (msg MsgAddCredential) Type() string            { return TypeMsgAddCredenti
 func (msg MsgAddCredential) Route() string           { return RouterKey }
 func (msg MsgAddCredential) GetSignerDid() exported.Did { return msg.DidCredential.Issuer }
 func (msg MsgAddCredential) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{DidToAddr(msg.GetSignerDid())}
 }
 func (msg MsgAddCredential) String() string {
 	return fmt.Sprintf("MsgAddCredential{Did: %v, Type: %v, Signer: %v}",
@@ -124,13 +121,13 @@ func (msg MsgAddCredential) String() string {
 func (msg MsgAddCredential) ValidateBasic() error {
 	// Check if empty
 	if strings.TrimSpace(msg.DidCredential.Claim.Id) == "" {
-		return er.Wrap(x.ErrorInvalidDidE, "claim id should not be empty")
+		return exported.Invalid("claim id should not be empty")
 	} else if strings.TrimSpace(msg.DidCredential.Issuer) == "" {
-		return er.Wrap(x.ErrorInvalidIssuer, "issuer should not be empty")
+		return exported.InvalidIssuer( "issuer should not be empty")
 	}
 	// Check that DID valid
 	if !exported.IsValidDid(msg.DidCredential.Issuer) {
-		return er.Wrap(x.ErrorInvalidDidE, "issuer id is invalid")
+		return exported.Invalid("issuer id is invalid")
 	}
 	return nil
 }

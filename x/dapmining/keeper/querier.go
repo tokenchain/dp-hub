@@ -25,7 +25,7 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 		case QueryRewardHistory:
 			return qHistory(ctx, keeper)
 		default:
-			return nil, x.UnknownRequest("unknown rewards query endpoint")
+			return nil,exported.UnknownRequest("unknown rewards query endpoint")
 		}
 	}
 }

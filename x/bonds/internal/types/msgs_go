@@ -1,12 +1,11 @@
 package types
 
 import (
-	"encoding/json"
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
 )
@@ -87,14 +86,14 @@ type (
 )
 
 var (
-	_ ante.IxoMsg = MsgCreateBond{}
-	_ ante.IxoMsg = MsgEditBond{}
-	_ ante.IxoMsg = MsgBuy{}
-	_ ante.IxoMsg = MsgSell{}
-	_ ante.IxoMsg = MsgSwap{}
-	_ ante.IxoMsg = MsgMint{}
-	_ ante.IxoMsg = MsgBurn{}
-	_ ante.IxoMsg = MsgTransfer{}
+	_ did.IxoMsg = MsgCreateBond{}
+	_ did.IxoMsg = MsgEditBond{}
+	_ did.IxoMsg = MsgBuy{}
+	_ did.IxoMsg = MsgSell{}
+	_ did.IxoMsg = MsgSwap{}
+	_ did.IxoMsg = MsgMint{}
+	_ did.IxoMsg = MsgBurn{}
+	_ did.IxoMsg = MsgTransfer{}
 )
 
 func NewMsgCreateBond(token, name, description string, creatorDid exported.IxoDid,
@@ -222,16 +221,12 @@ func (msg MsgCreateBond) ValidateBasic() error {
 }
 
 func (msg MsgCreateBond) GetSignBytes() []byte {
-	if bz, err := json.Marshal(msg); err != nil {
-		panic(err)
-	} else {
-		return sdk.MustSortJSON(bz)
-	}
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 func (msg MsgCreateBond) GetSignerDid() exported.Did { return msg.CreatorDid }
 func (msg MsgCreateBond) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgCreateBond) Route() string { return RouterKey }
@@ -299,16 +294,12 @@ func (msg MsgEditBond) ValidateBasic() error {
 }
 
 func (msg MsgEditBond) GetSignBytes() []byte {
-	if bz, err := json.Marshal(msg); err != nil {
-		panic(err)
-	} else {
-		return sdk.MustSortJSON(bz)
-	}
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 func (msg MsgEditBond) GetSignerDid() exported.Did { return msg.EditorDid }
 func (msg MsgEditBond) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgEditBond) Route() string { return RouterKey }
@@ -356,16 +347,12 @@ func (msg MsgBuy) ValidateBasic() error {
 }
 
 func (msg MsgBuy) GetSignBytes() []byte {
-	if bz, err := json.Marshal(msg); err != nil {
-		panic(err)
-	} else {
-		return sdk.MustSortJSON(bz)
-	}
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 func (msg MsgBuy) GetSignerDid() exported.Did { return msg.BuyerDid }
 func (msg MsgBuy) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgBuy) Route() string { return RouterKey }
@@ -416,16 +403,12 @@ func (msg MsgSell) ValidateBasic() error {
 }
 
 func (msg MsgSell) GetSignBytes() []byte {
-	if bz, err := json.Marshal(msg); err != nil {
-		panic(err)
-	} else {
-		return sdk.MustSortJSON(bz)
-	}
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 func (msg MsgSell) GetSignerDid() exported.Did { return msg.SellerDid }
 func (msg MsgSell) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgSell) Route() string { return RouterKey }
@@ -486,16 +469,12 @@ func (msg MsgSwap) ValidateBasic() error {
 }
 
 func (msg MsgSwap) GetSignBytes() []byte {
-	if bz, err := json.Marshal(msg); err != nil {
-		panic(err)
-	} else {
-		return sdk.MustSortJSON(bz)
-	}
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 func (msg MsgSwap) GetSignerDid() exported.Did { return msg.SwapperDid }
 func (msg MsgSwap) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgSwap) Route() string { return RouterKey }
@@ -528,14 +507,10 @@ func (msg MsgTransfer) GetSignerDid() exported.Did { return msg.ID }
 func (msg MsgTransfer) Type() string               { return TypeMsgTransfer }
 func (msg MsgTransfer) Route() string              { return RouterKey }
 func (msg MsgTransfer) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 func (msg MsgTransfer) GetSignBytes() []byte {
-	if bz, err := json.Marshal(msg); err != nil {
-		panic(err)
-	} else {
-		return sdk.MustSortJSON(bz)
-	}
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 func NewMsgBurn(id exported.Did, from sdk.AccAddress, amount sdk.Coin) MsgBurn {
@@ -565,14 +540,10 @@ func (msg MsgBurn) GetSignerDid() exported.Did { return msg.ID }
 func (msg MsgBurn) Type() string               { return TypeMsgBurn }
 func (msg MsgBurn) Route() string              { return RouterKey }
 func (msg MsgBurn) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 func (msg MsgBurn) GetSignBytes() []byte {
-	if bz, err := json.Marshal(msg); err != nil {
-		panic(err)
-	} else {
-		return sdk.MustSortJSON(bz)
-	}
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 func NewMsgMint(id exported.Did, from sdk.AccAddress, amount sdk.Coin) MsgMint {
@@ -602,12 +573,8 @@ func (msg MsgMint) GetSignerDid() exported.Did { return msg.ID }
 func (msg MsgMint) Type() string               { return TypeMsgMint }
 func (msg MsgMint) Route() string              { return RouterKey }
 func (msg MsgMint) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 func (msg MsgMint) GetSignBytes() []byte {
-	if bz, err := json.Marshal(msg); err != nil {
-		panic(err)
-	} else {
-		return sdk.MustSortJSON(bz)
-	}
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }

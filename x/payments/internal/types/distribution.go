@@ -2,7 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
 var oneHundred = sdk.NewDec(100)
@@ -16,7 +16,7 @@ func NewDistribution(shares ...DistributionShare) Distribution {
 func (d Distribution) Validate() error {
 	// Shares must add up to 100% (no shares means 0%)
 	if len(d) == 0 {
-		return ErrDistributionPercentagesNot100(sdk.ZeroDec())
+		return exported.ErrDistributionPercentagesNot100(sdk.ZeroDec())
 	}
 
 	// Validate shares and calculate total
@@ -30,7 +30,7 @@ func (d Distribution) Validate() error {
 
 	// Shares must add up to 100%
 	if !total.Equal(sdk.NewDec(100)) {
-		return ErrDistributionPercentagesNot100(total)
+		return exported.ErrDistributionPercentagesNot100(total)
 	}
 
 	return nil
@@ -69,9 +69,9 @@ func NewDistributionShare(address sdk.AccAddress, percentage sdk.Dec) Distributi
 
 func (d DistributionShare) Validate() error {
 	if !d.Percentage.IsPositive() {
-		return ErrNegativeSharePercentage()
+		return exported.ErrNegativeSharePercentage()
 	} else if d.Address.Empty() {
-		return x.ErrInvalidAddress("empty distribution share address")
+		return exported.InvalidAddress("empty distribution share address")
 	}
 
 	return nil

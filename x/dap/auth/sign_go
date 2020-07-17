@@ -17,7 +17,7 @@ import (
 )
 
 // PrepareTxBuilder populates a TxBuilder in preparation for the build of a Tx.
-func PrepareTxBuilder(txBldr authtypes.TxBuilder, cliCtx context.CLIContext) (authtypes.TxBuilder, error) {
+func prepareTxBuilder(txBldr authtypes.TxBuilder, cliCtx context.CLIContext) (authtypes.TxBuilder, error) {
 	from := cliCtx.GetFromAddress()
 
 	accGetter := authtypes.NewAccountRetriever(cliCtx)
@@ -50,8 +50,8 @@ func PrepareTxBuilder(txBldr authtypes.TxBuilder, cliCtx context.CLIContext) (au
 // QueryContext. It ensures that the account exists, has a proper number and
 // sequence set. In addition, it builds and signs a transaction with the
 // supplied messages. Finally, it broadcasts the signed transaction to a node.
-func CompleteAndBroadcastTxCLI(txBldr authtypes.TxBuilder, cliCtx context.CLIContext, msgs []sdk.Msg, did exported.IxoDid) error {
-	txBldr, err := PrepareTxBuilder(txBldr, cliCtx)
+func completeAndBroadcastTxCLI(txBldr authtypes.TxBuilder, cliCtx context.CLIContext, msgs []sdk.Msg, did exported.IxoDid) error {
+	txBldr, err := prepareTxBuilder(txBldr, cliCtx)
 	if err != nil {
 		return err
 	}

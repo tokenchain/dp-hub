@@ -2,7 +2,7 @@ package treasury
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/types"
 )
@@ -20,7 +20,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		case MsgOracleBurn:
 			return handleMsgOracleBurn(ctx, k, msg)
 		default:
-			return nil, x.UnknownRequest("No match for message type.")
+			return nil,exported.UnknownRequest("No match for message type.")
 		}
 	}
 

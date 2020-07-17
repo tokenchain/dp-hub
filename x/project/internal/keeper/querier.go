@@ -3,11 +3,11 @@ package keeper
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/abci/types"
-	"github.com/tokenchain/ixo-blockchain/x"
 )
 
 const (
@@ -29,7 +29,7 @@ func NewQuerier(k Keeper) sdk.Querier {
 		case QueryParams:
 			return queryParams(ctx, k)
 		default:
-			return nil, x.UnknownRequest("Unknown project query endpoint")
+			return nil, exported.UnknownRequest("Unknown project query endpoint")
 		}
 	}
 }
@@ -42,7 +42,7 @@ func queryProjectDoc(ctx sdk.Context, path []string, k Keeper) ([]byte, error) {
 
 	res, errRes := codec.MarshalJSONIndent(k.cdc, storedDoc)
 	if errRes != nil {
-		return nil, x.IntErr(fmt.Sprintf("failed to marshal data %s", err))
+		return nil, exported.IntErr(fmt.Sprintf("failed to marshal data %s", err))
 	}
 
 	return res, nil
@@ -53,7 +53,7 @@ func queryProjectAccounts(ctx sdk.Context, path []string, k Keeper) ([]byte, err
 	resp := k.GetAccountMap(ctx, path[0])
 	res, err := json.Marshal(resp)
 	if err != nil {
-		return nil, x.IntErr(fmt.Sprintf("failed to marshal data %s", err.Error()))
+		return nil, exported.IntErr(fmt.Sprintf("failed to marshal data %s", err.Error()))
 	}
 
 	return res, nil
@@ -67,7 +67,7 @@ func queryProjectTx(ctx sdk.Context, path []string, k Keeper) ([]byte, error) {
 
 	res, err2 := codec.MarshalJSONIndent(k.cdc, info)
 	if err2 != nil {
-		return nil, x.IntErr(fmt.Sprintf("failed to marshal data %s", err2.Error()))
+		return nil, exported.IntErr(fmt.Sprintf("failed to marshal data %s", err2.Error()))
 	}
 
 	return res, nil
@@ -78,7 +78,7 @@ func queryParams(ctx sdk.Context, k Keeper) ([]byte, error) {
 
 	res, err := codec.MarshalJSONIndent(k.cdc, params)
 	if err != nil {
-		return nil, x.ErrJsonMars(err.Error())
+		return nil, exported.ErrJsonMars(err.Error())
 	}
 
 	return res, nil

@@ -41,7 +41,7 @@ type (
 		Token                  string         `json:"token" yaml:"token"`
 		Name                   string         `json:"name" yaml:"name"`
 		Description            string         `json:"description" yaml:"description"`
-		CreatorDid             exported.Did        `json:"creator_did" yaml:"creator_did"`
+		CreatorDid             exported.Did   `json:"creator_did" yaml:"creator_did"`
 		FunctionType           string         `json:"function_type" yaml:"function_type"`
 		FunctionParameters     FunctionParams `json:"function_parameters" yaml:"function_parameters"`
 		ReserveTokens          []string       `json:"reserve_tokens" yaml:"reserve_tokens"`
@@ -56,7 +56,7 @@ type (
 		CurrentSupply          sdk.Coin       `json:"current_supply" yaml:"current_supply"`
 		AllowSells             string         `json:"allow_sells" yaml:"allow_sells"`
 		BatchBlocks            sdk.Uint       `json:"batch_blocks" yaml:"batch_blocks"`
-		BondDid                exported.Did        `json:"bond_did" yaml:"bond_did"`
+		BondDid                exported.Did   `json:"bond_did" yaml:"bond_did"`
 	}
 	FunctionParam struct {
 		Param string  `json:"param" yaml:"param"`

@@ -3,10 +3,7 @@ package keeper
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	er "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
-
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 )
 
@@ -22,12 +19,18 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey) Keeper {
 	}
 }
 
+var DidKey = []byte{0x01}
+
+func getDidPrefixKey(did exported.Did) []byte {
+	return append(DidKey, []byte(did)...)
+}
+
 func (k Keeper) GetDidDoc(ctx sdk.Context, did exported.Did) (exported.DidDoc, error) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDidPrefixKey(did)
+	key := getDidPrefixKey(did)
 	bz := store.Get(key)
 	if bz == nil {
-		return nil, er.Wrap(x.ErrorInvalidDidE, "Invalid Did Address")
+		return nil, exported.Invalid("Invalid Did Address")
 	}
 
 	var didDoc types.BaseDidDoc
@@ -39,7 +42,7 @@ func (k Keeper) GetDidDoc(ctx sdk.Context, did exported.Did) (exported.DidDoc, e
 func (k Keeper) SetDidDoc(ctx sdk.Context, did exported.DidDoc) (err error) {
 	existedDidDoc, err := k.GetDidDoc(ctx, did.GetDid())
 	if existedDidDoc != nil {
-		return er.Wrap(x.ErrorInvalidDidE, "Did already exists")
+		return exported.Invalid("Did already exists")
 	}
 
 	k.AddDidDoc(ctx, did)
@@ -48,7 +51,7 @@ func (k Keeper) SetDidDoc(ctx sdk.Context, did exported.DidDoc) (err error) {
 
 func (k Keeper) AddDidDoc(ctx sdk.Context, did exported.DidDoc) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDidPrefixKey(did.GetDid())
+	key := getDidPrefixKey(did.GetDid())
 	store.Set(key, k.cdc.MustMarshalBinaryLengthPrefixed(did))
 }
 
@@ -63,7 +66,7 @@ func (k Keeper) AddCredentials(ctx sdk.Context, did exported.Did, credential exp
 
 	for _, data := range credentials {
 		if data.Issuer == credential.Issuer && data.CredType[0] == credential.CredType[0] && data.CredType[1] == credential.CredType[1] && data.Claim.KYCValidated == credential.Claim.KYCValidated {
-			return er.Wrap(x.ErrorInvalidCredentials, "credentials already exist")
+			return exported.InvalidCredentials("credentials already exist")
 		}
 	}
 

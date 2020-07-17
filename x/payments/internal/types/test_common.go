@@ -1,6 +1,7 @@
 package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 // --------------------------------------------- TestPeriod
 var _ Period = TestPeriod{}
@@ -25,9 +26,9 @@ func (p TestPeriod) GetPeriodUnit() string {
 func (p TestPeriod) Validate() error {
 	// Validate period-related values
 	if p.PeriodStartBlock > p.periodEndBlock() {
-		return ErrInvalidPeriod("start time is after end time")
+		return exported.ErrInvalidPeriod("start time is after end time")
 	} else if p.PeriodLength <= 0 {
-		return ErrInvalidPeriod("period length must be greater than zero")
+		return exported.ErrInvalidPeriod("period length must be greater than zero")
 	}
 	return nil
 }

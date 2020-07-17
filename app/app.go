@@ -9,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
@@ -39,6 +40,7 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x/oracles"
 	"github.com/tokenchain/ixo-blockchain/x/payments"
 	"github.com/tokenchain/ixo-blockchain/x/project"
+	projectAnte "github.com/tokenchain/ixo-blockchain/x/project/ante"
 	"github.com/tokenchain/ixo-blockchain/x/treasury"
 	"io"
 	"os"
@@ -107,7 +109,6 @@ var (
 func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
 	ModuleBasics.RegisterCodec(cdc)
-	ante.RegisterCodec(cdc)
 	exported.RegisterCodec(cdc)
 	vesting.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
@@ -165,7 +166,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 		appName,
 		logger,
 		db,
-		ante.DefaultTxDecoder(cdc),
+		types.DefaultTxDecoder(cdc),
 		baseAppOptions...,
 	)
 	bApp.SetCommitMultiStoreTracer(traceStore)
@@ -557,18 +558,18 @@ func (app *DpApp) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList []stri
 
 func initAnteHandler(app *DpApp) sdk.AnteHandler {
 
-	defaultPubKeyGetter := ante.NewDefaultPubKeyGetter(app.didKeeper)
-	didPubKeyGetter := did.GetPubKeyGetter(app.didKeeper)
-	projectPubKeyGetter := project.GetPubKeyGetter(app.projectKeeper, app.didKeeper)
+	//projectPubKeyGetter := project.GetPubKeyGetter(app.projectKeeper, app.didKeeper)
 
-	defaultDxpAnteHandler := ante.DefaultAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, defaultPubKeyGetter)
-	didAnteHandler := ante.DidAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, didPubKeyGetter)
-	projectAnteHandler := ante.DefaultAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, projectPubKeyGetter)
+	defaultDxpAnteHandler := ante.DefaultAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, app.didKeeper)
+	didAnteHandler := ante.DidAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, app.didKeeper)
+	projectAnteHandler := ante.DefaultAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, app.didKeeper)
 	cosmosAnteHandler := auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer)
 
-	projectCreationAnteHandler := project.NewProjectCreationAnteHandler(
+/*	projectCreationAnteHandler := project.NewProjectCreationAnteHandler(
 		app.accountKeeper, app.supplyKeeper, app.bankKeeper,
-		app.didKeeper, projectPubKeyGetter)
+		app.didKeeper, projectPubKeyGetter)*/
+
+	projectCreationAnteHandler := projectAnte.ProjectAnteHandle(app.accountKeeper, app.supplyKeeper, app.didKeeper)
 
 	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (_ sdk.Context, _ error) {
 		msg := tx.GetMsgs()[0]

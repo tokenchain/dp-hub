@@ -3,7 +3,7 @@ package test
 import (
 	"fmt"
 	"github.com/streadway/handy/atomic"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 	"testing"
 	"time"
 )
@@ -68,9 +68,9 @@ func (b Ball) swapTz() {
 			types.NewSignature(time.Now(), bi),
 			types.NewSignature(time.Now(), bi),
 		}*/
-	s1 := ante.NewSignature(time.Now(), bi)
-	s2 := ante.NewSignature(time.Now(), bi)
-	s3 := ante.NewSignature(time.Now(), bi)
+	s1 := types.NewSignature(time.Now(), bi)
+	s2 := types.NewSignature(time.Now(), bi)
+	s3 := types.NewSignature(time.Now(), bi)
 	//b.signatures = append(b.signatures, s1, s2, s3, )
 	b.signatureVals = append(b.signatureVals, s1.SignatureValue, s2.SignatureValue, s3.SignatureValue, )
 	//copy(b.x, &sample)

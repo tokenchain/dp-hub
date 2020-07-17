@@ -11,7 +11,10 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(BaseDidDoc{}, "did/BaseDidDoc", nil)
 	//cdc.RegisterConcrete(ante.IxoTx{}, "darkpool/IxoTx", nil)
 	//cdc.RegisterConcrete(DidCredential{}, "did/DidCredential", nil)
-
+	cdc.RegisterInterface((*TxActor)(nil), nil)
+	//cdc.RegisterInterface((*[]interface{})(nil), nil)
+	cdc.RegisterConcrete(&IxoTx{}, "darkpool/IxoTx", nil)
+	cdc.RegisterConcrete(&IxoSignature{}, "darkpool/IxoSignature", nil)
 }
 
 // ModuleCdc is the codec for the module

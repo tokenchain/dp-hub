@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
-	"github.com/tokenchain/ixo-blockchain/x/dap"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"net/http"
 	"strings"
@@ -36,7 +36,7 @@ func parseBool(boolStr, boolName string) (bool, error) {
 	} else if boolStr == FALSE {
 		return false, nil
 	} else {
-		return false, types.ErrInvalidArgument(fmt.Sprintf("%s is not a valid bool (true/false)", boolName))
+		return false, exported.ErrInvalidArgument(fmt.Sprintf("%s is not a valid bool (true/false)", boolName))
 	}
 }
 func writeHeadf(w http.ResponseWriter, code int, format string, i ...interface{}) {
@@ -73,7 +73,7 @@ func createPaymentTemplateHandler(ctx context.CLIContext) http.HandlerFunc {
 		msg := types.NewMsgCreatePaymentTemplate(template, sovrinDid.Did)
 
 		//output, err := auth.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
-		output, err := dap.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
+		output, err := did.NewDidTxBuild(ctx, msg, sovrinDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
@@ -124,7 +124,7 @@ func createPaymentContractHandler(ctx context.CLIContext) http.HandlerFunc {
 		msg := types.NewMsgCreatePaymentContract(templateIdParam,
 			contractIdParam, payerAddr, canDeauthorise, discountId, sovrinDid.Did)
 
-		output, err := dap.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
+		output, err := did.NewDidTxBuild(ctx, msg, sovrinDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
@@ -169,7 +169,7 @@ func createSubscriptionHandler(ctx context.CLIContext) http.HandlerFunc {
 		msg := types.NewMsgCreateSubscription(subIdParam, contractIdParam,
 			maxPeriods, period, sovrinDid.Did)
 
-		output, err := dap.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
+		output, err := did.NewDidTxBuild(ctx, msg, sovrinDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
@@ -205,7 +205,7 @@ func setPaymentContractAuthorisationHandler(ctx context.CLIContext) http.Handler
 		msg := types.NewMsgSetPaymentContractAuthorisation(contractIdParam,
 			authorised, sovrinDid.Did)
 
-		output, err := dap.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
+		output, err := did.NewDidTxBuild(ctx, msg, sovrinDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
@@ -248,7 +248,7 @@ func grantDiscountHandler(ctx context.CLIContext) http.HandlerFunc {
 		msg := types.NewMsgGrantDiscount(contractIdParam, discountId,
 			recipientAddr, sovrinDid.Did)
 
-		output, err := dap.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
+		output, err := did.NewDidTxBuild(ctx, msg, sovrinDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
@@ -283,7 +283,7 @@ func revokeDiscountHandler(ctx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgRevokeDiscount(contractIdParam, holderAddr, sovrinDid.Did)
 
-		output, err := dap.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
+		output, err := did.NewDidTxBuild(ctx, msg, sovrinDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
@@ -311,7 +311,7 @@ func effectPaymentHandler(ctx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgEffectPayment(contractIdParam, sovrinDid.Did)
 
-		output, err := dap.SignAndBroadcastTxRest(ctx, msg, sovrinDid)
+		output, err := did.NewDidTxBuild(ctx, msg, sovrinDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return

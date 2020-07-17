@@ -6,10 +6,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"net/http"
 
-	"github.com/tokenchain/ixo-blockchain/x/dap"
 	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/types"
 )
 
@@ -54,7 +54,7 @@ func sendRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgSend(toDidParam, coins, sovrinDid.Did)
 
-		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
+		output, err := did.NewDidTxBuild(cliCtx, msg, sovrinDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w,http.StatusInternalServerError, err.Error())
 			return
@@ -92,7 +92,7 @@ func oracleTransferRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgOracleTransfer(fromDidParam, toDidParam, coins, oracleDid.Did, proofParam)
 
-		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, oracleDid)
+		output, err := did.NewDidTxBuild(cliCtx, msg, oracleDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w,http.StatusInternalServerError, err.Error())
 			return
@@ -129,7 +129,7 @@ func oracleMintRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgOracleMint(toDidParam, coins, oracleDid.Did, proofParam)
 
-		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, oracleDid)
+		output, err := did.NewDidTxBuild(cliCtx, msg, oracleDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w,http.StatusInternalServerError, err.Error())
 			return
@@ -166,7 +166,7 @@ func oracleBurnRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgOracleBurn(fromDidParam, coins, oracleDid.Did, proofParam)
 
-		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, oracleDid)
+		output, err := did.NewDidTxBuild(cliCtx, msg, oracleDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w,http.StatusInternalServerError, err.Error())
 			return

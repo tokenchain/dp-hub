@@ -13,8 +13,7 @@ import (
 	"github.com/gorilla/mux"
 	utils2 "github.com/tokenchain/ixo-blockchain/client/utils"
 	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/dap"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/project"
 	"io/ioutil"
@@ -24,9 +23,9 @@ import (
 )
 
 func RegisterTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
-	r.HandleFunc("/txs/{hash}", QueryTxRequestHandlerFn(cliCtx)).Methods("GET")
-	r.HandleFunc("/txs", QueryTxsRequestHandlerFn(cliCtx)).Methods("GET")
-	r.HandleFunc("/txs", BroadcastTxRequest(cliCtx)).Methods("POST")
+	//r.HandleFunc("/txs/{hash}", QueryTxRequestHandlerFn(cliCtx)).Methods("GET")
+	//r.HandleFunc("/txs", QueryTxsRequestHandlerFn(cliCtx)).Methods("GET")
+	//r.HandleFunc("/txs", BroadcastTxRequest(cliCtx)).Methods("POST")
 	r.HandleFunc("/sign_data", SignDataRequest(cliCtx)).Methods("POST")
 }
 
@@ -200,9 +199,9 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// all messages must be of type ixo.IxoMsg
-		ixoMsg, ok := msg.(ante.IxoMsg)
+		ixoMsg, ok := msg.(did.IxoMsg)
 		if !ok {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, x.IntErr("msg must be ixo.IxoMsg").Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, exported.IntErr("msg must be ixo.IxoMsg").Error())
 			return
 		}
 		msgs := []sdk.Msg{ixoMsg}
@@ -214,7 +213,7 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 			stdSignMsg = ixoMsg.(project.MsgCreateProject).ToStdSignMsg(project.MsgCreateProjectFee)
 		default:
 			// Deduce and set signer address
-			//signerAddress := types.DidToAddr(ixoMsg.GetSignerDid())
+			//signerAddress := did.DidToAddr(ixoMsg.GetSignerDid())
 			signerAddress := exported.VerifyKeyToAddrEd25519(req.PubKey)
 			cliCtx = cliCtx.WithFromAddress(signerAddress)
 
@@ -233,12 +232,12 @@ func SignDataRequest(cliCtx context.CLIContext) http.HandlerFunc {
 			}
 
 			// Create dummy tx with blank signature for fee approximation
-			signature := ante.IxoSignature{}
+			signature := did.IxoSignature{}
 			signature.Created = signature.Created.Add(1) // maximizes signature length
-			tx := ante.NewIxoTxSingleMsg(stdSignMsg.Msgs[0], stdSignMsg.Fee, signature, stdSignMsg.Memo)
+			tx := did.NewIxoTxSingleMsg(stdSignMsg.Msgs[0], stdSignMsg.Fee, signature, stdSignMsg.Memo)
 
 			// Approximate fee
-			fee, err := dap.ApproximateFeeForTx(cliCtx, tx, txBldr.ChainID())
+			fee, err := ApproximateFeeForTx(cliCtx, tx, txBldr.ChainID())
 			if err != nil {
 				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 				return

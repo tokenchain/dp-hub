@@ -19,6 +19,14 @@ type (
 		Address() sdk.AccAddress
 		AddressUnverified() sdk.AccAddress
 	}
+	DidKeeper interface {
+		GetDidDoc(ctx sdk.Context, did Did) (DidDoc, error)
+		SetDidDoc(ctx sdk.Context, did DidDoc) (err error)
+		AddDidDoc(ctx sdk.Context, did DidDoc)
+		AddCredentials(ctx sdk.Context, did Did, credential DidCredential) (err error)
+		GetAllDidDocs(ctx sdk.Context) (didDocs []DidDoc)
+		GetAddDids(ctx sdk.Context) (dids []Did)
+	}
 	Claim struct {
 		Id           Did  `json:"id" yaml:"id"`
 		KYCValidated bool `json:"KYCValidated" yaml:"KYCValidated"`
@@ -149,6 +157,14 @@ func fromJsonStringDp(jsonSovrinDid string) (IxoDid, error) {
 	return did, nil
 }
 
+// GetSignBytes returns the signBytes of the tx for a given signer
+func StringToAddr(str string) sdk.AccAddress {
+	return sdk.AccAddress(tmcrypto.AddressHash([]byte(str)))
+}
+
+func DidToAddr(did Did) sdk.AccAddress {
+	return StringToAddr(did)
+}
 /*
 func VerifyKeyToAddr(verifyKey string) sdk.AccAddress {
 	var pubKey ed25519.PubKeyEd25519

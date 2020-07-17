@@ -2,7 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
 type PaymentTemplate struct {
@@ -32,13 +32,13 @@ func (pt PaymentTemplate) GetDiscountPercent(discountId sdk.Uint) (sdk.Dec, erro
 			return discount.Percent, nil
 		}
 	}
-	return sdk.Dec{}, ErrDiscountIdIsNotInTemplate()
+	return sdk.Dec{}, exported.ErrDiscountIdIsNotInTemplate()
 }
 
 func (pt PaymentTemplate) Validate() error {
 	// Validate ID
 	if !IsValidPaymentTemplateId(pt.Id) {
-		return ErrInvalidId("payment template id invalid")
+		return exported.ErrInvalidId("payment template id invalid")
 	}
 
 	// Validate payment amount, minimum, maximum
@@ -46,17 +46,17 @@ func (pt PaymentTemplate) Validate() error {
 	min := &pt.PaymentMinimum
 	max := &pt.PaymentMaximum
 	if !amt.IsValid() {
-		return ErrInvalidPaymentTemplate("PaymentAmount coins invalid")
+		return exported.ErrInvalidPaymentTemplate("PaymentAmount coins invalid")
 	} else if !min.IsValid() {
-		return ErrInvalidPaymentTemplate("PaymentMinimum coins invalid")
+		return exported.ErrInvalidPaymentTemplate("PaymentMinimum coins invalid")
 	} else if !max.IsValid() {
-		return ErrInvalidPaymentTemplate("PaymentMaximum coins invalid")
+		return exported.ErrInvalidPaymentTemplate("PaymentMaximum coins invalid")
 	} else if min.IsAnyGT(*max) {
-		return ErrInvalidPaymentTemplate("min pay includes value greater than max pay")
+		return exported.ErrInvalidPaymentTemplate("min pay includes value greater than max pay")
 	} else if !min.DenomsSubsetOf(*amt) {
-		return ErrInvalidPaymentTemplate("min pay includes denom not in pay amount")
+		return exported.ErrInvalidPaymentTemplate("min pay includes denom not in pay amount")
 	} else if !max.DenomsSubsetOf(*amt) {
-		return ErrInvalidPaymentTemplate("max pay includes denom not in pay amount")
+		return exported.ErrInvalidPaymentTemplate("max pay includes denom not in pay amount")
 	}
 	// Validate discounts
 	if err := pt.Discounts.Validate(); err != nil {
@@ -103,23 +103,23 @@ func NewPaymentContractNoDiscount(id, templateId string, creator, payer sdk.AccA
 func (pc PaymentContract) Validate() error {
 	// Validate ID
 	if !IsValidPaymentContractId(pc.Id) {
-		return ErrInvalidId("payment contract id invalid")
+		return exported.ErrInvalidId("payment contract id invalid")
 	}
 	// Validate coins
 	if !pc.CumulativePay.IsValid() {
-		return ErrInvalidPaymentTemplate("CumulativePay coins invalid")
+		return exported.ErrInvalidPaymentTemplate("CumulativePay coins invalid")
 	} else if !pc.CurrentRemainder.IsValid() {
-		return ErrInvalidPaymentTemplate("CurrentRemainder coins invalid")
+		return exported.ErrInvalidPaymentTemplate("CurrentRemainder coins invalid")
 	}
 	// Validate addresses
 	if pc.Creator.Empty() {
-		return x.ErrInvalidAddress("empty creator address")
+		return exported.InvalidAddress("empty creator address")
 	} else if pc.Payer.Empty() {
-		return x.ErrInvalidAddress("empty payer address")
+		return exported.InvalidAddress("empty payer address")
 	}
 	// Validate IDs
 	if !IsValidPaymentTemplateId(pc.PaymentTemplateId) {
-		return ErrInvalidId("payment template id invalid")
+		return exported.ErrInvalidId("payment template id invalid")
 	}
 	return nil
 }

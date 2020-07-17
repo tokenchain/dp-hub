@@ -3,8 +3,7 @@ package types
 import (
 	"encoding/json"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
@@ -16,10 +15,10 @@ const (
 )
 
 var (
-	_ ante.IxoMsg = MsgSend{}
-	_ ante.IxoMsg = MsgOracleTransfer{}
-	_ ante.IxoMsg = MsgOracleMint{}
-	_ ante.IxoMsg = MsgOracleBurn{}
+	_ did.IxoMsg = MsgSend{}
+	_ did.IxoMsg = MsgOracleTransfer{}
+	_ did.IxoMsg = MsgOracleMint{}
+	_ did.IxoMsg = MsgOracleBurn{}
 )
 
 type MsgSend struct {
@@ -41,17 +40,17 @@ func (msg MsgSend) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.FromDid) {
-		return x.ErrInvalidDid("from did is invalid")
+		return exported.Invalid("from did is invalid")
 	}
 
 	_, err := sdk.AccAddressFromBech32(msg.ToDidOrAddr)
 	if err != nil && !exported.IsValidDid(msg.ToDidOrAddr) {
-		return x.InvalidAddress("recipient is neither a did nor an address")
+		return exported.InvalidAddress("recipient is neither a did nor an address")
 	}
 
 	// Check amount (note: validity also checks that coins are positive)
 	if !msg.Amount.IsValid() {
-		return x.ErrInvalidCoins("send amount is invalid: " + msg.Amount.String())
+		return exported.InvalidCoinsf("sending amount is invalid: %s", msg.Amount.String())
 	}
 
 	return nil
@@ -59,7 +58,7 @@ func (msg MsgSend) ValidateBasic() error {
 
 func (msg MsgSend) GetSignerDid() exported.Did { return msg.FromDid }
 func (msg MsgSend) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgSend) String() string {
@@ -102,18 +101,18 @@ func (msg MsgOracleTransfer) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.OracleDid) {
-		return x.ErrInvalidDid("oracle did is invalid")
+		return exported.Invalid("oracle did is invalid")
 	} else if !exported.IsValidDid(msg.FromDid) {
-		return x.ErrInvalidDid("from did is invalid")
+		return exported.Invalid("from did is invalid")
 	}
 
 	_, err := sdk.AccAddressFromBech32(msg.ToDidOrAddr)
 	if err != nil && !exported.IsValidDid(msg.ToDidOrAddr) {
-		return x.InvalidAddress("recipient is neither a did nor an address")
+		return exported.InvalidAddress("recipient is neither a did nor an address")
 	}
 	// Check amount (note: validity also checks that coins are positive)
 	if !msg.Amount.IsValid() {
-		return x.ErrInvalidCoins("send amount is invalid: " + msg.Amount.String())
+		return exported.InvalidCoinsf("send amount is invalid: ", msg.Amount.String())
 	}
 
 	return nil
@@ -122,7 +121,7 @@ func (msg MsgOracleTransfer) ValidateBasic() error {
 func (msg MsgOracleTransfer) GetSignerDid() exported.Did { return msg.OracleDid }
 func (msg MsgOracleTransfer) GetSigners() []sdk.AccAddress {
 	panic("tried to use unimplemented GetSigners function")
-	//	return []sdk.AccAddress{types.DidToAddr(msg.GetSignerDid())}
+	//	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgOracleTransfer) String() string {
@@ -163,17 +162,17 @@ func (msg MsgOracleMint) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.OracleDid) {
-		return x.ErrInvalidDid("oracle did is invalid")
+		return exported.Invalid("oracle did is invalid")
 	}
 
 	_, err := sdk.AccAddressFromBech32(msg.ToDidOrAddr)
 	if err != nil && !exported.IsValidDid(msg.ToDidOrAddr) {
-		return x.InvalidAddress("recipient is neither a did nor an address")
+		return exported.InvalidAddress("recipient is neither a did nor an address")
 	}
 
 	// Check amount (note: validity also checks that coins are positive)
 	if !msg.Amount.IsValid() {
-		return x.ErrInvalidCoins("send amount is invalid: " + msg.Amount.String())
+		return exported.InvalidCoinsf("sending amount is invalid: %s", msg.Amount.String())
 	}
 
 	return nil
@@ -181,7 +180,7 @@ func (msg MsgOracleMint) ValidateBasic() error {
 
 func (msg MsgOracleMint) GetSignerDid() exported.Did { return msg.OracleDid }
 func (msg MsgOracleMint) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgOracleMint) String() string {
@@ -222,20 +221,20 @@ func (msg MsgOracleBurn) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.OracleDid) {
-		return x.ErrInvalidDid("oracle did is invalid")
+		return exported.Invalid("oracle did is invalid")
 	} else if !exported.IsValidDid(msg.FromDid) {
-		return x.ErrInvalidDid("from did is invalid")
+		return exported.Invalid("from did is invalid")
 	}
 	// Check amount (note: validity also checks that coins are positive)
 	if !msg.Amount.IsValid() {
-		return x.ErrInvalidCoins("send amount is invalid: " + msg.Amount.String())
+		return exported.InvalidCoinsf("sending amount is invalid: %s", msg.Amount.String())
 	}
 	return nil
 }
 
 func (msg MsgOracleBurn) GetSignerDid() exported.Did { return msg.OracleDid }
 func (msg MsgOracleBurn) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{ante.DidToAddr(msg.GetSignerDid())}
+	return []sdk.AccAddress{exported.DidToAddr(msg.GetSignerDid())}
 }
 
 func (msg MsgOracleBurn) String() string {

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -15,7 +15,6 @@ import (
 
 	"github.com/tokenchain/ixo-blockchain/x/did/client/cli"
 	"github.com/tokenchain/ixo-blockchain/x/did/client/rest"
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
 )
 
 var (
@@ -63,7 +62,7 @@ func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	didTxCmd.AddCommand(flags.PostCommands(
 		cli.GetCmdAddDidDoc(cdc),
 		cli.GetCmdAddCredential(cdc),
-  	//	cli.GetCmdDidGenerate(cdc),
+		//	cli.GetCmdDidGenerate(cdc),
 		cli.GetCmdAccDidGenerate(cdc),
 	)...)
 
@@ -91,7 +90,7 @@ func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 
 type AppModule struct {
 	AppModuleBasic
-	keeper keeper.Keeper
+	keeper Keeper
 }
 
 func NewAppModule(keeper Keeper) AppModule {

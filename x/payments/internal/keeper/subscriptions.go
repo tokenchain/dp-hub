@@ -2,7 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
 )
 
@@ -37,7 +37,7 @@ func (k Keeper) GetSubscription(ctx sdk.Context, subscriptionId string) (types.S
 
 	bz := store.Get(key)
 	if bz == nil {
-		return types.Subscription{}, x.IntErr("invalid subscription")
+		return types.Subscription{}, exported.IntErr("invalid subscription")
 	}
 
 	var subscription types.Subscription
@@ -61,7 +61,7 @@ func (k Keeper) EffectSubscriptionPayment(ctx sdk.Context, subscriptionId string
 	}
 	// Check if should effect
 	if !subscription.ShouldEffect(ctx) {
-		return types.ErrTriedToEffectSubscriptionPaymentWhenShouldnt()
+		return exported.ErrTriedToEffectSubscriptionPaymentWhenShouldnt()
 	}
 
 	// Effect payment

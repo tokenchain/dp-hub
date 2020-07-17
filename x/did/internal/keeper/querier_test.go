@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/did"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -12,7 +12,7 @@ import (
 
 func TestQueryDidDocs(t *testing.T) {
 	ctx, k, cdc := CreateTestInput()
-	cdc.RegisterInterface((*did.DidDoc)(nil), nil)
+	cdc.RegisterInterface((*exported.DidDoc)(nil), nil)
 	err := k.SetDidDoc(ctx, &types.ValidDidDoc)
 	require.Nil(t, err)
 

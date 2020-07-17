@@ -7,6 +7,7 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
+	types2 "github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 )
 
 const (
@@ -28,5 +29,5 @@ func init() {
 	//copy(simSecp256k1Pubkey[:], bz)
 }
 
-type PubKeyGetter func(ctx sdk.Context, msg IxoMsg) (crypto.PubKey, error)
+type PubKeyGetter func(ctx sdk.Context, msg types2.IxoMsg) (crypto.PubKey, error)
 type SigVerificationGasConsumer func(meter sdk.GasMeter, sig []byte, pubkey crypto.PubKey, params types.Params) error

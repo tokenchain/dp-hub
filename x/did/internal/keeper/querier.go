@@ -6,7 +6,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
@@ -26,7 +25,7 @@ func NewQuerier(k Keeper) sdk.Querier {
 		case QueryAllDidDocs:
 			return queryAllDidDocs(ctx, k)
 		default:
-			return nil, x.UnknownRequest("Unknown did query endpoint")
+			return nil,exported.UnknownRequest("Unknown did query endpoint")
 		}
 	}
 }
@@ -39,7 +38,7 @@ func queryDidDoc(ctx sdk.Context, path []string, k Keeper) ([]byte, error) {
 
 	res, errRes := codec.MarshalJSONIndent(k.cdc, didDoc)
 	if errRes != nil {
-		return nil, x.IntErr(fmt.Sprintf("failed to marshal data %s", errRes))
+		return nil, exported.IntErr(fmt.Sprintf("failed to marshal data %s", errRes))
 	}
 
 	return res, nil
@@ -50,7 +49,7 @@ func queryAllDids(ctx sdk.Context, k Keeper) ([]byte, error) {
 
 	res, errRes := json.Marshal(allDids)
 	if errRes != nil {
-		return nil, x.IntErr(fmt.Sprintf("failed to marshal data %s", errRes.Error()))
+		return nil, exported.IntErr(fmt.Sprintf("failed to marshal data %s", errRes.Error()))
 	}
 
 	return res, nil
@@ -62,7 +61,7 @@ func queryAllDidDocs(ctx sdk.Context, k Keeper) ([]byte, error) {
 
 	res, errRes := json.Marshal(didDocs)
 	if errRes != nil {
-		return nil, x.IntErr(fmt.Sprintf("failed to marshal data %s", errRes.Error()))
+		return nil, exported.IntErr(fmt.Sprintf("failed to marshal data %s", errRes.Error()))
 	}
 
 	return res, nil

@@ -9,57 +9,44 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/tendermint/tendermint/crypto"
 	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/did/ed25519"
-	"github.com/tokenchain/ixo-blockchain/x/did/exported"
-
+	didexported "github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"time"
 )
 
 // DidKeeper defines the did contract that must be fulfilled throughout the ixo module
 
 type (
-	DidKeeper interface {
-		GetDidDoc(ctx sdk.Context, did exported.Did) (exported.DidDoc, error)
-		SetDidDoc(ctx sdk.Context, did exported.DidDoc) (err error)
-		AddDidDoc(ctx sdk.Context, did exported.DidDoc)
-		AddCredentials(ctx sdk.Context, did exported.Did, credential exported.DidCredential) (err error)
-		GetAllDidDocs(ctx sdk.Context) (didDocs []exported.DidDoc)
-		GetAddDids(ctx sdk.Context) (dids []exported.Did)
-	}
 	SigVerification struct {
 		ak              auth.AccountKeeper
 		stdSignature    auth.StdSignature
 		account_address []byte
 		pubkey          []byte
-		dap_tx          IxoTx
-		pgetter         PubKeyGetter
-		signature       IxoSignature
+		dap_tx          did.IxoTx
+		dk              didexported.DidKeeper
+		signature       did.IxoSignature
 	}
 	DapPubKeyDecoratorDecorator struct {
 		SigVerification
 	}
 	SigVerificationDecorator struct {
 		SigVerification
-		signature IxoSignature
+		signature did.IxoSignature
 	}
 )
 
-func NewDefaultPubKeyGetter(didKeeper DidKeeper) PubKeyGetter {
-	return func(ctx sdk.Context, msg IxoMsg) (pubKey crypto.PubKey, res error) {
-		signerDidDoc, err := didKeeper.GetDidDoc(ctx, msg.GetSignerDid())
-		if err != nil {
-			return pubKey, err
-		}
-		var pubKeyRaw ed25519tm.PubKeyEd25519
-		copy(pubKeyRaw[:], base58.Decode(signerDidDoc.GetPubKey()))
-		return pubKeyRaw, nil
+func NewSigVerification(ak auth.AccountKeeper, p didexported.DidKeeper) SigVerification {
+	return SigVerification{
+		ak: ak,
+		dk: p,
 	}
 }
-func NewSigVerification(ak auth.AccountKeeper, p PubKeyGetter) SigVerification {
-	return SigVerification{
-		ak:      ak,
-		pgetter: p,
-	}
+func (sv SigVerification) GetAccountKeeper() auth.AccountKeeper {
+	return sv.ak
+}
+func (sv SigVerification) GetDapTx() did.IxoTx {
+	return sv.dap_tx
 }
 func (sv SigVerification) isGenesis(ctx sdk.Context) bool {
 	return ctx.BlockHeight() == 0
@@ -80,40 +67,62 @@ func (sv SigVerification) RefreshAccount(ctx sdk.Context) error {
 	//	sv.account_address = address
 	return nil
 }
-
 func (sv SigVerification) initializeSignatures() (nsv SigVerification, err error) {
 	//f := sv.tx.GetFirstSignatureValues()
 	if len(sv.dap_tx.Signatures) > 0 {
-		sv.signature = NewSignature(time.Now(), sv.dap_tx.GetFirstSignature())
+		sv.signature = did.NewSignature(time.Now(), sv.dap_tx.GetFirstSignature())
 		return sv, nil
 	} else {
 		return sv, ErrItemNotFound("tx signature not found")
 	}
 }
 
+func (sv SigVerification) pubkeyExtract(ctx sdk.Context, msg did.IxoMsg) (pubKey crypto.PubKey, err error) {
+	// Get signer PubKey
+	var pubKeyEd25519 ed25519tm.PubKeyEd25519
+	switch msg := msg.(type) {
+	case did.MsgAddDid:
+		copy(pubKeyEd25519[:], base58.Decode(msg.DidDoc.PubKey))
+		//pubKeyEd25519 = did.RecoverDidToEd25519PubKey(msg.DidDoc.)
+	default:
+		// For the remaining messages, the did is the signer
+		didDoc, _ := sv.dk.GetDidDoc(ctx, msg.GetSignerDid())
+		if didDoc == nil {
+			return pubKey, Unauthorized("Issuer did not found")
+		}
+		copy(pubKeyEd25519[:], base58.Decode(didDoc.GetPubKey()))
+
+	}
+	return pubKeyEd25519, nil
+}
 func (sv SigVerification) RetrievePubkey(ctx sdk.Context, tx sdk.Tx, simulate bool) (nsv SigVerification, pubKey crypto.PubKey, err error) {
-	sigTx, ok := tx.(IxoTx)
+	sigTx, ok := did.CastTypeSdkTx(tx)
+
 	if !ok {
 		return sv, nil, InvalidTxDecode()
 	}
-	//fmt.Println(sigTx)
+	fmt.Println("debug ===============SigVerification.RetrievePubkey, sigTx")
+	fmt.Println(sigTx)
 	//fmt.Println(*sv.tx)
 	// all messages must be of type IxoMsg
-	msg, ok := sigTx.GetMsgs()[0].(IxoMsg)
+	msg, ok := sigTx.GetMsgs()[0].(did.IxoMsg)
 	if !ok {
-		//gInfo = sdk.GasInfo{}
 		return sv, nil, IntErr("msg must be ixo.IxoMsg. dxp")
 	}
 
-	pubKey, err = sv.pgetter(ctx, msg)
+	pubKey, err = sv.pubkeyExtract(ctx, msg)
 	if err != nil {
 		return sv, nil, err
 	}
-
+	fmt.Println("debug ===============SigVerification.RetrievePubkey, pgetter => pubKey")
+	fmt.Println(pubKey)
 	address := sdk.AccAddress(pubKey.Address())
 	signerAcc, err := auth.GetSignerAcc(ctx, sv.ak, address)
 	//signer := sigTx.GetSigner()
 	//acc := sv.ak.GetAccount(ctx, signer)
+	fmt.Println("debug ===============SigVerification.RetrievePubkey, address")
+	fmt.Println(address)
+
 	if signerAcc != nil {
 		sv.account_address = address
 		//copy(sv.account_address, address.Bytes())
@@ -157,7 +166,7 @@ func (sv SigVerification) RetrievePubkey(ctx sdk.Context, tx sdk.Tx, simulate bo
 	return sv, pubKey, nil
 }
 
-func NewDapPubKeyDecorator(ak auth.AccountKeeper, p PubKeyGetter) DapPubKeyDecoratorDecorator {
+func NewDapPubKeyDecorator(ak auth.AccountKeeper, p didexported.DidKeeper) DapPubKeyDecoratorDecorator {
 	return DapPubKeyDecoratorDecorator{
 		NewSigVerification(ak, p),
 	}
@@ -170,7 +179,7 @@ func (__edp DapPubKeyDecoratorDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, 
 	return next(ctx, tx, simulate)
 }
 
-func NewSigVerificationDecorator(ak auth.AccountKeeper, p PubKeyGetter) SigVerificationDecorator {
+func NewSigVerificationDecorator(ak auth.AccountKeeper, p didexported.DidKeeper) SigVerificationDecorator {
 	return SigVerificationDecorator{
 		SigVerification: NewSigVerification(ak, p),
 	}
@@ -184,9 +193,9 @@ func (sv SigVerificationDecorator) VerifyNow(pub []byte, message []byte, sign []
 		return Unauthorizedf("ed25519: bad public key length expected %d but got %d! ", ed25519.PublicKeySize, l)
 	}
 	/*
-	fmt.Println("===> debug public key check:", base58.Encode(pub), len(pub), pub)
-	fmt.Println("===> ⚠️ check signed message data ....")
-	fmt.Println(message)
+		fmt.Println("===> debug public key check:", base58.Encode(pub), len(pub), pub)
+		fmt.Println("===> ⚠️ check signed message data ....")
+		fmt.Println(message)
 	*/
 	if ed25519.Verify(pub, message, sign) {
 		return nil
@@ -208,8 +217,8 @@ func (sv SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 	signedMessageBytes := nsv2.dap_tx.GetSignBytes(ctx, nsv2.GetSignerAccount(ctx))
 	/*
 
-	fmt.Println("✅  check signature data ....")
-	fmt.Println(nsv2.signature.SignatureValue[:])
+		fmt.Println("✅  check signature data ....")
+		fmt.Println(nsv2.signature.SignatureValue[:])
 
 	*/
 

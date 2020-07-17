@@ -4,11 +4,10 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
 )
 
@@ -27,7 +26,7 @@ func NewHandler(keeper keeper.Keeper) sdk.Handler {
 			return handleMsgSwap(ctx, keeper, msg)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized bonds Msg type: %v", msg.Type())
-			return nil, x.UnknownRequest(errMsg)
+			return nil, exported.UnknownRequest(errMsg)
 		}
 	}
 }
@@ -208,7 +207,7 @@ func handleMsgEditBond(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgEditB
 }
 
 func handleMsgBuy(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgBuy) (*sdk.Result, error) {
-	buyerAddr := ante.DidToAddr(msg.BuyerDid)
+	buyerAddr := exported.DidToAddr(msg.BuyerDid)
 
 	bond, found := keeper.GetBond(ctx, msg.BondDid)
 	if !found {
@@ -277,7 +276,7 @@ func handleMsgBuy(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgBuy) (*sdk
 }
 
 func performFirstSwapperFunctionBuy(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgBuy) (*sdk.Result, error) {
-	buyerAddr := ante.DidToAddr(msg.BuyerDid)
+	buyerAddr := exported.DidToAddr(msg.BuyerDid)
 
 	// TODO: investigate effect that a high amount has on future buyers' ability to buy.
 
@@ -336,7 +335,7 @@ func performFirstSwapperFunctionBuy(ctx sdk.Context, keeper keeper.Keeper, msg t
 }
 
 func handleMsgSell(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgSell) (*sdk.Result, error) {
-	sellerAddr := ante.DidToAddr(msg.SellerDid)
+	sellerAddr := exported.DidToAddr(msg.SellerDid)
 
 	bond, found := keeper.GetBond(ctx, msg.BondDid)
 	if !found {
@@ -403,7 +402,7 @@ func handleMsgSell(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgSell) (*s
 }
 
 func handleMsgSwap(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgSwap) (*sdk.Result, error) {
-	swapperAddr := ante.DidToAddr(msg.SwapperDid)
+	swapperAddr := exported.DidToAddr(msg.SwapperDid)
 
 	bond, found := keeper.GetBond(ctx, msg.BondDid)
 	if !found {

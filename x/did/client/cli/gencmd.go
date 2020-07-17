@@ -9,14 +9,15 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/input"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
-	aute2 "github.com/tokenchain/ixo-blockchain/x/did/ante"
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/go-bip39"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+	//needs to use internal because this package is used in did package
+	didtypes "github.com/tokenchain/ixo-blockchain/x/did/internal/types"
+
 	"io"
 )
 
@@ -214,9 +215,9 @@ func runGenerationOffline(cdc *codec.Codec) CommandDo {
 		if !response {
 			return errors.New("aborted.")
 		}
-		msg := types.NewMsgAddDid(docCombine.Did, docCombine.GetPubKey())
+		msg := didtypes.NewMsgAddDid(docCombine.Did, docCombine.GetPubKey())
 		cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(docCombine.Address())
-		preheat := aute2.NewDidTxBuild(cliCtx, msg, docCombine)
+		preheat := didtypes.NewDidTxBuild(cliCtx, msg, docCombine)
 
 		if generateOnly {
 			return preheat.DebugTxDecode()

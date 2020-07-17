@@ -3,6 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"net/http"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
 
-	"github.com/tokenchain/ixo-blockchain/x/dap"
 	"github.com/tokenchain/ixo-blockchain/x/project/internal/types"
 )
 
@@ -54,7 +54,7 @@ func createProjectRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		cliCtx = cliCtx.WithBroadcastMode(mode)
 		msg := types.NewMsgCreateProject(senderDid, projectDoc, didDoc)
 
-		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, didDoc)
+		output, err := did.NewDidTxBuild(cliCtx, msg, didDoc).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHeadf(w, http.StatusInternalServerError, "Internal Server Error: %s", err.Error())
 			return
@@ -98,7 +98,7 @@ func updateProjectStatusRequestHandler(cliCtx context.CLIContext) http.HandlerFu
 
 		msg := types.NewMsgUpdateProjectStatus(senderDid, updateProjectStatusDoc, sovrinDid)
 
-		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
+		output, err := did.NewDidTxBuild(cliCtx, msg, sovrinDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
@@ -138,7 +138,7 @@ func createAgentRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgCreateAgent(txHash, senderDid, createAgentDoc, projectDid)
 
-		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, projectDid)
+		output, err := did.NewDidTxBuild(cliCtx, msg, projectDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
@@ -171,7 +171,7 @@ func createClaimRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgCreateClaim(txHash, senderDid, createClaimDoc, sovrinDid)
 
-		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
+		output, err := did.NewDidTxBuild(cliCtx, msg, sovrinDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
@@ -212,7 +212,7 @@ func createEvaluationRequestHandler(cliCtx context.CLIContext) http.HandlerFunc 
 
 		msg := types.NewMsgCreateEvaluation(txHash, senderDid, createEvaluationDoc, sovrinDid)
 
-		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
+		output, err := did.NewDidTxBuild(cliCtx, msg, sovrinDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
@@ -246,7 +246,7 @@ func withdrawFundsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgWithdrawFunds(senderDid.Did, data)
 
-		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, senderDid)
+		output, err := did.NewDidTxBuild(cliCtx, msg, senderDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return

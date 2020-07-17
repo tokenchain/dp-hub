@@ -4,7 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/nameservice/types"
 )
 
@@ -26,7 +26,7 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 		case QueryNames:
 			return queryNames(ctx, req, keeper)
 		default:
-			return nil, x.UnknownRequest("unknown nameservice query endpoint")
+			return nil,exported.UnknownRequest("unknown nameservice query endpoint")
 		}
 	}
 }
@@ -36,12 +36,12 @@ func queryResolve(ctx sdk.Context, path []string, req abci.RequestQuery, keeper 
 	value := keeper.ResolveName(ctx, path[0])
 
 	if value == "" {
-		return []byte{}, x.UnknownRequest("could not resolve name")
+		return []byte{},exported.UnknownRequest("could not resolve name")
 	}
 
 	res, err := codec.MarshalJSONIndent(keeper.cdc, types.QueryResResolve{Value: value})
 	if err != nil {
-		return nil, x.ErrJsonMars(err.Error())
+		return nil, exported.ErrJsonMars(err.Error())
 	}
 
 	return res, nil
@@ -53,7 +53,7 @@ func queryWhois(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Ke
 
 	res, err := codec.MarshalJSONIndent(keeper.cdc, whois)
 	if err != nil {
-		return nil, x.ErrJsonMars(err.Error())
+		return nil, exported.ErrJsonMars(err.Error())
 	}
 
 	return res, nil
@@ -70,7 +70,7 @@ func queryNames(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, 
 
 	res, err := codec.MarshalJSONIndent(keeper.cdc, namesList)
 	if err != nil {
-		return nil, x.ErrJsonMars(err.Error())
+		return nil, exported.ErrJsonMars(err.Error())
 	}
 
 	return res, nil

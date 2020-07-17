@@ -9,8 +9,7 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x/bonds/client"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/dap"
-	"github.com/tokenchain/ixo-blockchain/x/dap/auth"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"net/http"
 	"strings"
@@ -186,7 +185,7 @@ func createBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			orderQuantityLimits, sanityRate, sanityMarginPercentage,
 			req.AllowSells, batchBlocks, req.BondDid)
 
-		output, err2 := auth.SignAndBroadcastTxRest(cliCtx, msg, creatorDid)
+		output, err2 := did.NewDidTxBuild(cliCtx, msg, creatorDid).SignAndBroadcastTxRest()
 		if err2 != nil {
 			writeHead(w, http.StatusInternalServerError, err2.Error())
 			return
@@ -221,7 +220,7 @@ func editBondHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			req.OrderQuantityLimits, req.SanityRate,
 			req.SanityMarginPercentage, editorDid, req.BondDid)
 
-		output, err := auth.SignAndBroadcastTxRest(cliCtx, msg, editorDid)
+		output, err := did.NewDidTxBuild(cliCtx, msg, editorDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
@@ -266,7 +265,7 @@ func buyHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgBuy(buyerDid.Did, bondCoin, maxPrices, req.BondDid)
 
-		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, buyerDid)
+		output, err := did.NewDidTxBuild(cliCtx, msg, buyerDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
@@ -305,7 +304,7 @@ func sellHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgSell(sellerDid, bondCoin, req.BondDid)
 
-		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sellerDid)
+		output, err := did.NewDidTxBuild(cliCtx, msg, sellerDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
@@ -345,7 +344,7 @@ func swapHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgSwap(swapperDid, fromCoin, req.ToToken, req.BondDid)
 
-		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, swapperDid)
+		output, err := did.NewDidTxBuild(cliCtx, msg, swapperDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return

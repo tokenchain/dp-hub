@@ -12,7 +12,7 @@ import (
 	client2 "github.com/tokenchain/ixo-blockchain/x/bonds/client"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
 )
@@ -143,7 +143,7 @@ func GetCmdCreateBond(cdc *codec.Codec) *cobra.Command {
 				_allowSells, batchBlocks, bondDid)
 
 			//return dap.SignAndBroadcastTxCli(cliCtx, msg, creatorDid)
-			return ante.NewDidTxBuild(cliCtx, msg, creatorDid).CompleteAndBroadcastTxCLI()
+			return did.NewDidTxBuild(cliCtx, msg, creatorDid).CompleteAndBroadcastTxCLI()
 
 		},
 	}
@@ -201,7 +201,7 @@ func GetCmdEditBond(cdc *codec.Codec) *cobra.Command {
 				_sanityMarginPercentage, editorDid, _bondDid)
 
 			//	return dap.SignAndBroadcastTxCli(cliCtx, msg, editorDid)
-			return ante.NewDidTxBuild(cliCtx, msg, editorDid).CompleteAndBroadcastTxCLI()
+			return did.NewDidTxBuild(cliCtx, msg, editorDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 
@@ -246,7 +246,7 @@ func GetCmdBuy(cdc *codec.Codec) *cobra.Command {
 			msg := types.NewMsgBuy(buyerDid.Did, bondCoinWithAmount, maxPrices, args[2])
 
 			//			return did.SignAndBroadcastTxCli(cliCtx, msg, buyerDid)
-			return ante.NewDidTxBuild(cliCtx, msg, buyerDid).CompleteAndBroadcastTxCLI()
+			return did.NewDidTxBuild(cliCtx, msg, buyerDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 	return cmd
@@ -277,7 +277,7 @@ func GetCmdSell(cdc *codec.Codec) *cobra.Command {
 
 			//return did.SignAndBroadcastTxCli(cliCtx, msg, sellerDid)
 
-			return ante.NewDidTxBuild(cliCtx, msg, sellerDid).CompleteAndBroadcastTxCLI()
+			return did.NewDidTxBuild(cliCtx, msg, sellerDid).CompleteAndBroadcastTxCLI()
 		},
 	}
 	return cmd
@@ -310,7 +310,7 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 
 			//return did.SignAndBroadcastTxCli(cliCtx, msg, swapperDid)
 
-			return ante.NewDidTxBuild(cliCtx, msg, swapperDid).CompleteAndBroadcastTxCLI()
+			return did.NewDidTxBuild(cliCtx, msg, swapperDid).CompleteAndBroadcastTxCLI()
 
 		},
 	}
