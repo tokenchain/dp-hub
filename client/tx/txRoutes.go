@@ -12,7 +12,6 @@ import (
 	genutilrest "github.com/cosmos/cosmos-sdk/x/genutil/client/rest"
 	"github.com/gorilla/mux"
 	utils2 "github.com/tokenchain/ixo-blockchain/client/utils"
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/project"
