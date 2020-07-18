@@ -85,7 +85,7 @@ func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application
 		skipUpgradeHeights[int64(h)] = true
 	}
 
-	return app.NewIxoApp(
+	return app.NewDarkpoolApp(
 		logger, db, traceStore, true, invCheckPeriod, skipUpgradeHeights,
 		baseapp.SetPruning(store.PruneSyncable),
 		baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
@@ -99,7 +99,7 @@ func exportAppStateAndTMValidators(logger log.Logger, db dbm.DB, traceStore io.W
 	forZeroHeight bool, jailWhiteList []string) (json.RawMessage, []tmtypes.GenesisValidator, error) {
 
 	if height != -1 {
-		nsApp := app.NewIxoApp(logger, db, traceStore, false, uint(1), map[int64]bool{})
+		nsApp := app.NewDarkpoolApp(logger, db, traceStore, false, uint(1), map[int64]bool{})
 		err := nsApp.LoadHeight(height)
 		if err != nil {
 			return nil, nil, err
@@ -108,7 +108,7 @@ func exportAppStateAndTMValidators(logger log.Logger, db dbm.DB, traceStore io.W
 		return nsApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 	}
 
-	nsApp := app.NewIxoApp(logger, db, traceStore, true, uint(1), map[int64]bool{})
+	nsApp := app.NewDarkpoolApp(logger, db, traceStore, true, uint(1), map[int64]bool{})
 	println("export validators now..")
 	return nsApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 }

@@ -17,7 +17,8 @@ import (
 )
 
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
-	r.HandleFunc("/bonds/create_bond", createBondHandler(cliCtx), ).Methods("POST")
+	//bond listing is temporay not available
+	//r.HandleFunc("/bonds/create_bond", createBondHandler(cliCtx), ).Methods("POST")
 	r.HandleFunc("/bonds/edit_bond", editBondHandler(cliCtx), ).Methods("POST")
 	r.HandleFunc("/bonds/buy", buyHandler(cliCtx), ).Methods("POST")
 	r.HandleFunc("/bonds/sell", sellHandler(cliCtx), ).Methods("POST")

@@ -319,7 +319,31 @@ func simulateMsgs(txBldr auth.TxBuilder, cliCtx context.CLIContext, msgs []sdk.M
 	return
 }
 
-func ApproximateFeeForTx(cliCtx context.CLIContext, tx ante.IxoTx, chainId string) (auth.StdFee, error) {
+func ApproximateFeeForTxDap(cliCtx context.CLIContext, tx ante.IxoTx, chainId string) (auth.StdFee, error) {
+
+	// Set up a transaction builder
+	cdc := cliCtx.Codec
+	txEncoder := auth.DefaultTxEncoder
+	gasAdjustment := approximationGasAdjustment
+	fees := sdk.NewCoins(sdk.NewCoin(types.NativeToken, sdk.OneInt()))
+	txBldr := auth.NewTxBuilder(txEncoder(cdc), 0, 0, 0, gasAdjustment, true, chainId, tx.Memo, fees, nil)
+
+	// Approximate gas consumption
+	txBldr, err := utils.EnrichWithGas(txBldr, cliCtx, tx.Msgs)
+	if err != nil {
+		return auth.StdFee{}, err
+	}
+
+	// Clear fees and set gas-prices to deduce updated fee = (gas * gas-prices)
+	signMsg, err := txBldr.WithFees("").WithGasPrices(expectedMinGasPrices).BuildSignMsg(tx.Msgs)
+	if err != nil {
+		return auth.StdFee{}, err
+	}
+
+	return signMsg.Fee, nil
+}
+
+func ApproximateFeeForTx(cliCtx context.CLIContext, tx auth.StdTx, chainId string) (auth.StdFee, error) {
 
 	// Set up a transaction builder
 	cdc := cliCtx.Codec
@@ -361,7 +385,7 @@ func CompleteAndBroadcastTxRest(cliCtx context.CLIContext, msg sdk.Msg, ixoDid e
 	// Construct dummy tx and approximate and set fee
 	tx := ante.NewIxoTxSingleMsg(msg, auth.StdFee{}, ante.IxoSignature{}, "")
 	chainId := viper.GetString(flags.FlagChainID)
-	fee, err := ApproximateFeeForTx(cliCtx, tx, chainId)
+	fee, err := ApproximateFeeForTxDap(cliCtx, tx, chainId)
 	if err != nil {
 		return nil, err
 	}
@@ -477,7 +501,7 @@ func SignAndBroadcastTxRest(cliCtx context.CLIContext, msg sdk.Msg, sovrinDid ex
 	// Construct dummy tx and approximate and set fee
 	tx := ante.NewIxoTxSingleMsg(msg, auth.StdFee{}, ante.IxoSignature{}, "")
 	chainId := viper.GetString(flags.FlagChainID)
-	fee, err := ApproximateFeeForTx(cliCtx, tx, chainId)
+	fee, err := ApproximateFeeForTxDap(cliCtx, tx, chainId)
 	if err != nil {
 		return nil, err
 	}

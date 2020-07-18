@@ -10,14 +10,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	authCli "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
-	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	bankCli "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tmlibs/cli"
 	"github.com/tokenchain/ixo-blockchain/app"
 	cli2 "github.com/tokenchain/ixo-blockchain/client/cli"
-	/*	distRest "github.com/cosmos/cosmos-sdk/x/distribution/client/rest"
+	clientTx "github.com/tokenchain/ixo-blockchain/client/tx"
+	/*authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
+		distRest "github.com/cosmos/cosmos-sdk/x/distribution/client/rest"
 		distcmd "github.com/cosmos/cosmos-sdk/x/distribution"
 		distClient "github.com/cosmos/cosmos-sdk/x/distribution/client"*/
 
@@ -119,6 +120,7 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 // NOTE: If making updates here you also need to update the test helper in client/lcd/test_helper.go
 func registerRoutes(rs *lcd.RestServer) {
 	client.RegisterRoutes(rs.CliCtx, rs.Mux)
-	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
+	//authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
+	clientTx.RegisterTxRoutes(rs.CliCtx, rs.Mux)
 	app.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }

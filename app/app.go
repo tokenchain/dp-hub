@@ -156,20 +156,20 @@ type DpApp struct {
 // verify app interface at compile time
 var _ simapp.App = (*DpApp)(nil)
 
-func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
+func NewDarkpoolApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, skipUpgradeHeights map[int64]bool, baseAppOptions ...func(*bam.BaseApp)) *DpApp {
 
 	cdc := MakeCodec()
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
-	bApp := bam.NewBaseApp(
+	dapApp := bam.NewBaseApp(
 		appName,
 		logger,
 		db,
 		ante.DefaultTxDecoder(cdc),
 		baseAppOptions...,
 	)
-	bApp.SetCommitMultiStoreTracer(traceStore)
-	//bApp.SetAppVersion(version.NewVersion("v0.1.1"))
+	dapApp.SetCommitMultiStoreTracer(traceStore)
+	//dapApp.SetAppVersion(version.NewVersion("v0.1.1"))
 
 	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
 		supply.StoreKey, distribution.StoreKey, slashing.StoreKey,
@@ -182,7 +182,7 @@ func NewIxoApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bo
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
 	app := &DpApp{
-		BaseApp:        bApp,
+		BaseApp:        dapApp,
 		cdc:            cdc,
 		invCheckPeriod: invCheckPeriod,
 		keys:           keys,

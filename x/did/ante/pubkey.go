@@ -170,7 +170,7 @@ func (__edp DapPubKeyDecoratorDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, 
 	return next(ctx, tx, simulate)
 }
 
-func NewSigVerificationDecorator(ak auth.AccountKeeper, p PubKeyGetter) SigVerificationDecorator {
+func NewSigVerificationAndIncrementSequenceDecorator(ak auth.AccountKeeper, p PubKeyGetter) SigVerificationDecorator {
 	return SigVerificationDecorator{
 		SigVerification: NewSigVerification(ak, p),
 	}

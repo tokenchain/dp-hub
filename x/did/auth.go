@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/btcsuite/btcutil/base58"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/tendermint/tendermint/crypto"
 	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
 func GetPubKeyGetter(keeper Keeper) ante.PubKeyGetter {
@@ -21,21 +21,21 @@ func GetPubKeyGetter(keeper Keeper) ante.PubKeyGetter {
 
 		default:
 			// For the remaining messages, the did is the signer
-			fmt.Println("--- GetPubKeyGetter .1")
+			//fmt.Println("--- GetPubKeyGetter .1")
 			fmt.Println(msg.GetSignerDid())
 
 			didDoc, er := keeper.GetDidDoc(ctx, msg.GetSignerDid())
-			fmt.Println("--- GetPubKeyGetter .3")
+			//fmt.Println("--- GetPubKeyGetter .3")
 			if er != nil {
 				return nil, er
 			}
-			fmt.Println("--- GetPubKeyGetter .4")
+			//fmt.Println("--- GetPubKeyGetter .4")
 			if didDoc == nil {
-				return pubKey, Unauthorized("Issuer did not found")
+				return pubKey, exported.Unauthorized("Issuer did not found")
 			}
 
 			copy(pubKeyEd25519[:], base58.Decode(didDoc.GetPubKey()))
-			fmt.Println("--- GetPubKeyGetter .5")
+			//fmt.Println("--- GetPubKeyGetter .5")
 		}
 		/*
 		   MsgAddDid{Did: did:dxp:VrsU9cUAcYgF7f397xtjsX, publicKey: GjKLRmDSCLALj28519q8XwKTmJTfFpobEsWCCKWHhzut}
@@ -43,8 +43,8 @@ func GetPubKeyGetter(keeper Keeper) ante.PubKeyGetter {
 		   fmt.Println("- json message -")
 		   fmt.Println(msg)
 		*/
-		fmt.Println("--- GetPubKeyGetter .6")
-		fmt.Println(pubKeyEd25519)
+		//fmt.Println("--- GetPubKeyGetter .6")
+		//fmt.Println(pubKeyEd25519)
 		return pubKeyEd25519, nil
 	}
 }
@@ -59,8 +59,4 @@ func NewDefaultPubKeyGetter(didKeeper Keeper) ante.PubKeyGetter {
 		copy(pubKeyRaw[:], base58.Decode(signerDidDoc.GetPubKey()))
 		return pubKeyRaw, nil
 	}
-}
-
-func Unauthorized(m string) error {
-	return errors.Wrap(errors.ErrUnauthorized, m)
 }

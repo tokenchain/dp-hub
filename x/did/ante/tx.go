@@ -75,8 +75,8 @@ type (
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterInterface((*TxActor)(nil), nil)
 	//cdc.RegisterInterface((*[]interface{})(nil), nil)
-	cdc.RegisterConcrete(&IxoTx{}, "darkpool/IxoTx", nil)
-	cdc.RegisterConcrete(&IxoSignature{}, "darkpool/IxoSignature", nil)
+	cdc.RegisterConcrete(IxoTx{}, "darkpool/IxoTx", nil)
+	cdc.RegisterConcrete(IxoSignature{}, "darkpool/IxoSignature", nil)
 
 }
 
@@ -230,7 +230,7 @@ func (tx IxoTx) GetFirstSignature() []byte {
 GetGas() uint64
 GetFee() sdk.Coins
 FeePayer() sdk.AccAddress*/
-
+/*
 func DefaultTxDecoderV2(cdc *codec.Codec) sdk.TxDecoder {
 	return func(txBytes []byte) (sdk.Tx, error) {
 
@@ -247,7 +247,7 @@ func DefaultTxDecoderV2(cdc *codec.Codec) sdk.TxDecoder {
 			}
 			fmt.Println("--- Darkpool Transaction -1")
 			fmt.Println(upTx)
-			//payloadArray := upTx["payload"].([]interface{})
+
 			payloadArray := upTx["payload"].(map[string]interface{})
 			if len(payloadArray) != 1 {
 				return nil, InvalidTxDecodeMsg("Multiple messages not supported")
@@ -271,13 +271,15 @@ func DefaultTxDecoderV2(cdc *codec.Codec) sdk.TxDecoder {
 		}
 	}
 }
-
+*/
 func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 	return func(txBytes []byte) (sdk.Tx, error) {
 		if len(txBytes) == 0 {
 			return nil, InvalidTxDecodeMsg("txBytes are empty")
 		}
+
 		if string(txBytes[0:1]) == "{" {
+			fmt.Println("--- DefaultTxDecoder, UnmarshalJSON the IxoTx")
 			var tx IxoTx
 			err := cdc.UnmarshalJSON(txBytes, &tx)
 			if err != nil {
@@ -285,6 +287,7 @@ func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 			}
 			return tx, nil
 		} else {
+			fmt.Println("--- DefaultTxDecoder, UnmarshalBinaryLengthPrefixed the standardTx")
 			var tx auth.StdTx
 			err := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &tx)
 			if err != nil {

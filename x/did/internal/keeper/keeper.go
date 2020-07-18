@@ -42,7 +42,7 @@ func (k Keeper) SetDidDoc(ctx sdk.Context, did exported.DidDoc) (err error) {
 	if existedDidDoc != nil {
 		return exported.ErrInvalidDid("Did already exists")
 	}
-	
+
 	return k.AddDidDocDebug(ctx, did)
 }
 
