@@ -221,6 +221,11 @@ func (msg MsgCreateBond) ValidateBasic() error {
 
 func (msg MsgCreateBond) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	/*if bz, err := json.Marshal(msg); err != nil {
+		panic(err)
+	} else {
+		return sdk.MustSortJSON(bz)
+	}*/
 }
 
 func (msg MsgCreateBond) GetSignerDid() exported.Did { return msg.CreatorDid }

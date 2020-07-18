@@ -22,9 +22,9 @@ import (
 )
 
 func RegisterTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
-	//r.HandleFunc("/txs/{hash}", QueryTxRequestHandlerFn(cliCtx)).Methods("GET")
-	//r.HandleFunc("/txs", QueryTxsRequestHandlerFn(cliCtx)).Methods("GET")
-	//r.HandleFunc("/txs", BroadcastTxRequest(cliCtx)).Methods("POST")
+	r.HandleFunc("/txs/{hash}", QueryTxRequestHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc("/txs", QueryTxsRequestHandlerFn(cliCtx)).Methods("GET")
+	r.HandleFunc("/txs", BroadcastTxRequest(cliCtx)).Methods("POST")
 	r.HandleFunc("/sign_data", SignDataRequest(cliCtx)).Methods("POST")
 }
 

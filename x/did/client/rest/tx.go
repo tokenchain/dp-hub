@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
@@ -26,7 +27,7 @@ func createDidRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		msg := didtypes.NewMsgAddDid(sovrinDid.Did, sovrinDid.GetPubKey())
-
+		fmt.Println("createDidRequestHandler here to handle it now..")
 		output, err := didtypes.NewDidTxBuild(cliCtx, msg, sovrinDid).SignAndBroadcastTxRest()
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+	"github.com/tokenchain/ixo-blockchain/x/did/test"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -13,7 +14,7 @@ import (
 func TestQueryDidDocs(t *testing.T) {
 	ctx, k, cdc := CreateTestInput()
 	cdc.RegisterInterface((*exported.DidDoc)(nil), nil)
-	err := k.SetDidDoc(ctx, &types.ValidDidDoc)
+	err := k.SetDidDoc(ctx, &test.ValidDidDoc)
 	require.Nil(t, err)
 
 	query := abci.RequestQuery{
@@ -22,7 +23,7 @@ func TestQueryDidDocs(t *testing.T) {
 	}
 
 	querier := NewQuerier(k)
-	res, err := querier(ctx, []string{"queryDidDoc", types.ValidDidDoc.Did}, query)
+	res, err := querier(ctx, []string{"queryDidDoc", test.ValidDidDoc.Did}, query)
 	require.Nil(t, err)
 
 	var a types.BaseDidDoc

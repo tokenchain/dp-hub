@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
@@ -34,8 +35,9 @@ func (k Keeper) GetDidDoc(ctx sdk.Context, did exported.Did) (exported.DidDoc, e
 	}
 
 	var didDoc types.BaseDidDoc
+	fmt.Println("========== get did doc GetDidDoc")
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &didDoc)
-
+	fmt.Println("========== over here")
 	return didDoc, nil
 }
 
@@ -78,10 +80,11 @@ func (k Keeper) AddCredentials(ctx sdk.Context, did exported.Did, credential exp
 
 func (k Keeper) GetAllDidDocs(ctx sdk.Context) (didDocs []exported.DidDoc) {
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.DidKey)
+	iterator := sdk.KVStorePrefixIterator(store, DidKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var didDoc types.BaseDidDoc
+		fmt.Println("========== get did doc GetAllDidDocs")
 		k.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Value(), &didDoc)
 		didDocs = append(didDocs, &didDoc)
 	}

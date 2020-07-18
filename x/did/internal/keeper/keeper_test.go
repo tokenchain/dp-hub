@@ -2,11 +2,10 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/test"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 )
 
 type (
@@ -24,12 +23,12 @@ type (
 func TestKeeper(t *testing.T) {
 	ctx, k, cdc := CreateTestInput()
 	cdc.RegisterInterface((*DidDoc)(nil), nil)
-	_, err := k.GetDidDoc(ctx, types.EmptyDid)
+	_, err := k.GetDidDoc(ctx, test.EmptyDid)
 	require.NotNil(t, err)
 
-	err = k.SetDidDoc(ctx, &types.ValidDidDoc)
+	err = k.SetDidDoc(ctx, &test.ValidDidDoc)
 	require.Nil(t, err)
 
-	_, err = k.GetDidDoc(ctx, types.ValidDidDoc.GetDid())
+	_, err = k.GetDidDoc(ctx, test.ValidDidDoc.GetDid())
 	require.Nil(t, err)
 }

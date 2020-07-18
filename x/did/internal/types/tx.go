@@ -15,6 +15,7 @@ import (
 	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/crypto"
+	dap "github.com/tokenchain/ixo-blockchain/x/dap"
 	"github.com/tokenchain/ixo-blockchain/x/did/ed25519"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"gopkg.in/yaml.v2"
@@ -26,7 +27,8 @@ import (
 var (
 	maxGasWanted = uint64((1 << 63) - 1)
 	//_            TxActor = (*IxoTx)(nil)
-	_ sdk.Tx = (*IxoTx)(nil)
+	_         sdk.Tx = (*IxoTx)(nil)
+	gas_price        = "250" + dap.IxoNativeToken
 )
 
 // GetSignBytes returns the signBytes of the tx for a given signer
@@ -85,7 +87,6 @@ func (is IxoSignature) MarshalYAML() (interface{}, error) {
 		bz  []byte
 		err error
 	)
-
 	bz, err = yaml.Marshal(struct {
 		SignatureValue string
 		Created        string
@@ -275,15 +276,27 @@ func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 			return nil, exported.InvalidTxDecodeMsg("txBytes are empty")
 		}
 		if string(txBytes[0:1]) == "{" {
+			/*	fmt.Println("--- Darkpool Transaction -0")
+				var upTx map[string]interface{}
+				er := json.Unmarshal(txBytes, &upTx)
+				if er != nil {
+					return nil, exported.InvalidTxDecodeMsg(er.Error())
+				}
+			*/
+
 			var tx IxoTx
+			fmt.Println("--- Darkpool Transaction -1")
 			err := cdc.UnmarshalJSON(txBytes, &tx)
 			if err != nil {
+				fmt.Println("--- Darkpool Transaction -2")
 				return nil, exported.InvalidTxDecodeMsgf("tx decoder %s", err.Error())
 			}
 			return tx, nil
 		} else {
 			var tx auth.StdTx
+			fmt.Println("--- Standard Cosmos Transaction")
 			err := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &tx)
+			fmt.Println("--- Standard Cosmos Transaction 2")
 			if err != nil {
 				return nil, exported.InvalidTxDecodeMsgf("tx decoder std msg %s", err.Error())
 			}
@@ -305,7 +318,8 @@ func NewDidTxBuild(ctx context.CLIContext, msg sdk.Msg, ixoDid exported.IxoDid) 
 		msg:    msg,
 		did:    ixoDid,
 	}
-	instance.txBldr = auth.NewTxBuilderFromCLI(ctx.Input)
+	instance.txBldr = auth.NewTxBuilderFromCLI(ctx.Input).
+		WithTxEncoder(utils.GetTxEncoder(ctx.Codec))
 	return instance
 }
 func (tb SignTxPack) collectMsgs() []sdk.Msg {
@@ -428,12 +442,12 @@ func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {
 		}
 		return nil
 	}
-	/*
-		fmt.Println("=============== public key ==============")
-		fmt.Println(tb.did.GetPubKey())
-		fmt.Println("=============== private key ==============")
-		fmt.Println(tb.did.GetPriKeyByte())
-	*/
+
+	fmt.Println("=============== public key ==============")
+	fmt.Println(tb.did.GetPubKey())
+	fmt.Println("=============== private key ==============")
+	fmt.Println(tb.did.GetPriKeyByte())
+
 	if !tb.ctxCli.SkipConfirm {
 
 		var json []byte
@@ -460,15 +474,19 @@ func (tb SignTxPack) CompleteAndBroadcastTxCLI() error {
 	}
 	//will print the message  check signed message ==
 	signTxMsg := tb.CollectSignedMessage(stdSignMsg)
-	/*
-		fmt.Println("=============== pre-tx-signature ==============")
-		fmt.Println(signTxMsg.GetFirstSignature())
-	*/
+
+	fmt.Println("=============== pre-tx-signature ==============")
+	fmt.Println(signTxMsg.GetFirstSignature())
+
 	bz, err := tb.ctxCli.Codec.MarshalJSON(signTxMsg)
 	if err != nil {
 		return fmt.Errorf("Could not marshall tx to binary. Error: %s! ", err.Error())
 	}
 
+	fmt.Println("=============== marsha json bytes ==============")
+	fmt.Println(bz)
+	fmt.Println("=============== marsha json bytes to string ==============")
+	fmt.Println(string(bz))
 	res, err := tb.ctxCli.BroadcastTx(bz)
 	if err != nil {
 		return fmt.Errorf("Could not broadcast tx. Error: %s! ", err.Error())
@@ -489,7 +507,7 @@ func (tb SignTxPack) SignAndBroadcastTxRest() ([]byte, error) {
 	}
 
 	// Clear fees and set gas-prices to deduce updated fee = (gas * gas-prices)
-	stdSignMsg, err := txBldr.WithFees("").WithGasPrices("25mdap").BuildSignMsg(tb.collectMsgs())
+	stdSignMsg, err := txBldr.WithFees("").WithGasPrices(gas_price).BuildSignMsg(tb.collectMsgs())
 	if err != nil {
 		return nil, err
 	}

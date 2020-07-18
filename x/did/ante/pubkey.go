@@ -82,10 +82,12 @@ func (sv SigVerification) pubkeyExtract(ctx sdk.Context, msg did.IxoMsg) (pubKey
 	var pubKeyEd25519 ed25519tm.PubKeyEd25519
 	switch msg := msg.(type) {
 	case did.MsgAddDid:
+		fmt.Println("add did doc message extract the pubkey .... ")
 		copy(pubKeyEd25519[:], base58.Decode(msg.DidDoc.PubKey))
 		//pubKeyEd25519 = did.RecoverDidToEd25519PubKey(msg.DidDoc.)
 	default:
 		// For the remaining messages, the did is the signer
+		fmt.Println("get did doc from other subjects .... ")
 		didDoc, _ := sv.dk.GetDidDoc(ctx, msg.GetSignerDid())
 		if didDoc == nil {
 			return pubKey, Unauthorized("Issuer did not found")
@@ -93,6 +95,8 @@ func (sv SigVerification) pubkeyExtract(ctx sdk.Context, msg did.IxoMsg) (pubKey
 		copy(pubKeyEd25519[:], base58.Decode(didDoc.GetPubKey()))
 
 	}
+
+	fmt.Println("all data extracted .... ")
 	return pubKeyEd25519, nil
 }
 func (sv SigVerification) RetrievePubkey(ctx sdk.Context, tx sdk.Tx, simulate bool) (nsv SigVerification, pubKey crypto.PubKey, err error) {

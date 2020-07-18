@@ -6,5 +6,3 @@ const (
 	RouterKey    = ModuleName
 	QuerierRoute = ModuleName
 )
-
-var DidKey = []byte{0x01}
