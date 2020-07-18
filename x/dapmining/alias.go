@@ -1,9 +1,9 @@
 package dapmining
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/dapmining/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/dapmining/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
 //noinspection GoNameStartsWithPackageName
@@ -31,6 +31,6 @@ var (
 
 type (
 	Keeper       = keeper.Keeper
-	CodeType     = x.CodeType
+	CodeType     = exported.CodeType
 	GenesisState = types.GenesisState
 )

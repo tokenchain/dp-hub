@@ -4,7 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"time"
 )
 
@@ -25,7 +25,7 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 		case QueryRewardHistory:
 			return qHistory(ctx, keeper)
 		default:
-			return nil, x.UnknownRequest("unknown rewards query endpoint")
+			return nil, exported.UnknownRequest("unknown rewards query endpoint")
 		}
 	}
 }

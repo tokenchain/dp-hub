@@ -2,8 +2,8 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
 const (
@@ -55,7 +55,7 @@ func CheckNoOfReserveTokens(resTokens []string, fnType string) error {
 func CheckCoinDenom(denom string) (err error) {
 	coin, err2 := sdk.ParseCoin("0" + denom)
 	if err2 != nil {
-		return x.IntErr(err2.Error())
+		return exported.IntErr(err2.Error())
 	} else if denom != coin.Denom {
 		return errors.InvalidCoinDenomination(denom)
 	}

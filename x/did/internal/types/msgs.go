@@ -3,7 +3,6 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
@@ -58,23 +57,23 @@ func (msg MsgAddDid) GetSigners() []sdk.AccAddress {
 func (msg MsgAddDid) ValidateBasic() error {
 	// Check that not empty
 	if strings.TrimSpace(msg.DidDoc.Did) == "" {
-		return er.Wrap(x.ErrorInvalidDidE, "did should not be empty")
+		return er.Wrap(exported.ErrorInvalidDidE, "did should not be empty")
 	} else if strings.TrimSpace(msg.DidDoc.PubKey) == "" {
-		return er.Wrap(x.ErrorInvalidPubKey, "pubKey should not be empty")
+		return er.Wrap(exported.ErrorInvalidPubKey, "pubKey should not be empty")
 	}
 
 	// Check DidDoc credentials for empty fields
 	for _, cred := range msg.DidDoc.Credentials {
 		if strings.TrimSpace(cred.Issuer) == "" {
-			return er.Wrap(x.ErrorInvalidIssuer, "issuer should not be empty")
+			return er.Wrap(exported.ErrorInvalidIssuer, "issuer should not be empty")
 		} else if strings.TrimSpace(cred.Claim.Id) == "" {
-			return er.Wrap(x.ErrorInvalidDidE, "claim id should not be empty")
+			return er.Wrap(exported.ErrorInvalidDidE, "claim id should not be empty")
 		}
 	}
 
 	// Check that DID valid
 	if !exported.IsValidDid(msg.DidDoc.Did) {
-		return er.Wrap(x.ErrorInvalidDidE, "did is invalid")
+		return er.Wrap(exported.ErrorInvalidDidE, "did is invalid")
 	}
 
 	return nil
@@ -124,13 +123,13 @@ func (msg MsgAddCredential) String() string {
 func (msg MsgAddCredential) ValidateBasic() error {
 	// Check if empty
 	if strings.TrimSpace(msg.DidCredential.Claim.Id) == "" {
-		return er.Wrap(x.ErrorInvalidDidE, "claim id should not be empty")
+		return er.Wrap(exported.ErrorInvalidDidE, "claim id should not be empty")
 	} else if strings.TrimSpace(msg.DidCredential.Issuer) == "" {
-		return er.Wrap(x.ErrorInvalidIssuer, "issuer should not be empty")
+		return er.Wrap(exported.ErrorInvalidIssuer, "issuer should not be empty")
 	}
 	// Check that DID valid
 	if !exported.IsValidDid(msg.DidCredential.Issuer) {
-		return er.Wrap(x.ErrorInvalidDidE, "issuer id is invalid")
+		return er.Wrap(exported.ErrorInvalidDidE, "issuer id is invalid")
 	}
 	return nil
 }

@@ -1,4 +1,4 @@
-package x
+package exported
 
 import (
 	"github.com/cosmos/cosmos-sdk/types/errors"
@@ -106,4 +106,7 @@ func IntErr(m string) error {
 }
 func ErrJsonMars(m string) error {
 	return errors.Wrapf(errors.ErrJSONMarshal, "Json marshall error %s", m)
+}
+func ErrUnmarshalJson(m string) error {
+	return errors.Wrapf(errors.ErrJSONUnmarshal, "technical error in %s", m)
 }

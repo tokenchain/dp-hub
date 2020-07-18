@@ -2,7 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
 type PaymentTemplate struct {
@@ -113,9 +113,9 @@ func (pc PaymentContract) Validate() error {
 	}
 	// Validate addresses
 	if pc.Creator.Empty() {
-		return x.ErrInvalidAddress("empty creator address")
+		return exported.ErrInvalidAddress("empty creator address")
 	} else if pc.Payer.Empty() {
-		return x.ErrInvalidAddress("empty payer address")
+		return exported.ErrInvalidAddress("empty payer address")
 	}
 	// Validate IDs
 	if !IsValidPaymentTemplateId(pc.PaymentTemplateId) {

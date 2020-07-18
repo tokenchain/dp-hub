@@ -2,7 +2,6 @@ package ante
 
 import (
 	"fmt"
-	"github.com/btcsuite/btcutil/base58"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	aexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
@@ -22,6 +21,7 @@ type (
 		GetDidDoc(ctx sdk.Context, did exported.Did) (exported.DidDoc, error)
 		SetDidDoc(ctx sdk.Context, did exported.DidDoc) (err error)
 		AddDidDoc(ctx sdk.Context, did exported.DidDoc)
+		AddDidDocDebug(ctx sdk.Context, did exported.DidDoc) (err error)
 		AddCredentials(ctx sdk.Context, did exported.Did, credential exported.DidCredential) (err error)
 		GetAllDidDocs(ctx sdk.Context) (didDocs []exported.DidDoc)
 		GetAddDids(ctx sdk.Context) (dids []exported.Did)
@@ -44,17 +44,6 @@ type (
 	}
 )
 
-func NewDefaultPubKeyGetter(didKeeper DidKeeper) PubKeyGetter {
-	return func(ctx sdk.Context, msg IxoMsg) (pubKey crypto.PubKey, res error) {
-		signerDidDoc, err := didKeeper.GetDidDoc(ctx, msg.GetSignerDid())
-		if err != nil {
-			return pubKey, err
-		}
-		var pubKeyRaw ed25519tm.PubKeyEd25519
-		copy(pubKeyRaw[:], base58.Decode(signerDidDoc.GetPubKey()))
-		return pubKeyRaw, nil
-	}
-}
 func NewSigVerification(ak auth.AccountKeeper, p PubKeyGetter) SigVerification {
 	return SigVerification{
 		ak:      ak,
@@ -92,28 +81,37 @@ func (sv SigVerification) initializeSignatures() (nsv SigVerification, err error
 }
 
 func (sv SigVerification) RetrievePubkey(ctx sdk.Context, tx sdk.Tx, simulate bool) (nsv SigVerification, pubKey crypto.PubKey, err error) {
+	fmt.Println("--- RetrievePubkey .1")
 	sigTx, ok := tx.(IxoTx)
 	if !ok {
+		fmt.Println("--- RetrievePubkey .1.1")
+		fmt.Println(tx.ValidateBasic())
+		fmt.Println(tx)
 		return sv, nil, InvalidTxDecode()
 	}
 	//fmt.Println(sigTx)
 	//fmt.Println(*sv.tx)
 	// all messages must be of type IxoMsg
+	fmt.Println("--- RetrievePubkey .1.3")
 	msg, ok := sigTx.GetMsgs()[0].(IxoMsg)
 	if !ok {
 		//gInfo = sdk.GasInfo{}
 		return sv, nil, IntErr("msg must be ixo.IxoMsg. dxp")
 	}
-
+	fmt.Println("--- RetrievePubkey .1.4")
+	fmt.Println(msg)
 	pubKey, err = sv.pgetter(ctx, msg)
 	if err != nil {
+		fmt.Println("--- RetrievePubkey .1.5")
 		return sv, nil, err
 	}
-
+	fmt.Println("--- RetrievePubkey .2")
 	address := sdk.AccAddress(pubKey.Address())
+	fmt.Println("--- RetrievePubkey .3")
 	signerAcc, err := auth.GetSignerAcc(ctx, sv.ak, address)
 	//signer := sigTx.GetSigner()
 	//acc := sv.ak.GetAccount(ctx, signer)
+	fmt.Println("--- RetrievePubkey .4")
 	if signerAcc != nil {
 		sv.account_address = address
 		//copy(sv.account_address, address.Bytes())
@@ -163,7 +161,9 @@ func NewDapPubKeyDecorator(ak auth.AccountKeeper, p PubKeyGetter) DapPubKeyDecor
 	}
 }
 func (__edp DapPubKeyDecoratorDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
+	fmt.Println("--- DapPubKeyDecoratorDecorator .1")
 	if _, _, e := __edp.RetrievePubkey(ctx, tx, simulate); e != nil {
+		fmt.Println("--- DapPubKeyDecoratorDecorator .2")
 		return ctx, InvalidTxDecodePubkeyNotFound(e)
 	}
 	fmt.Println("✅  DapPubKeyDecoratorDecorator pass")
@@ -184,9 +184,9 @@ func (sv SigVerificationDecorator) VerifyNow(pub []byte, message []byte, sign []
 		return Unauthorizedf("ed25519: bad public key length expected %d but got %d! ", ed25519.PublicKeySize, l)
 	}
 	/*
-	fmt.Println("===> debug public key check:", base58.Encode(pub), len(pub), pub)
-	fmt.Println("===> ⚠️ check signed message data ....")
-	fmt.Println(message)
+		fmt.Println("===> debug public key check:", base58.Encode(pub), len(pub), pub)
+		fmt.Println("===> ⚠️ check signed message data ....")
+		fmt.Println(message)
 	*/
 	if ed25519.Verify(pub, message, sign) {
 		return nil
@@ -208,8 +208,8 @@ func (sv SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 	signedMessageBytes := nsv2.dap_tx.GetSignBytes(ctx, nsv2.GetSignerAccount(ctx))
 	/*
 
-	fmt.Println("✅  check signature data ....")
-	fmt.Println(nsv2.signature.SignatureValue[:])
+		fmt.Println("✅  check signature data ....")
+		fmt.Println(nsv2.signature.SignatureValue[:])
 
 	*/
 

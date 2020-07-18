@@ -4,7 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/supply"
-	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
 )
 
@@ -39,7 +39,7 @@ func (k Keeper) GetPaymentTemplate(ctx sdk.Context, templateId string) (types.Pa
 
 	bz := store.Get(key)
 	if bz == nil {
-		return types.PaymentTemplate{}, x.IntErr("invalid payment template")
+		return types.PaymentTemplate{}, exported.IntErr("invalid payment template")
 	}
 
 	var template types.PaymentTemplate
@@ -101,7 +101,7 @@ func (k Keeper) GetPaymentContract(ctx sdk.Context, contractId string) (types.Pa
 
 	bz := store.Get(key)
 	if bz == nil {
-		return types.PaymentContract{}, x.IntErr("invalid payment contract")
+		return types.PaymentContract{}, exported.IntErr("invalid payment contract")
 	}
 
 	var contract types.PaymentContract

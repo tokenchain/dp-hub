@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
@@ -45,7 +44,7 @@ func (msg MsgCreatePaymentTemplate) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.CreatorDid) {
-		return errors.Wrap(x.ErrorInvalidDidE, "creator did is invalid")
+		return errors.Wrap(exported.ErrorInvalidDidE, "creator did is invalid")
 	}
 
 	// Validate PaymentTemplate
@@ -94,7 +93,7 @@ func (msg MsgCreatePaymentContract) ValidateBasic() error {
 	if valid, err := CheckNotEmpty(msg.CreatorDid, "CreatorDid"); !valid {
 		return err
 	} else if msg.Payer.Empty() {
-		return x.ErrInvalidAddress("payer address is empty")
+		return exported.ErrInvalidAddress("payer address is empty")
 	}
 
 	// Check that DIDs valid
@@ -259,7 +258,7 @@ func (msg MsgGrantDiscount) ValidateBasic() error {
 	} else if valid, err = CheckNotEmpty(msg.SenderDid, "SenderDid"); !valid {
 		return err
 	} else if msg.Recipient.Empty() {
-		return x.ErrInvalidAddress("recipient address is empty")
+		return exported.ErrInvalidAddress("recipient address is empty")
 	}
 
 	// Check that DIDs valid
@@ -312,7 +311,7 @@ func (msg MsgRevokeDiscount) ValidateBasic() error {
 	} else if valid, err = CheckNotEmpty(msg.SenderDid, "SenderDid"); !valid {
 		return err
 	} else if msg.Holder.Empty() {
-		return x.ErrInvalidAddress("holder address is empty")
+		return exported.ErrInvalidAddress("holder address is empty")
 	}
 
 	// Check that DIDs valid

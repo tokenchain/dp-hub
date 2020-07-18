@@ -557,11 +557,11 @@ func (app *DpApp) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList []stri
 
 func initAnteHandler(app *DpApp) sdk.AnteHandler {
 
-	defaultPubKeyGetter := ante.NewDefaultPubKeyGetter(app.didKeeper)
+	//defaultPubKeyGetter := ante.NewDefaultPubKeyGetter(app.didKeeper)
 	didPubKeyGetter := did.GetPubKeyGetter(app.didKeeper)
 	projectPubKeyGetter := project.GetPubKeyGetter(app.projectKeeper, app.didKeeper)
 
-	defaultDxpAnteHandler := ante.DefaultAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, defaultPubKeyGetter)
+	defaultDxpAnteHandler := ante.DefaultAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, didPubKeyGetter)
 	didAnteHandler := ante.DidAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, didPubKeyGetter)
 	projectAnteHandler := ante.DefaultAnteHandler(app.accountKeeper, app.bankKeeper, app.supplyKeeper, projectPubKeyGetter)
 	cosmosAnteHandler := auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper, auth.DefaultSigVerificationGasConsumer)

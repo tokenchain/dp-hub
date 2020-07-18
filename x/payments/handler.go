@@ -5,8 +5,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/payments/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
 )
@@ -67,7 +67,7 @@ func NewHandler(k Keeper, bk bank.Keeper) sdk.Handler {
 		case MsgEffectPayment:
 			return handleMsgEffectPayment(ctx, k, bk, msg)
 		default:
-			return nil, x.UnknownRequest("No match for message type.")
+			return nil, exported.UnknownRequest("No match for message type.")
 		}
 	}
 }
@@ -83,7 +83,7 @@ func handleMsgSetPaymentContractAuthorisation(ctx sdk.Context, k Keeper, msg Msg
 	// Confirm that signer is actually the payer in the payment contract
 	payerAddr := ante.DidToAddr(msg.PayerDid)
 	if !payerAddr.Equals(contract.Payer) {
-		return nil, x.ErrInvalidAddress("signer must be payment contract payer")
+		return nil, exported.ErrInvalidAddress("signer must be payment contract payer")
 	}
 
 	// Set authorised status
@@ -104,7 +104,7 @@ func handleMsgCreatePaymentTemplate(ctx sdk.Context, k Keeper, bk bank.Keeper, m
 
 	// Ensure that payment template ID is not reserved
 	if k.PaymentTemplateIdReserved(msg.PaymentTemplate.Id) {
-		return nil, x.Unauthorized(fmt.Sprintf("%s is not allowed as it is "+
+		return nil, exported.Unauthorized(fmt.Sprintf("%s is not allowed as it is "+
 			"using a reserved prefix", msg.PaymentTemplate.Id))
 	}
 
@@ -116,7 +116,7 @@ func handleMsgCreatePaymentTemplate(ctx sdk.Context, k Keeper, bk bank.Keeper, m
 	// Ensure no blacklisted address in wallet distribution
 	for _, share := range msg.PaymentTemplate.WalletDistribution {
 		if bk.BlacklistedAddr(share.Address) {
-			return nil, x.Unauthorized(fmt.Sprintf("%s is not allowed "+
+			return nil, exported.Unauthorized(fmt.Sprintf("%s is not allowed "+
 				"to receive transactions", share.Address))
 		}
 	}
@@ -138,19 +138,19 @@ func handleMsgCreatePaymentContract(ctx sdk.Context, k Keeper, bk bank.Keeper,
 
 	// Ensure that payment contract ID is not reserved
 	if k.PaymentContractIdReserved(msg.PaymentContractId) {
-		return nil, x.Unauthorized(fmt.Sprintf("%s is not allowed as it is "+
+		return nil, exported.Unauthorized(fmt.Sprintf("%s is not allowed as it is "+
 			"using a reserved prefix", msg.PaymentContractId))
 	}
 
 	// Ensure payer is not a blacklisted address
 	if bk.BlacklistedAddr(msg.Payer) {
-		return nil, x.Unauthorized(fmt.Sprintf("%s is not allowed "+
+		return nil, exported.Unauthorized(fmt.Sprintf("%s is not allowed "+
 			"to receive transactions", msg.Payer))
 	}
 
 	// Confirm that payment template exists
 	if !k.PaymentTemplateExists(ctx, msg.PaymentTemplateId) {
-		return nil, x.IntErr("invalid payment template")
+		return nil, exported.IntErr("invalid payment template")
 	}
 
 	// Create payment contract and validate
@@ -178,7 +178,7 @@ func handleMsgCreateSubscription(ctx sdk.Context, k Keeper,
 
 	// Ensure that subscription ID is not reserved
 	if k.SubscriptionIdReserved(msg.SubscriptionId) {
-		return nil, x.Unauthorized(fmt.Sprintf("%s is not allowed as it is "+
+		return nil, exported.Unauthorized(fmt.Sprintf("%s is not allowed as it is "+
 			"using a reserved prefix", msg.SubscriptionId))
 	}
 
@@ -191,7 +191,7 @@ func handleMsgCreateSubscription(ctx sdk.Context, k Keeper,
 	// Confirm that signer is actually the creator of the payment contract
 	creatorAddr := ante.DidToAddr(msg.CreatorDid)
 	if !creatorAddr.Equals(contract.Creator) {
-		return nil, x.ErrInvalidAddress("signer must be payment contract creator")
+		return nil, exported.ErrInvalidAddress("signer must be payment contract creator")
 	}
 
 	// Create subscription and validate
@@ -218,7 +218,7 @@ func handleMsgGrantDiscount(ctx sdk.Context, k Keeper, msg MsgGrantDiscount) (*s
 	// Confirm that signer is actually the creator of the payment contract
 	creatorAddr := ante.DidToAddr(msg.SenderDid)
 	if !creatorAddr.Equals(contract.Creator) {
-		return nil, x.ErrInvalidAddress("signer must be payment contract creator")
+		return nil, exported.ErrInvalidAddress("signer must be payment contract creator")
 	}
 
 	// Confirm that discount ID is in the template (to avoid invalid discount IDs)
@@ -250,7 +250,7 @@ func handleMsgRevokeDiscount(ctx sdk.Context, k Keeper, msg MsgRevokeDiscount) (
 	// Confirm that signer is actually the creator of the payment contract
 	creatorAddr := ante.DidToAddr(msg.SenderDid)
 	if !creatorAddr.Equals(contract.Creator) {
-		return nil, x.ErrInvalidAddress("signer must be payment contract creator")
+		return nil, exported.ErrInvalidAddress("signer must be payment contract creator")
 	}
 
 	// Revoke the discount
@@ -273,7 +273,7 @@ func handleMsgEffectPayment(ctx sdk.Context, k Keeper, bk bank.Keeper, msg MsgEf
 	// Confirm that signer is actually the creator of the payment contract
 	creatorAddr := ante.DidToAddr(msg.SenderDid)
 	if !creatorAddr.Equals(contract.Creator) {
-		return nil, x.ErrInvalidAddress("signer must be payment contract creator")
+		return nil, exported.ErrInvalidAddress("signer must be payment contract creator")
 	}
 
 	// Effect payment
@@ -284,7 +284,7 @@ func handleMsgEffectPayment(ctx sdk.Context, k Keeper, bk bank.Keeper, msg MsgEf
 
 	// Payment not effected but no error, meaning that payment should have been effected
 	if !effected {
-		return nil, x.IntErr("payment not effected due to unknown reason")
+		return nil, exported.IntErr("payment not effected due to unknown reason")
 	}
 
 	return &sdk.Result{}, nil

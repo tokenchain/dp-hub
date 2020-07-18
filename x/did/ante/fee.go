@@ -25,25 +25,34 @@ func NewDeductFeeDecorator(ak keeper.AccountKeeper, sk types.SupplyKeeper, p Pub
 }
 
 func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+	fmt.Println("--- DeductFeeDecorator .1")
 	sv, _, e := dfd.RetrievePubkey(ctx, tx, simulate)
+	fmt.Println("--- DeductFeeDecorator .2")
 	if e != nil {
 		return ctx, InvalidTxDecodePubkeyNotFound(e)
 	}
 
+	fmt.Println("--- DeductFeeDecorator .3")
 	if addr := dfd.supplyKeeper.GetModuleAddress(types.FeeCollectorName); addr == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.FeeCollectorName))
 	}
 
+	fmt.Println("--- DeductFeeDecorator .4")
 	// deduct the fees
 	if !sv.dap_tx.GetFee().IsZero() {
+
+		fmt.Println("--- DeductFeeDecorator .4.1")
 		if err = DeductFees(dfd.supplyKeeper, ctx, dfd.GetSignerAccount(ctx), sv.dap_tx.GetFee()); err != nil {
 			return ctx, err
 		}
+
+		fmt.Println("--- DeductFeeDecorator .5")
 		// reload the account as fees have been deducted
 		if err = dfd.RefreshAccount(ctx); err != nil {
 			return ctx, err
 		}
 	}
+
 	fmt.Println("✅  fee deduction pass ....")
 	return next(ctx, tx, simulate)
 }
@@ -56,12 +65,15 @@ func DeductFees(supplyKeeper types.SupplyKeeper, ctx sdk.Context, acc exported.A
 	blockTime := ctx.BlockHeader().Time
 	coins := acc.GetCoins()
 
+	fmt.Println("--- DeductFeeDecorator .4.2")
 	if !fees.IsValid() {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "invalid fee amount: %s", fees)
 	}
 
+	fmt.Println("--- DeductFeeDecorator .4.3")
 	// verify the account has enough funds to pay for fees
 	_, hasNeg := coins.SafeSub(fees)
+	fmt.Println("--- DeductFeeDecorator .4.4")
 	if hasNeg {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds,
 			"insufficient funds to pay for fees; %s < %s", coins, fees)
@@ -69,13 +81,19 @@ func DeductFees(supplyKeeper types.SupplyKeeper, ctx sdk.Context, acc exported.A
 
 	// Validate the account has enough "spendable" coins as this will cover cases
 	// such as vesting accounts.
+	fmt.Println("--- DeductFeeDecorator .4.5")
 	spendableCoins := acc.SpendableCoins(blockTime)
+
+	fmt.Println("--- DeductFeeDecorator .4.6")
 	if _, hasNeg := spendableCoins.SafeSub(fees); hasNeg {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds,
 			"insufficient funds to pay for fees; %s < %s", spendableCoins, fees)
 	}
 
+	fmt.Println("--- DeductFeeDecorator .4.7")
 	err := supplyKeeper.SendCoinsFromAccountToModule(ctx, acc.GetAddress(), types.FeeCollectorName, fees)
+
+	fmt.Println("--- DeductFeeDecorator .4.8")
 	if err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
 	}

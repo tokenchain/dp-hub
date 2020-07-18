@@ -1,7 +1,6 @@
 package types
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 
 	"strings"
@@ -71,7 +70,7 @@ func NewMsgWithdrawFunds(senderDid exported.Did, data WithdrawFundsDoc) MsgWithd
 
 func CheckNotEmpty(value string, name string) (valid bool, err error) {
 	if strings.TrimSpace(value) == "" {
-		return false, x.UnknownRequest(name + " is empty.")
+		return false, exported.UnknownRequest(name + " is empty.")
 	} else {
 		return true, nil
 	}

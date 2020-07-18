@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 )
-
+//use in bond
 func DefaultAnteHandler(ak auth.AccountKeeper, bk bank.Keeper, sk supply.Keeper, pubKeyGetter PubKeyGetter) sdk.AnteHandler {
 	//return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 	return sdk.ChainAnteDecorators(

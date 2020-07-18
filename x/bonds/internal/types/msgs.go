@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
 	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
@@ -211,11 +210,11 @@ func (msg MsgCreateBond) ValidateBasic() error {
 	fmt.Println("=== check bond did ===>")
 	fmt.Println(msg.BondDid)
 	if !exported.IsValidDid(msg.BondDid) {
-		return x.ErrInvalidDid(fmt.Sprintf("bond did is invalid. got - %s", msg.BondDid))
+		return exported.ErrInvalidDid(fmt.Sprintf("bond did is invalid. got - %s", msg.BondDid))
 	}
 
 	if !exported.IsValidDid(msg.CreatorDid) {
-		return x.ErrInvalidDid(fmt.Sprintf("creator did is invalid. got - %s", msg.CreatorDid))
+		return exported.ErrInvalidDid(fmt.Sprintf("creator did is invalid. got - %s", msg.CreatorDid))
 	}
 
 	return nil
@@ -290,9 +289,9 @@ func (msg MsgEditBond) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.BondDid) {
-		return x.ErrInvalidDid("bond did is invalid")
+		return exported.ErrInvalidDid("bond did is invalid")
 	} else if !exported.IsValidDid(msg.EditorDid) {
-		return x.ErrInvalidDid("editor did is invalid")
+		return exported.ErrInvalidDid("editor did is invalid")
 	}
 
 	return nil
@@ -347,9 +346,9 @@ func (msg MsgBuy) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.BondDid) {
-		return x.ErrInvalidDid("bond did is invalid")
+		return exported.ErrInvalidDid("bond did is invalid")
 	} else if !exported.IsValidDid(msg.BuyerDid) {
-		return x.ErrInvalidDid("buyer did is invalid")
+		return exported.ErrInvalidDid("buyer did is invalid")
 	}
 
 	return nil
@@ -407,9 +406,9 @@ func (msg MsgSell) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.BondDid) {
-		return x.ErrInvalidDid("bond did is invalid")
+		return exported.ErrInvalidDid("bond did is invalid")
 	} else if !exported.IsValidDid(msg.SellerDid) {
-		return x.ErrInvalidDid("seller did is invalid")
+		return exported.ErrInvalidDid("seller did is invalid")
 	}
 
 	return nil
@@ -477,9 +476,9 @@ func (msg MsgSwap) ValidateBasic() error {
 
 	// Check that DIDs valid
 	if !exported.IsValidDid(msg.BondDid) {
-		return x.ErrInvalidDid("bond did is invalid")
+		return exported.ErrInvalidDid("bond did is invalid")
 	} else if !exported.IsValidDid(msg.SwapperDid) {
-		return x.ErrInvalidDid("swapper did is invalid")
+		return exported.ErrInvalidDid("swapper did is invalid")
 	}
 
 	return nil

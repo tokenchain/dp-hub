@@ -4,7 +4,7 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
 func NewHandler(keeper Keeper) sdk.Handler {
@@ -13,7 +13,7 @@ func NewHandler(keeper Keeper) sdk.Handler {
 
 		default:
 			errMsg := fmt.Sprintf("Unrecognized bonds Msg type: %v", msg.Type())
-			return nil, x.UnknownRequest(errMsg)
+			return nil, exported.UnknownRequest(errMsg)
 		}
 	}
 }

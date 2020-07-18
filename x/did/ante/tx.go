@@ -15,7 +15,6 @@ import (
 	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did/ed25519"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"gopkg.in/yaml.v2"
@@ -155,7 +154,7 @@ func (tx IxoTx) GetMemo() string { return tx.Memo }
 func (tx IxoTx) ValidateBasic() error {
 	// Fee validation
 	if tx.Fee.Gas > maxGasWanted {
-		return errors.Wrapf(x.ErrGasOverflow, "invalid gas supplied; %d > %d", tx.Fee.Gas, maxGasWanted)
+		return errors.Wrapf(exported.ErrGasOverflow, "invalid gas supplied; %d > %d", tx.Fee.Gas, maxGasWanted)
 		//return sdk.ErrGasOverflow(fmt.Sprintf("invalid gas supplied; %d > %d", tx.Fee.Gas, maxGasWanted))
 	}
 	if tx.Fee.Amount.IsAnyNegative() {

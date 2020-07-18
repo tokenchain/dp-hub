@@ -1,8 +1,9 @@
 package did
 
 import (
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
@@ -16,7 +17,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		case types.MsgAddCredential:
 			return handleMsgAddCredential(ctx, k, msg)
 		default:
-			return nil, x.UnknownRequest("No match for message type.")
+			return nil, exported.UnknownRequest("No match for message type.")
 		}
 	}
 }
@@ -25,14 +26,14 @@ func handleMsgAddDidDoc(ctx sdk.Context, k keeper.Keeper, msg types.MsgAddDid) (
 	newDidDoc := msg.DidDoc
 
 	if len(newDidDoc.Credentials) > 0 {
-		return nil, x.UnknownRequest("Cannot add a new DID with existing Credentials")
+		return nil, exported.UnknownRequest("Cannot add a new DID with existing Credentials")
 	}
 
 	err := k.SetDidDoc(ctx, newDidDoc)
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Println("handleMsgAddDidDoc complete")
 	return &sdk.Result{}, nil
 }
 
@@ -41,6 +42,6 @@ func handleMsgAddCredential(ctx sdk.Context, k keeper.Keeper, msg types.MsgAddCr
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Println("handleMsgAddCredential complete")
 	return &sdk.Result{}, nil
 }

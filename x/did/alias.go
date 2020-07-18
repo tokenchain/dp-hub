@@ -1,8 +1,8 @@
 package did
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/did/ed25519"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 )
@@ -57,5 +57,5 @@ var (
 	// variable aliases
 	ModuleCdc = types.ModuleCdc
 
-	ErrorInvalidDid = x.ErrorInvalidDidE
+	ErrorInvalidDid = exported.ErrorInvalidDidE
 )

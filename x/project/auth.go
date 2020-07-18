@@ -12,7 +12,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tokenchain/ixo-blockchain/x"
 	"github.com/tokenchain/ixo-blockchain/x/dap"
 	"github.com/tokenchain/ixo-blockchain/x/dap/types"
 	"github.com/tokenchain/ixo-blockchain/x/did"
@@ -166,7 +165,7 @@ func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
 			// Set a gas meter with limit 0 as to prevent an infinite gas meter attack
 			// during runTx.
 			newCtx = auth.SetGasMeter(simulate, ctx, 0)
-			return newCtx, x.IntErr("tx must be ixo.IxoTx")
+			return newCtx, export2.IntErr("tx must be ixo.IxoTx")
 		}
 
 		params := ak.GetParams(ctx)
@@ -195,20 +194,20 @@ func NewProjectCreationAnteHandler(ak auth.AccountKeeper, sk supply.Keeper,
 		// message must be of type MsgCreateProject
 		msg, ok := ixoTx.GetMsgs()[0].(MsgCreateProject)
 		if !ok {
-			return newCtx, x.IntErr("msg must be MsgCreateProject")
+			return newCtx, export2.IntErr("msg must be MsgCreateProject")
 		}
 
 		// Fetch signer (project itself). Account expected to not exist
 		signerAddr := ixoTx.GetSigner()
 		signerAcc, res := auth.GetSignerAcc(newCtx, ak, signerAddr)
 		if res != nil {
-			return newCtx, x.IntErr("expected project account to not exist")
+			return newCtx, export2.IntErr("expected project account to not exist")
 		}
 
 		// confirm that fee is the exact amount expected
 		expectedTotalFee := sdk.NewCoins(sdk.NewCoin(types.NativeToken, sdk.NewInt(MsgCreateProjectFee)))
 		if !ixoTx.Fee.Amount.IsEqual(expectedTotalFee) {
-			return newCtx, x.ErrInvalidCoins("invalid fee")
+			return newCtx, export2.ErrInvalidCoins("invalid fee")
 		}
 
 		// Calculate transaction fee and project funding

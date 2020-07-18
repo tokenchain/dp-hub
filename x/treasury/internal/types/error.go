@@ -1,9 +1,9 @@
 package types
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
 const (
-	DefaultCodespace x.CodespaceType = ModuleName
+	DefaultCodespace exported.CodespaceType = ModuleName
 )

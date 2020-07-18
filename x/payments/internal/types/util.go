@@ -2,7 +2,6 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x"
 	exported "github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
 )
@@ -76,7 +75,7 @@ func NewMsgEffectPayment(contractId string, creatorDid exported.Did) MsgEffectPa
 
 func CheckNotEmpty(value string, name string) (valid bool, err error) {
 	if strings.TrimSpace(value) == "" {
-		return false, x.UnknownRequest(name + " is empty.")
+		return false, exported.UnknownRequest(name + " is empty.")
 	} else {
 		return true, nil
 	}
