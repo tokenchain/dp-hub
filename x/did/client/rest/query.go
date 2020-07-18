@@ -2,14 +2,17 @@ package rest
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/tokenchain/ixo-blockchain/client/utils"
 	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/gorilla/mux"
 
-	rest "github.com/tokenchain/ixo-blockchain/client"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 )
@@ -20,35 +23,58 @@ func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc("/did/{did}", queryDidDocRequestHandler(cliCtx)).Methods("GET")
 	r.HandleFunc("/did", queryAllDidsRequestHandler(cliCtx)).Methods("GET")
 	r.HandleFunc("/allDidDocs", queryAllDidDocsRequestHandler(cliCtx)).Methods("GET")
+	r.HandleFunc("/checkName/{name}", queryCheckNameSystem(cliCtx)).Methods("GET")
 }
 
+type (
+	ConfirmBool struct {
+		Bool      bool   `json:"bool" yaml:"bool"`
+		TimeStamp string `json:"time" yaml:"time"`
+	}
+)
+
+func queryCheckNameSystem(cliCtx context.CLIContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		kb, err := utils.GetKeybase(false, cliCtx.Input)
+		if err != nil {
+			return
+		}
+		name := vars["name"]
+		_, err = kb.Get(strings.ToLower(name))
+		result := ConfirmBool{
+			Bool:      true,
+			TimeStamp: time.Now().String(),
+		}
+
+		if err == nil {
+			result.Bool = false
+		}
+
+		rest.PostProcessResponseBare(w, cliCtx, result)
+	}
+}
 func queryAddressFromDidRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		w.Header().Set("Content-Type", "application/json")
 		vars := mux.Vars(r)
-
 		if !exported.IsValidDid(vars["did"]) {
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte("input is not a valid did"))
 			return
 		}
-
 		accAddress := ante.DidToAddr(vars["did"])
-
-		rest.PostProcessResponse(w, cliCtx.Codec, accAddress, true)
+		rest.PostProcessResponseBare(w, cliCtx, accAddress)
 	}
 }
-
 func queryDidDocRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		w.Header().Set("Content-Type", "application/json")
 		vars := mux.Vars(r)
 		didAddr := vars["did"]
 		key := exported.Did(didAddr)
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
-			keeper.QueryDidDoc, key), nil)
+		res, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s/%s", types.QuerierRoute, keeper.QueryDidDoc, key)
+
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(fmt.Sprintf("Could't query did. Error: %s", err.Error())))
@@ -62,17 +88,16 @@ func queryDidDocRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		var didDoc types.BaseDidDoc
 		cliCtx.Codec.MustUnmarshalJSON(res, &didDoc)
-
-		rest.PostProcessResponse(w, cliCtx.Codec, didDoc, true)
+		rest.PostProcessResponseBare(w, cliCtx, didDoc)
+		//rest.PostProcessResponse(w, cliCtx.Codec, didDoc, true)
 	}
 }
 
 func queryAllDidsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		w.Header().Set("Content-Type", "application/json")
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.QuerierRoute,
-			keeper.QueryAllDids), nil)
+		res, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s", types.QuerierRoute,
+			keeper.QueryAllDids)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(fmt.Sprintf("Could't query did. Error: %s", err.Error())))
@@ -86,17 +111,16 @@ func queryAllDidsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		var dids []exported.Did
 		cliCtx.Codec.MustUnmarshalJSON(res, &dids)
-
-		rest.PostProcessResponse(w, cliCtx.Codec, dids, true)
+		rest.PostProcessResponseBare(w, cliCtx, dids)
+		//rest.PostProcessResponse(w, cliCtx.Codec, dids, true)
 	}
 }
 
 func queryAllDidDocsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		w.Header().Set("Content-Type", "application/json")
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.QuerierRoute,
-			keeper.QueryAllDidDocs), nil)
+		res, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s", types.QuerierRoute,
+			keeper.QueryAllDidDocs)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(fmt.Sprintf("Could't query did. Error: %s", err.Error())))
@@ -111,7 +135,7 @@ func queryAllDidDocsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		var didDocs []types.BaseDidDoc
 		cliCtx.Codec.MustUnmarshalJSON(res, &didDocs)
-
-		rest.PostProcessResponse(w, cliCtx.Codec, didDocs, true)
+		rest.PostProcessResponseBare(w, cliCtx, didDocs)
+		//rest.PostProcessResponse(w, cliCtx.Codec, didDocs, true)
 	}
 }

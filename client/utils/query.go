@@ -2,15 +2,29 @@ package utils
 
 import (
 	"encoding/hex"
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/spf13/viper"
 	core "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+	"io"
 	"time"
 )
 
 /*custom coin transaction layer*/
+func GetKeybase(transient bool, buf io.Reader) (keys.Keybase, error) {
+	if transient {
+		return keys.NewInMemory(), nil
+	}
+	return keys.NewKeyring(sdk.KeyringServiceName(), viper.GetString(flags.FlagKeyringBackend), viper.GetString(flags.FlagHome), buf)
+}
+func QueryWithData(cliCtx context.CLIContext, format string, arg ...interface{}) ([]byte, int64, error) {
+	return cliCtx.QueryWithData(fmt.Sprintf(format, arg...), nil)
+}
 func parseTx(cdc *codec.Codec, txBytes []byte) (sdk.Tx, error) {
 	return ante.DefaultTxDecoder(cdc)(txBytes)
 }

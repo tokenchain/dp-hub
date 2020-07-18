@@ -5,6 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
+	"github.com/tokenchain/ixo-blockchain/client/utils"
 
 	"github.com/tokenchain/ixo-blockchain/x/payments/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
@@ -17,8 +18,8 @@ func GetParamsRequestHandler(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			bz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.QuerierRoute,
-				keeper.QueryParams), nil)
+			bz, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s", types.QuerierRoute,
+				keeper.QueryParams)
 			if err != nil {
 				return err
 			}
@@ -43,9 +44,7 @@ func GetCmdPaymentTemplate(cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			templateId := args[0]
 
-			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/%s/%s/%s",
-					types.QuerierRoute, keeper.QueryPaymentTemplate, templateId), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s/%s", types.QuerierRoute, keeper.QueryPaymentTemplate, templateId)
 			if err != nil {
 				fmt.Printf("%s", err.Error())
 				return nil
@@ -77,9 +76,8 @@ func GetCmdPaymentContract(cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			contractId := args[0]
 
-			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
-					keeper.QueryPaymentContract, contractId), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s/%s", types.QuerierRoute,
+				keeper.QueryPaymentContract, contractId)
 			if err != nil {
 				fmt.Printf("%s", err.Error())
 				return nil
@@ -111,9 +109,8 @@ func GetCmdSubscription(cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			subscriptionId := args[0]
 
-			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
-					keeper.QuerySubscription, subscriptionId), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s/%s", types.QuerierRoute,
+				keeper.QuerySubscription, subscriptionId)
 			if err != nil {
 				fmt.Printf("%s", err.Error())
 				return nil

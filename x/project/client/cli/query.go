@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/tokenchain/ixo-blockchain/client/utils"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -25,8 +26,7 @@ func GetCmdProjectDoc(cdc *codec.Codec) *cobra.Command {
 			didAddr := args[0]
 			key := exported.Did(didAddr)
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
-				keeper.QueryProjectDoc, key), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s/%s", types.QuerierRoute, keeper.QueryProjectDoc, key)
 			if err != nil {
 				return err
 			}
@@ -58,8 +58,7 @@ func GetCmdProjectAccounts(cdc *codec.Codec) *cobra.Command {
 
 			projectDid := args[0]
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
-				keeper.QueryProjectAccounts, projectDid), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s/%s", types.QuerierRoute, keeper.QueryProjectAccounts, projectDid)
 			if err != nil {
 				return err
 			}
@@ -93,11 +92,8 @@ func GetCmdProjectTxs(cdc *codec.Codec) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
 			projectDid := args[0]
-
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
-				keeper.QueryProjectTx, projectDid), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s/%s", types.QuerierRoute, keeper.QueryProjectTx, projectDid)
 			if err != nil {
 				return err
 			}
@@ -129,9 +125,7 @@ func GetParamsRequestHandler(cdc *codec.Codec) *cobra.Command {
 		Short: "Query params",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
-			bz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.QuerierRoute,
-				keeper.QueryParams), nil)
+			bz, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s", types.QuerierRoute, keeper.QueryParams)
 			if err != nil {
 				return err
 			}

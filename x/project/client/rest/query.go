@@ -2,7 +2,7 @@ package rest
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/tokenchain/ixo-blockchain/client/utils"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"net/http"
 
@@ -35,8 +35,7 @@ func queryProjectDocRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		didAddr := vars["did"]
 
 		key := exported.Did(didAddr)
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
-			keeper.QueryProjectDoc, key), nil)
+		res, _, err :=  utils.QueryWithData(cliCtx,"custom/%s/%s/%s", types.QuerierRoute, keeper.QueryProjectDoc, key)
 		if err != nil {
 			writeHeadf(w, http.StatusInternalServerError, "Could't query did. Error: %s", err.Error())
 			return
@@ -61,8 +60,7 @@ func queryProjectAccountsRequestHandler(cliCtx context.CLIContext) http.HandlerF
 		vars := mux.Vars(r)
 		projectDid := vars["projectDid"]
 
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s",
-			types.QuerierRoute, keeper.QueryProjectAccounts, projectDid), nil)
+		res, _, err :=  utils.QueryWithData(cliCtx,"custom/%s/%s/%s", types.QuerierRoute, keeper.QueryProjectAccounts, projectDid)
 		if err != nil {
 			writeHeadf(w, http.StatusInternalServerError, "Could't query did. Error: %s", err.Error())
 			return
@@ -93,8 +91,7 @@ func queryProjectTxsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		vars := mux.Vars(r)
 		projectDid := vars["projectDid"]
 
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s",
-			types.QuerierRoute, keeper.QueryProjectTx, projectDid), nil)
+		res, _, err :=  utils.QueryWithData(cliCtx,"custom/%s/%s/%s", types.QuerierRoute, keeper.QueryProjectTx, projectDid)
 		if err != nil {
 			writeHeadf(w, http.StatusInternalServerError, "Could't query did. Error: %s", err.Error())
 			return
@@ -117,8 +114,7 @@ func queryProjectTxsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 func queryParamsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		bz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.QuerierRoute,
-			keeper.QueryParams), nil)
+		bz, _, err :=  utils.QueryWithData(cliCtx,"custom/%s/%s", types.QuerierRoute, keeper.QueryParams)
 		if err != nil {
 			writeHeadf(w, http.StatusInternalServerError, "Couldn't get query data %s", err.Error())
 			return

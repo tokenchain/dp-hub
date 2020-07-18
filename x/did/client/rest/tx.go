@@ -3,6 +3,7 @@ package rest
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/tokenchain/ixo-blockchain/client/utils"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"net/http"
 	"time"
@@ -42,7 +43,7 @@ func createDidRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		msg := types.NewMsgAddDid(sovrinDid.Did,sovrinDid.GetPubKey())
+		msg := types.NewMsgAddDid(sovrinDid.Did, sovrinDid.GetPubKey())
 
 		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
 		if err != nil {
@@ -63,8 +64,7 @@ func addCredentialRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		mode := r.URL.Query().Get("mode")
 		cliCtx = cliCtx.WithBroadcastMode(mode)
 
-		_, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
-			keeper.QueryDidDoc, did), nil)
+		_, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s/%s", types.QuerierRoute, keeper.QueryDidDoc, did)
 		if err != nil {
 			writeHead(w, http.StatusBadRequest, "The did is not found")
 			return

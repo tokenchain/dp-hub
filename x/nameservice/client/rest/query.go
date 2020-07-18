@@ -1,10 +1,10 @@
 package rest
 
 import (
-	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
+	"github.com/tokenchain/ixo-blockchain/client/utils"
 	"net/http"
 )
 
@@ -13,7 +13,7 @@ func resolveNameHandler(cliCtx context.CLIContext, storeName string) http.Handle
 		vars := mux.Vars(r)
 		paramType := vars[restName]
 
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/resolve/%s", storeName, paramType), nil)
+		res, _, err := utils.QueryWithData(cliCtx, "custom/%s/resolve/%s", storeName, paramType)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
@@ -28,7 +28,7 @@ func whoIsHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc 
 		vars := mux.Vars(r)
 		paramType := vars[restName]
 
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/whois/%s", storeName, paramType), nil)
+		res, _, err := utils.QueryWithData(cliCtx, "custom/%s/whois/%s", storeName, paramType)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
@@ -40,7 +40,7 @@ func whoIsHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc 
 
 func namesHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/names", storeName), nil)
+		res, _, err := utils.QueryWithData(cliCtx, "custom/%s/names", storeName)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return

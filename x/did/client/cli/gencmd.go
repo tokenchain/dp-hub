@@ -5,19 +5,17 @@ import (
 	"errors"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/input"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
+	"github.com/tokenchain/ixo-blockchain/client/utils"
 	aute2 "github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/go-bip39"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
-	"io"
 )
 
 const (
@@ -123,13 +121,6 @@ func RunGenerationNewDoc(cdc *codec.Codec) CommandDo {
 	}
 }*/
 
-func getKeybase(transient bool, buf io.Reader) (keys.Keybase, error) {
-	if transient {
-		return keys.NewInMemory(), nil
-	}
-	return keys.NewKeyring(sdk.KeyringServiceName(), viper.GetString(flags.FlagKeyringBackend), viper.GetString(flags.FlagHome), buf)
-}
-
 func runGenerationOffline(cdc *codec.Codec) CommandDo {
 	return func(cmd *cobra.Command, args []string) error {
 		inBuf := bufio.NewReader(cmd.InOrStdin())
@@ -157,7 +148,7 @@ func runGenerationOffline(cdc *codec.Codec) CommandDo {
 
 		//userEntropy, _ := flags.GetBool(flagUserEntropy)
 		isDryRun, _ := flags.GetBool(flagDryRun)
-		kb, err := getKeybase(isDryRun, inBuf)
+		kb, err := utils.GetKeybase(isDryRun, inBuf)
 
 		entropySeed, err := bip39.NewEntropy(mnemonicEntropySize)
 		cmd.Println("=> Seed===============================")
