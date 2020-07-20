@@ -28,6 +28,7 @@ const (
 	CodeBondTokenInvalid        CodeType = 316
 	CodeReserveDenomsMismatch   CodeType = 317
 	CodeInvalidCoinDenomination CodeType = 318
+	CodeParseCodeInvalid        CodeType = 325
 
 	// Amounts and fees
 	CodeInvalidResultantSupply CodeType = 319

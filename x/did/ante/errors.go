@@ -31,14 +31,12 @@ func UnknownAddress(m string) error {
 func UnknownAddressf(format string, a ...interface{}) error {
 	return errors.Wrap(errors.ErrUnknownAddress, fmt.Sprintf(format, a...))
 }
-
 func IntErr(m string) error {
 	return errors.Wrap(errors.ErrPanic, m)
 }
 func ErrJsonMars(m string) error {
 	return errors.Wrapf(errors.ErrJSONMarshal, "Json marshall error %s", m)
 }
-
 func InvalidPubKey(m string) error {
 	return errors.Wrapf(errors.ErrInvalidPubKey, "PubKey error %s", m)
 }

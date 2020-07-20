@@ -6,6 +6,7 @@ import (
 	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"sort"
+	"strings"
 )
 
 const (
@@ -41,7 +42,7 @@ type (
 		Token                  string         `json:"token" yaml:"token"`
 		Name                   string         `json:"name" yaml:"name"`
 		Description            string         `json:"description" yaml:"description"`
-		CreatorDid             exported.Did        `json:"creator_did" yaml:"creator_did"`
+		CreatorDid             exported.Did   `json:"creator_did" yaml:"creator_did"`
 		FunctionType           string         `json:"function_type" yaml:"function_type"`
 		FunctionParameters     FunctionParams `json:"function_parameters" yaml:"function_parameters"`
 		ReserveTokens          []string       `json:"reserve_tokens" yaml:"reserve_tokens"`
@@ -56,7 +57,7 @@ type (
 		CurrentSupply          sdk.Coin       `json:"current_supply" yaml:"current_supply"`
 		AllowSells             string         `json:"allow_sells" yaml:"allow_sells"`
 		BatchBlocks            sdk.Uint       `json:"batch_blocks" yaml:"batch_blocks"`
-		BondDid                exported.Did        `json:"bond_did" yaml:"bond_did"`
+		BondDid                exported.Did   `json:"bond_did" yaml:"bond_did"`
 	}
 	FunctionParam struct {
 		Param string  `json:"param" yaml:"param"`
@@ -469,8 +470,37 @@ func (bond Bond) GetExitFees(reserveAmounts sdk.DecCoins) (fees sdk.Coins) {
 }
 
 func (bond Bond) ReserveDenomsEqualTo(coins sdk.Coins) bool {
-	if len(bond.ReserveTokens) != len(coins) {
+	/*if len(bond.ReserveTokens) != len(coins) {
 		return false
+	}*/
+	matched := false
+
+	if len(bond.ReserveTokens) > len(coins) {
+		for _, d := range bond.ReserveTokens {
+			for _, coin := range coins {
+				if strings.ToLower(coin.Denom) == strings.ToLower(d) {
+					matched = true
+				}
+			}
+		}
+	}
+
+	if len(bond.ReserveTokens) == len(coins) {
+		k := 0
+		for _, d := range bond.ReserveTokens {
+			for _, coin := range coins {
+				if strings.ToLower(coin.Denom) == strings.ToLower(d) {
+					k++
+				}
+			}
+		}
+		if k == len(bond.ReserveTokens) {
+			matched = true
+		}
+	}
+
+	if len(bond.ReserveTokens) < len(coins) {
+		matched = false
 	}
 
 	for _, d := range bond.ReserveTokens {
@@ -479,7 +509,7 @@ func (bond Bond) ReserveDenomsEqualTo(coins sdk.Coins) bool {
 		}
 	}
 
-	return true
+	return matched
 }
 
 func (bond Bond) AnyOrderQuantityLimitsExceeded(amounts sdk.Coins) bool {

@@ -3,6 +3,7 @@ package bonds
 import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/keeper"
@@ -74,9 +75,9 @@ func handleMsgCreateBond(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgCre
 		return nil, errors.BondTokenCannotBeStakingToken()
 	}
 
-	reserveAddress := keeper.GetNextUnusedReserveAddress(ctx)
-
-	// TODO: investigate ways to prevent reserve address from receiving transactions
+	//reserveAddress := keeper.GetNextUnusedReserveAddress(ctx)
+	//the more secured by to create an address by the given name.
+	reserveAddress := supply.NewModuleAddress(fmt.Sprintf("bonds/%s/reserveAddress", msg.BondDid))
 
 	// Not critical since as is no tokens can be taken out of the reserve, unless
 	// programmatically. However, increases in balance still affect calculations.
@@ -413,6 +414,7 @@ func handleMsgSwap(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgSwap) (*s
 	// Check that from and to use reserve token names
 	fromAndTo := sdk.NewCoins(msg.From, sdk.NewCoin(msg.ToToken, sdk.OneInt()))
 	fromAndToDenoms := msg.From.Denom + "," + msg.ToToken
+
 	if !bond.ReserveDenomsEqualTo(fromAndTo) {
 		return nil, errors.ReserveDenomsMismatch(fromAndToDenoms, bond.ReserveTokens)
 	}

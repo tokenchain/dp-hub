@@ -14,7 +14,6 @@ type (
 
 var (
 	KeyListingDid                       = []byte("ListingDid")
-
 )
 
 // ParamTable for project module.
@@ -44,13 +43,11 @@ func ValidateParams(params Params) error {
 	return nil
 }
 
-
 func (p Params) String() string {
 	return fmt.Sprintf(`Project Params:
   Listing Did: %s
 `, p.ListingDid)
 }
-
 
 // Implements params.ParamSet
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
@@ -66,4 +63,3 @@ func listingValidation(i interface{}) error {
 	}
 	return nil
 }
-

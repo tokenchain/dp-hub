@@ -16,7 +16,24 @@ type DeductFeeDecorator struct {
 	supplyKeeper types.SupplyKeeper
 	SigVerification
 }
+type OnlyOneMsgDecorator struct {
+	supplyKeeper types.SupplyKeeper
+	SigVerification
+}
 
+func NewOnlyOneMsgDecorator() OnlyOneMsgDecorator {
+	return OnlyOneMsgDecorator{}
+}
+
+// Number of messages in the tx must be 1
+
+func (g OnlyOneMsgDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+	if len(tx.GetMsgs()) != 1 {
+		return ctx, IntErr("number of messages must be 1")
+	}
+	fmt.Println("✅  only one message pass ....")
+	return next(ctx, tx, simulate)
+}
 func NewDeductFeeDecorator(ak keeper.AccountKeeper, sk types.SupplyKeeper, p PubKeyGetter) DeductFeeDecorator {
 	return DeductFeeDecorator{
 		SigVerification: NewSigVerification(ak, p),
