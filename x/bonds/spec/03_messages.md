@@ -78,6 +78,29 @@ This message is expected to fail if:
 
 This message creates and stores the `Bond` object at appropriate indexes. Note that the sanity rate and sanity margin percentage are only used in the case of the `swapper_function`, but no error is raised if these are set for other function types.
 
+### Coin issue example
+```shell script
+cli tx bonds create-bond \
+  --token=abc \
+  --name="A B C" \
+  --description="Description about A B C" \
+  --function-type=swapper_function \
+  --function-parameters="" \
+  --reserve-tokens=res,rez \
+  --tx-fee-percentage=0.5 \
+  --exit-fee-percentage=0.1 \
+  --fee-address="$FEE" \
+  --max-supply=1000000abc \
+  --order-quantity-limits="10abc,5000res,5000rez" \
+  --sanity-rate="0.5" \
+  --sanity-margin-percentage="20" \
+  --allow-sells=true \
+  --batch-blocks=1 \
+  --bond-did="$BOND_DID" \
+  --creator-did="$MIGUEL_DID_FULL" \
+  --broadcast-mode block --gas-prices="$GAS_PRICES" -y
+```
+
 ## MsgEditBond
 
 The owner of a bond can edit some of the bond's parameters using `MsgEditBond`.
@@ -147,6 +170,22 @@ type MsgBuy struct {
 
 This message adds the buy order to the current batch.
 
+### Example for buy message
+```shell script
+
+echo "Miguel buys 1abc..."
+cli tx bonds buy 1abc 500res,1000rez "$BOND_DID" "$MIGUEL_DID_FULL" --broadcast-mode block --gas-prices="$GAS_PRICES" -y
+echo "Miguel's account..."
+cli q auth account "$MIGUEL_ADDR"
+
+
+echo "Francesco buys 10abc..."
+cli tx bonds buy 10abc 10100res,10100rez "$BOND_DID" "$FRANCESCO_DID_FULL" --broadcast-mode block --gas-prices="$GAS_PRICES" -y
+echo "Francesco's account..."
+cli q auth account "$FRANCESCO_ADDR"
+
+```
+
 ### MsgBuy for Swapper Function Bonds
 
 In general, but especially in the case of swapper function bonds, buying tokens from a bond can be seen as adding liquidity to that bond's token. To add liquidity to a swapper function, the current exchange rate is used to determine how much of each reserve token makes up the price. Otherwise, the price is an equal number of each of the reserve tokens according to the function type.
@@ -186,6 +225,22 @@ type MsgSell struct {
 
 This message adds the sell order to the current batch.
 
+### Example for sell messages
+
+```shell script
+
+echo "Miguel sells 1abc..."
+cli tx bonds sell 1abc "$BOND_DID" "$MIGUEL_DID_FULL" --broadcast-mode block --gas-prices="$GAS_PRICES" -y
+echo "Miguel's account..."
+cli q auth account "$MIGUEL_ADDR"
+
+echo "Francesco sells 10abc..."
+cli tx bonds sell 10abc "$BOND_DID" "$FRANCESCO_DID_FULL" --broadcast-mode block --gas-prices="$GAS_PRICES" -y
+echo "Francesco's account..."
+cli q auth account "$FRANCESCO_ADDR"
+
+```
+
 ## MsgSwap
 
 Any address that holds tokens (_t1_) that a swapper function bond uses as one of its two reserves (_t1_ and _t2_) can swap the tokens in exchange for reserve tokens of the other type (_t2_). Similar to the `MsgBuy` and `MsgSell`, the `MsgSwap` handler just registers a swap order in the current orders batch which then gets fulfilled at the end of the batch's lifespan.
@@ -216,3 +271,29 @@ type MsgSwap struct {
 ```
 
 This message adds the swap order to the current batch.
+
+### Example for swap messages
+
+```shell script
+
+echo "Miguel swap 500 res to rez..."
+cli tx bonds swap 500 res rez "$BOND_DID" "$MIGUEL_DID_FULL" --broadcast-mode block --gas-prices="$GAS_PRICES" -y
+echo "Miguel's account..."
+cli q auth account "$MIGUEL_ADDR"
+
+echo "Francesco swap 500 rez to res..."
+cli tx bonds swap 500 rez res "$BOND_DID" "$FRANCESCO_DID_FULL" --broadcast-mode block --gas-prices="$GAS_PRICES" -y
+echo "Francesco's account..."
+cli q auth account "$FRANCESCO_ADDR"
+
+echo "Miguel swaps above order limit (tx will fail)..."
+cli tx bonds swap 5001 res rez "$BOND_DID" "$MIGUEL_DID_FULL" --broadcast-mode block --gas-prices="$GAS_PRICES" -y
+echo "Miguel's account (no  changes)..."
+cli q auth account "$MIGUEL_ADDR"
+
+echo "Francesco swaps to violate sanity (tx will be successful but order will fail)..."
+cli tx bonds swap 5000 rez res "$BOND_DID" "$FRANCESCO_DID_FULL" --broadcast-mode block --gas-prices="$GAS_PRICES" -y
+echo "Francesco's account (no changes)..."
+cli q auth account "$FRANCESCO_ADDR"
+
+```
