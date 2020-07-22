@@ -9,6 +9,7 @@ type CodeType = uint32
 type CodespaceType = string
 
 const (
+
 	moduleNameDid     = "did"
 	moduleNameBonddoc = "bonddoc"
 	moduleNameIxo     = "dap"
@@ -19,7 +20,6 @@ const (
 	CodeInvalidPubKey      CodeType = 202
 	CodeInvalidIssuer      CodeType = 203
 	CodeInvalidCredentials CodeType = 204
-
 
 	CodeNameDoesNotExist       CodeType = 325
 	CodeInternalBondDic        CodeType = 326

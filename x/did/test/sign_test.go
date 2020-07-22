@@ -1,6 +1,7 @@
 package test
 
 import (
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"github.com/btcsuite/btcutil/base58"
@@ -13,7 +14,6 @@ import (
 	"strings"
 	"testing"
 )
-
 
 type addrData struct {
 	Mnemonic string
@@ -129,8 +129,6 @@ func Test_dk(t *testing.T) {
 
 }
 
-
-
 func Test_recover(t *testing.T) {
 	name := "cosmos"
 	entropySeed, err := bip39.NewEntropy(mnemonicEntropySize)
@@ -160,7 +158,7 @@ func Test_recover(t *testing.T) {
 	info, err := kb.CreateOffline(name, privKey.PubKey(), algo)
 
 	did_document := exported.GenDidInfoExperiment(info, privKey, algo)
-	recover_privKey:=exported.RecoverDidSecpK1ToPrivateKey(did_document)
+	recover_privKey := exported.RecoverDidSecpK1ToPrivateKey(did_document)
 
 	//var recover_privKey ed25519tm.PrivKeyEd25519
 	fmt.Println(recover_privKey)
@@ -214,7 +212,6 @@ func Test_development(t *testing.T) {
 	copy(recover_privKey[:], p1)
 	copy(recover_privKey[24:], p2)
 
-
 	fmt.Println("========secp original  =========")
 	fmt.Println(privkey_v3)
 	fmt.Println(len(privkey_v3))
@@ -242,3 +239,86 @@ func Test_development(t *testing.T) {
 	require.Equal(t, privKey, recover_privKey, "recover key success")
 }
 
+var (
+	validMnemonic = "" +
+		"basket mechanic myself capable shoe then " +
+		"home magic cream edge seminar artefact"
+	validIxoDid = exported.IxoDid{
+		Did:                 fmt.Sprintf("%s:%s", exported.DidPrefix, "CYCc2xaJKrp8Yt947Nc6jd"),
+		VerifyKey:           "7HjjYKd4SoBv26MqXp1SzmvDiouQxarBZ2ryscZLK22x",
+		EncryptionPublicKey: "FaE44kz98vbKdKh3YWzhe7PTPZ8YsbpDFpdwveGjDgv6",
+		Secret: exported.Secret{
+			Seed:                 "29a58bc799e8ce6a0ee87cc1e42107fc93e9d904f345501fcd92c20172b2603a",
+			SignKey:              "3oa8GeqqCYpmdXa1TW8Q8CtU1M1PELhkTnNYbhcTamBX",
+			EncryptionPrivateKey: "3oa8GeqqCYpmdXa1TW8Q8CtU1M1PELhkTnNYbhcTamBX",
+		},
+	}
+	// Note: validIxoDid deduced from validMnemonic
+)
+
+func TestSecret_Equals(t *testing.T) {
+	validSecret := validIxoDid.Secret
+	secret := exported.NewSecret(validSecret.Seed, validSecret.SignKey, validSecret.EncryptionPrivateKey)
+
+	require.True(t, secret.Equals(validSecret))
+
+	var secret2 exported.Secret
+
+	secret2 = secret
+	secret2.Seed += "_"
+	require.False(t, secret2.Equals(validSecret))
+
+	secret2 = secret
+	secret2.SignKey += "_"
+	require.False(t, secret2.Equals(validSecret))
+
+	secret2 = secret
+	secret2.EncryptionPrivateKey += "_"
+	require.False(t, secret2.Equals(validSecret))
+}
+
+func TestGenerateMnemonic(t *testing.T) {
+	mnemonic := exported.NewDidGeneratorBuilder().GetMnemonicString()
+	//	require.Nil(t, err)
+	require.True(t, bip39.IsMnemonicValid(mnemonic))
+}
+
+func TestFromMnemonic(t *testing.T) {
+	ixoDid := exported.NewDidGeneratorBuilder().WithMem(validMnemonic).Build()
+	//require.Nil(t, err)
+	require.Equal(t, validIxoDid, ixoDid)
+}
+
+func TestGen(t *testing.T) {
+	ixoDid := exported.NewDidGeneratorBuilder().Build()
+	//require.Nil(t, err)
+	require.NotNil(t, ixoDid)
+}
+
+func TestFromSeed(t *testing.T) {
+	seed := sha256.New()
+	seed.Write([]byte(validMnemonic))
+	var seed32 [32]byte
+	copy(seed32[:], seed.Sum(nil)[:32])
+
+	ixoDid := exported.NewDidGeneratorBuilder().BuildWithCustomSeed(seed32)
+	//require.Nil(t, err)
+	require.Equal(t, validIxoDid, ixoDid)
+}
+
+func TestSignAndVerify(t *testing.T) {
+	bz1 := []byte("abcdefghijklmnopqrstuvwxyz1234567890")  // "correct" msg
+	bz2 := []byte("abcdefghijklmnopqrstuvwxyz1234567890_") // "incorrect" msg
+
+	sig1, err := validIxoDid.SignMessage(bz1) // "correct" signature
+	require.Nil(t, err)
+	sig2 := append(sig1, byte(0)) // "incorrect" signature
+
+	// Correct signature and correct/incorrect msg
+	require.True(t, validIxoDid.VerifySignedMessage(bz1, sig1))
+	require.False(t, validIxoDid.VerifySignedMessage(bz2, sig1))
+
+	// Incorrect signature and correct/incorrect msg
+	require.False(t, validIxoDid.VerifySignedMessage(bz1, sig2))
+	require.False(t, validIxoDid.VerifySignedMessage(bz2, sig2))
+}

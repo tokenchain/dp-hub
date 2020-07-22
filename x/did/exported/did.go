@@ -3,10 +3,12 @@ package exported
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/btcsuite/btcutil/base58"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	tmcrypto "github.com/tendermint/tendermint/crypto"
+	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
 )
 
 type (
@@ -54,8 +56,6 @@ type (
 		name    string
 		seed    [32]byte
 	}
-
-	Credential struct{}
 )
 
 func RegisterCodec(cdc *codec.Codec) {
@@ -67,27 +67,12 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(&Claim{}, "darkpool/Claim", nil)
 }
 
-func (s Secret) String() string {
-	output, err := json.MarshalIndent(s, "", "  ")
-	if err != nil {
-		panic(err)
-	}
-	return fmt.Sprintf("%v", string(output))
+func (id IxoDid) Equals(other IxoDid) bool {
+	return id.Did == other.Did &&
+		id.VerifyKey == other.VerifyKey &&
+		id.EncryptionPublicKey == other.EncryptionPublicKey &&
+		id.Secret.Equals(other.Secret)
 }
-
-// Above IxoDid modelled after Sovrin documents
-// Ref: https://www.npmjs.com/package/sovrin-did
-// {
-//    did: "<base58 did>",
-//    verifyKey: "<base58 publicKey>",
-//    publicKey: "<base58 publicKey>",
-//
-//    secret: {
-//        seed: "<hex encoded 32-byte seed>",
-//        signKey: "<base58 secretKey>",
-//        privateKey: "<base58 privateKey>"
-//    }
-// }
 
 func (id IxoDid) GetPubKeyByte() [32]byte {
 	return RecoverDidToEd25519PubKey(id)
@@ -95,7 +80,6 @@ func (id IxoDid) GetPubKeyByte() [32]byte {
 func (id IxoDid) GetPriKeyByte() [64]byte {
 	return RecoverDidToEd25519PrivateKey(id)
 }
-
 func (id IxoDid) FromAddressDx0() sdk.AccAddress {
 	address, _ := sdk.AccAddressFromBech32(id.Dpinfo.DpAddress)
 	return address
@@ -119,7 +103,6 @@ func (id IxoDid) AddressEd() sdk.AccAddress {
 func (id IxoDid) DidAddress() string {
 	return id.Did
 }
-
 func (id IxoDid) String() string {
 	output, err := json.MarshalIndent(id, "", "  ")
 	if err != nil {
@@ -139,6 +122,20 @@ func (id IxoDid) GetPubKey() string {
 	//return base58.Encode(han[:])
 	return id.VerifyKey
 }
+
+func (id IxoDid) SignMessage(msg []byte) ([]byte, error) {
+	var privateKey ed25519tm.PrivKeyEd25519
+	copy(privateKey[:], base58.Decode(id.Secret.SignKey))
+	copy(privateKey[32:], base58.Decode(id.VerifyKey))
+	return privateKey.Sign(msg)
+}
+
+func (id IxoDid) VerifySignedMessage(msg []byte, sig []byte) bool {
+	var publicKey ed25519tm.PubKeyEd25519
+	copy(publicKey[:], base58.Decode(id.VerifyKey))
+	return publicKey.VerifyBytes(msg, sig)
+}
+
 func fromJsonStringDp(jsonSovrinDid string) (IxoDid, error) {
 	var did IxoDid
 	err := json.Unmarshal([]byte(jsonSovrinDid), &did)
@@ -163,3 +160,39 @@ func UnmarshalDxpDid(jsonSovrinDid string) (IxoDid, error) {
 	return fromJsonStringDp(jsonSovrinDid)
 }
 */
+
+// Above IxoDid modelled after Sovrin documents
+// Ref: https://www.npmjs.com/package/sovrin-did
+// {
+//    did: "<base58 did>",
+//    verifyKey: "<base58 publicKey>",
+//    publicKey: "<base58 publicKey>",
+//
+//    secret: {
+//        seed: "<hex encoded 32-byte seed>",
+//        signKey: "<base58 secretKey>",
+//        privateKey: "<base58 privateKey>"
+//    }
+// }
+
+func NewSecret(seed, signKey, encryptionPrivateKey string) Secret {
+	return Secret{
+		Seed:                 seed,
+		SignKey:              signKey,
+		EncryptionPrivateKey: encryptionPrivateKey,
+	}
+}
+
+func (s Secret) Equals(other Secret) bool {
+	return s.Seed == other.Seed &&
+		s.SignKey == other.SignKey &&
+		s.EncryptionPrivateKey == other.EncryptionPrivateKey
+}
+
+func (s Secret) String() string {
+	output, err := json.MarshalIndent(s, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	return fmt.Sprintf("%v", string(output))
+}

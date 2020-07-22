@@ -11,11 +11,16 @@ import (
 	"strings"
 )
 
+const (
+	DidPrefix = "did:dxp"
+)
+
+//https://sovrin-foundation.github.io/sovrin/spec/did-method-spec-template.html
 var (
-	validDidClassic = regexp.MustCompile(`^did:(dxp:|sov:)([a-zA-Z0-9]){21,22}([/][a-zA-Z0-9:]+|)$`)
-	validDid        = regexp.MustCompile(`^did:(dxp:|sov:)([a-zA-Z0-9]){21,22}([a-zA-Z0-9:]+|)$`)
-	IsValidDid      = validDid.MatchString
-	// https://sovrin-foundation.github.io/sovrin/spec/did-method-spec-template.html
+	validDidSimplified = regexp.MustCompile(`^did:(dxp:|sov:)([a-zA-Z0-9]){21,22}$`)
+	validDidClassic    = regexp.MustCompile(`^did:(dxp:|sov:)([a-zA-Z0-9]){21,22}([/][a-zA-Z0-9:]+|)$`)
+	validDid           = regexp.MustCompile(`^did:(dxp:|sov:)([a-zA-Z0-9]){21,22}([a-zA-Z0-9:]+|)$`)
+	IsValidDid         = validDid.MatchString
 	// IsValidDid adapted from the above link but assumes no sub-namespaces
 	// TODO: ValidDid needs to be updated once we no longer want to be able
 	//   to consider project accounts as DIDs (especially in treasury module),
@@ -65,7 +70,6 @@ func RecoverDidEd25519PublicKey(doc IxoDid) [32]byte {
 	copy(recover_pub[16:], p2)
 	return recover_pub
 }
-
 func RecoverDidSecpK1ToPrivateKey(doc IxoDid) [32]byte {
 	var recover_privKey secp256k1.PrivKeySecp256k1
 	p1, _ := hex.DecodeString(strings.ToLower(doc.Secret.EncryptionPrivateKey))
@@ -74,7 +78,6 @@ func RecoverDidSecpK1ToPrivateKey(doc IxoDid) [32]byte {
 	copy(recover_privKey[24:], p2)
 	return secp256k1.PrivKeySecp256k1(recover_privKey)
 }
-
 func PrivateKeyToSecp256k1(privKey tmcrypto.PrivKey) secp256k1.PrivKeySecp256k1 {
 	var privKey_orginal secp256k1.PrivKeySecp256k1
 	copy(privKey_orginal[:], privKey.Bytes()[5:])
@@ -85,7 +88,6 @@ func SecpPrivKey(bz []byte) secp256k1.PrivKeySecp256k1 {
 	copy(bzArr[:], bz)
 	return secp256k1.PrivKeySecp256k1(bzArr)
 }
-
 func getArrayFromKey(key string) []byte {
 	fmt.Println(len(base58.Decode(key)))
 	return base58.Decode(key)

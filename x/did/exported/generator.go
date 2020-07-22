@@ -7,6 +7,7 @@ import (
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/go-bip39"
 	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
 	edgen "github.com/tokenchain/ixo-blockchain/x/did/ed25519"
 	naclBox "golang.org/x/crypto/nacl/box"
@@ -15,7 +16,7 @@ import (
 func NewDidGeneratorBuilder() KeyGenerator {
 	return KeyGenerator{
 		name: "cosmos",
-		mem:  GenerateMnemonic(),
+		mem:  generateMnemonic(),
 	}
 }
 func (s KeyGenerator) WithName(n string) KeyGenerator {
@@ -37,16 +38,27 @@ func (s KeyGenerator) WithMem(n string) KeyGenerator {
 	s.mem = n
 	return s
 }
-
-func (s KeyGenerator) Build() IxoDid {
+func (s KeyGenerator) WithSeed(seed32 [32]byte) KeyGenerator {
+	s.seed = seed32
+	return s
+}
+func (s KeyGenerator) NewSeed() KeyGenerator {
 	seed := sha256.New()
 	seed.Write([]byte(s.mem))
 	var seed32 [32]byte
 	copy(seed32[:], seed.Sum(nil)[:32])
 	s.seed = seed32
-	return s.bySeed()
+	return s
 }
-
+func (s KeyGenerator) NewMnemonic() KeyGenerator {
+	entropy, _ := bip39.NewEntropy(12)
+	mnemonicWords, _ := bip39.NewMnemonic(entropy)
+	s.mem = mnemonicWords
+	return s
+}
+func (s KeyGenerator) GetMnemonicString() string {
+	return s.mem
+}
 func (s KeyGenerator) bySeed() IxoDid {
 
 	publicKeyBytes, privateKeyBytes, err := edgen.GenerateKey(bytes.NewReader(s.seed[0:32]))
@@ -80,4 +92,11 @@ func (s KeyGenerator) bySeed() IxoDid {
 		},
 	}
 	return sovDid
+}
+
+func (s KeyGenerator) Build() IxoDid {
+	return s.NewSeed().bySeed()
+}
+func (s KeyGenerator) BuildWithCustomSeed(seed32 [32]byte) IxoDid {
+	return s.WithSeed(seed32).bySeed()
 }

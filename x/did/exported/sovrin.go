@@ -50,11 +50,7 @@ func NewDapDid(did, verifykey, publickey, seed, signkey, privatekey, dpaddress, 
 		Did:                 did,
 		VerifyKey:           verifykey,
 		EncryptionPublicKey: publickey,
-		Secret: Secret{
-			Seed:                 seed,
-			SignKey:              signkey,
-			EncryptionPrivateKey: privatekey,
-		},
+		Secret:              NewSecret(seed, signkey, privatekey),
 		Dpinfo: DpInfo{
 			DpAddress: dpaddress,
 			PubKey:    dppubkey,
@@ -146,7 +142,7 @@ func (sd SovrinDid) String() string {
 	return fmt.Sprintf("%v", string(output))
 }
 
-func GenerateMnemonic() string {
+func generateMnemonic() string {
 	entropy, _ := bip39.NewEntropy(12)
 	mnemonicWords, _ := bip39.NewMnemonic(entropy)
 	return mnemonicWords
@@ -230,7 +226,7 @@ func VerifyKeyToAddr(verifyKey string) sdk.AccAddress {
 }
 
 func dxpDidAddress(document string) string {
-	return fmt.Sprintf("did:dxp:%s", document)
+	return fmt.Sprintf("%s:%s", DidPrefix, document)
 }
 
 func fromSeedToDid(seed [32]byte) IxoDid {
@@ -258,40 +254,6 @@ func fromSeedToDid(seed [32]byte) IxoDid {
 	return sovDid
 }
 
-/*
-
-publicKeyBytes, privateKeyBytes, err := edgen.GenerateKey(bytes.NewReader(seed[0:32]))
-if err != nil {
-panic(err)
-}
-publicKey := []byte(publicKeyBytes)
-privateKey := []byte(privateKeyBytes)
-
-signKey := base58.Encode(privateKey[:32])
-keyPair_publicKey, keyPair_privateKey, err := naclbox.GenerateKey(bytes.NewReader(privateKey[:]))
-
-sovDid := SovrinDid{
-Did:                 base58.Encode(publicKey[:16]),
-VerifyKey:           base58.Encode(publicKey),
-EncryptionPublicKey: base58.Encode(keyPair_publicKey[:]),
-
-Secret: SovrinSecret{
-Seed:                 hex.EncodeToString(seed[0:32]),
-SignKey:              signKey,
-EncryptionPrivateKey: base58.Encode(keyPair_privateKey[:]),
-},
-}
-*/
-/*
-func Gen() IxoDid {
-	var seed [32]byte
-	if _, err := io.ReadFull(cryptoRand.Reader, seed[:]); err != nil {
-		panic(err)
-	}
-	did, _ := fromJsonString(seed)
-	return did
-}
-*/
 func SignMessage(message []byte, signKey string, verifyKey string) []byte {
 	// Force the length to 64
 	privateKey := make([]byte, edgen.PrivateKeySize)
@@ -316,7 +278,6 @@ func SignMessageDid(message []byte, did_doc IxoDid) []byte {
 	p2, _ := hex.DecodeString(strings.ToLower(did_doc.Secret.SignKey))
 	copy(recover_privKey[:], p1)
 	copy(recover_privKey[24:], p2)
-	//return edgen.Sign(recover_privKey, message)
 	return recover_privKey[:]
 }
 
