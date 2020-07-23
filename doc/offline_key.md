@@ -233,6 +233,5 @@ func (s KeyGenerator) Recover(mem string) IxoDid {
 
 ```
 
-
-#### API Doc
-Please find the api document to be located at `*:1317/swagger-ui/` at the LCD.
+#### JS-SDK
+Please find the similar repository at `https://github.com/cosmos/ledger-cosmos-js`
