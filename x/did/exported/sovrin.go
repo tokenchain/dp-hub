@@ -10,7 +10,6 @@ import (
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/go-bip39"
 	"github.com/pkg/errors"
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
@@ -142,11 +141,6 @@ func (sd SovrinDid) String() string {
 	return fmt.Sprintf("%v", string(output))
 }
 
-func generateMnemonic() string {
-	entropy, _ := bip39.NewEntropy(12)
-	mnemonicWords, _ := bip39.NewMnemonic(entropy)
-	return mnemonicWords
-}
 
 func fromJsonString(jsonSovrinDid string) (IxoDid, error) {
 	var did IxoDid
@@ -159,22 +153,7 @@ func fromJsonString(jsonSovrinDid string) (IxoDid, error) {
 	return did, nil
 }
 
-func mnemonicToDid(mnemonic string) IxoDid {
-	seed := sha256.New()
-	seed.Write([]byte(mnemonic))
-	var seed32 [32]byte
-	copy(seed32[:], seed.Sum(nil)[:32])
-	return fromSeedToDid(seed32)
-}
 
-func MnToDid(mnemonic string, usr string) IxoDid {
-	return mnemonicToDid(mnemonic)
-}
-func SeedToDid(seed []byte) IxoDid {
-	var seed32 [32]byte
-	copy(seed32[:], seed[:32])
-	return fromSeedToDid(seed32)
-}
 func UnverifiedToAddr(ver string) sdk.AccAddress {
 	return sdk.AccAddress(tmcrypto.AddressHash([]byte(ver)))
 }

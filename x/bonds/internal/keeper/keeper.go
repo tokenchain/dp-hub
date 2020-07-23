@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 )
 
 type (
@@ -19,6 +20,7 @@ type (
 		SupplyKeeper  supply.Keeper
 		accountKeeper auth.AccountKeeper
 		StakingKeeper staking.Keeper
+		DidKeeper     did.Keeper
 		storeKey      sdk.StoreKey
 		cdc           *codec.Codec
 		paramSpace    params.Subspace
@@ -26,7 +28,7 @@ type (
 )
 
 func NewKeeper(bankKeeper bank.Keeper, supplyKeeper supply.Keeper,
-	accountKeeper auth.AccountKeeper, stakingKeeper staking.Keeper,
+	accountKeeper auth.AccountKeeper, stakingKeeper staking.Keeper, didKeeper did.Keeper,
 	storeKey sdk.StoreKey, cdc *codec.Codec) Keeper {
 
 	// ensure batches module account is set
@@ -39,6 +41,7 @@ func NewKeeper(bankKeeper bank.Keeper, supplyKeeper supply.Keeper,
 		SupplyKeeper:  supplyKeeper,
 		accountKeeper: accountKeeper,
 		StakingKeeper: stakingKeeper,
+		DidKeeper:     didKeeper,
 		storeKey:      storeKey,
 		cdc:           cdc,
 	}

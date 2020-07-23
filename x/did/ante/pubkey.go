@@ -21,6 +21,7 @@ type (
 		GetDidDoc(ctx sdk.Context, did exported.Did) (exported.DidDoc, error)
 		SetDidDoc(ctx sdk.Context, did exported.DidDoc) (err error)
 		AddDidDoc(ctx sdk.Context, did exported.DidDoc)
+		MustGetDidDoc(ctx sdk.Context, did exported.DidDoc) exported.DidDoc
 		AddDidDocDebug(ctx sdk.Context, did exported.DidDoc) (err error)
 		AddCredentials(ctx sdk.Context, did exported.Did, credential exported.DidCredential) (err error)
 		GetAllDidDocs(ctx sdk.Context) (didDocs []exported.DidDoc)

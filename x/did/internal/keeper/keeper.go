@@ -37,6 +37,14 @@ func (k Keeper) GetDidDoc(ctx sdk.Context, did exported.Did) (exported.DidDoc, e
 	return didDoc, nil
 }
 
+func (k Keeper) MustGetDidDoc(ctx sdk.Context, did exported.Did) exported.DidDoc {
+	didDoc, err := k.GetDidDoc(ctx, did)
+	if err != nil {
+		panic(err)
+	}
+	return didDoc
+}
+
 func (k Keeper) SetDidDoc(ctx sdk.Context, did exported.DidDoc) (err error) {
 	existedDidDoc, err := k.GetDidDoc(ctx, did.GetDid())
 	if existedDidDoc != nil {

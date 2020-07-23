@@ -13,7 +13,7 @@ import (
 
 func GetCmdSend(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "send [to-did-or-address] [amount] [sender-ixo-did]",
+		Use:   "send [to-did-or-address] [amount] [sender-dap-did]",
 		Short: "Create and sign a send tx using DIDs",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -42,7 +42,7 @@ func GetCmdSend(cdc *codec.Codec) *cobra.Command {
 
 func GetCmdOracleTransfer(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "oracle-transfer [from-did] [to-did-or-addr] [amount] [oracle-ixo-did] [proof]",
+		Use:   "oracle-transfer [from-did] [to-did-or-addr] [amount] [oracle-dap-did] [proof]",
 		Short: "Create and sign an oracle-transfer tx using DIDs",
 		Args:  cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -75,7 +75,7 @@ func GetCmdOracleTransfer(cdc *codec.Codec) *cobra.Command {
 
 func GetCmdOracleMint(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "oracle-mint [to-did-or-addr] [amount] [oracle-ixo-did] [proof]",
+		Use:   "oracle-mint [to-did-or-addr] [amount] [oracle-dap-did] [proof]",
 		Short: "Create and sign an oracle-mint tx using DIDs",
 		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -107,7 +107,7 @@ func GetCmdOracleMint(cdc *codec.Codec) *cobra.Command {
 
 func GetCmdOracleBurn(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "oracle-burn [from-did] [amount] [oracle-ixo-did] [proof]",
+		Use:   "oracle-burn [from-did] [amount] [oracle-dap-did] [proof]",
 		Short: "Create and sign an oracle-burn tx using DIDs",
 		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {

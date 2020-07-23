@@ -188,7 +188,13 @@ func toAddress(str string) sdk.AccAddress {
 }
 func (k Keeper) PerformBuyAtPrice(ctx sdk.Context, bondDid exported.Did, bo types.BuyOrder, prices sdk.DecCoins) (err error) {
 	bond := k.MustGetBond(ctx, bondDid)
-	buyerAddr := toAddress(bo.AccountDid)
+	//	buyerAddr := toAddress(bo.AccountDid)
+	// Get buyer address
+	buyerDidDoc, err := k.DidKeeper.GetDidDoc(ctx, bo.AccountDid)
+	if err != nil {
+		return err
+	}
+	buyerAddr := buyerDidDoc.Address()
 
 	// Mint bond tokens
 	err = k.SupplyKeeper.MintCoins(ctx, types.BondsMintBurnAccount, sdk.Coins{bo.Amount})
@@ -259,7 +265,13 @@ func (k Keeper) PerformBuyAtPrice(ctx sdk.Context, bondDid exported.Did, bo type
 
 func (k Keeper) PerformSellAtPrice(ctx sdk.Context, bondDid exported.Did, so types.SellOrder, prices sdk.DecCoins) (err error) {
 	bond := k.MustGetBond(ctx, bondDid)
-	sellerAddr := toAddress(so.AccountDid)
+	//	sellerAddr := toAddress(so.AccountDid)
+	// Get buyer address
+	sellerDidDoc, err := k.DidKeeper.GetDidDoc(ctx, so.AccountDid)
+	if err != nil {
+		return err
+	}
+	sellerAddr := sellerDidDoc.Address()
 
 	reserveReturns := types.MultiplyDecCoinsByInt(prices, so.Amount.Amount)
 	reserveReturnsRounded := types.RoundReserveReturns(reserveReturns)
@@ -327,7 +339,15 @@ func (k Keeper) PerformSwap(ctx sdk.Context, bondDid exported.Did, so types.Swap
 	}
 
 	// Give resultant tokens to swapper (reserveReturns should never be zero)
-	swapperAddr := toAddress(so.AccountDid)
+	//swapperAddr := toAddress(so.AccountDid)
+
+	// Get swapper address
+	swapperDidDoc, err := k.DidKeeper.GetDidDoc(ctx, so.AccountDid)
+	if err != nil {
+		return err, true
+	}
+	swapperAddr := swapperDidDoc.Address()
+
 	err = k.BankKeeper.SendCoins(ctx, bond.ReserveAddress, swapperAddr, reserveReturns)
 	if err != nil {
 		return err, false
@@ -422,7 +442,8 @@ func (k Keeper) PerformSwapOrders(ctx sdk.Context, bondDid exported.Did) {
 					logger.Debug(fmt.Sprintf("cancellation reason: %s", err.Error()))
 
 					// Return from amount to swapper
-					swapperAddr := toAddress(so.AccountDid)
+					//	swapperAddr := toAddress(so.AccountDid)
+					swapperAddr := k.DidKeeper.MustGetDidDoc(ctx, so.AccountDid).Address()
 					err := k.SupplyKeeper.SendCoinsFromModuleToAccount(ctx,
 						types.BatchesIntermediaryAccount, swapperAddr, sdk.Coins{so.Amount})
 					if err != nil {
@@ -490,7 +511,8 @@ func (k Keeper) CancelUnfulfillableBuys(ctx sdk.Context, bondDid exported.Did) (
 				))
 
 				// Return reserve to buyer
-				buyerAddr := toAddress(bo.AccountDid)
+				//buyerAddr := toAddress(bo.AccountDid)
+				buyerAddr := k.DidKeeper.MustGetDidDoc(ctx, bo.AccountDid).Address()
 				err := k.SupplyKeeper.SendCoinsFromModuleToAccount(ctx,
 					types.BatchesIntermediaryAccount, buyerAddr, bo.MaxPrices)
 				if err != nil {

@@ -25,8 +25,47 @@ const (
 	flagHDPath      = "hd-path"
 	flagKeyAlgo     = "algo"
 
-	mnemonicEntropySize         = 256
-	sample_mnom                 = "ignore sing before romance shiver hidden away despair soda gas moon merit borrow ten orbit sibling blame again pair estate siege dose horror rough"
+	mnemonicEntropySize = 256
+	sample_mnom         = "ignore sing before romance shiver hidden away despair soda gas moon merit borrow ten orbit sibling blame again pair estate siege dose horror rough"
+	/*
+
+		{
+		  "did": "did:dxp:UDH4t88ebNMbdFXAgpwcgD",
+		  "verifyKey": "FqDSyd526qAv91LSo5N9evxfzecnHSVzqopF8JsBCqis",
+		  "encryptionPublicKey": "7WByPHkdVTa9zXcsextkdWuGuhRVCo92r2mu1jQBkTna",
+		  "secret": {
+		    "seed": "37f77ad61ec8623aee253892b01b2a8cebba283d10ceb41472915ec40699a479",
+		    "signKey": "4mUJA3jUSWjfDWNdqc3t6wbHdgJvTEtbzyfcopX4T3Bn",
+		    "encryptionPrivateKey": "4mUJA3jUSWjfDWNdqc3t6wbHdgJvTEtbzyfcopX4T3Bn"
+		  },
+		  "dp": {
+		    "address": "dx019l9vhk4e5edcessq42arpfsftr0048phun5d89",
+		    "pubkey": "dx0pub1zcjduepqm3wey93mzsc95nfc6ful5dgte62rxusmqx6rc566xec5m2ed9w2qu2m4hv",
+		    "name": "cosmos",
+		    "algo": "ed25519"
+		  }
+		}
+
+	*/
+	sample_did_01_mem = "better swap climb night chronic border process gift drastic cabin jazz find pupil twin breeze lawn peanut banana tail empower civil borrow edit dentist"
+	/*
+	   {
+	     "did": "did:dxp:VrsU9cUAcYgF7f397xtjsX",
+	     "verifyKey": "GjKLRmDSCLALj28519q8XwKTmJTfFpobEsWCCKWHhzut",
+	     "encryptionPublicKey": "2Pb4bkbk1oXTpypzuZFABUtDgDP8VCZEiBVuXJsVbgYb",
+	     "secret": {
+	       "seed": "74fd93fdd7508e6b2fc9f4e1ac8cef727003f2c36e3f1acf1fcb104658da8f42",
+	       "signKey": "8sgZQSCiu8GHTveWb1mfusT1KbaFCksriHoXhyDzwahF",
+	       "encryptionPrivateKey": "8sgZQSCiu8GHTveWb1mfusT1KbaFCksriHoXhyDzwahF"
+	     },
+	     "dp": {
+	       "address": "dx01nyx8wn3qelmdpykjcjqnw22zdmu9pjt9us0y73",
+	       "pubkey": "dx0pub1zcjduepqaxmxmerk2lw76qxlsf8cc0rzst5hfgy4a3xmvnaxgmkczc9hv30sh4yj2y",
+	       "name": "cosmos",
+	       "algo": "ed25519"
+	     }
+	   }
+	*/
 	sample_did                  = "did:dxp:VrsU9cUAcYgF7f397xtjsX"
 	sample_verifyKey            = "GjKLRmDSCLALj28519q8XwKTmJTfFpobEsWCCKWHhzut"
 	sample_encryptionPublicKey  = "2Pb4bkbk1oXTpypzuZFABUtDgDP8VCZEiBVuXJsVbgYb"

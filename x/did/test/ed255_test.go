@@ -40,18 +40,22 @@ func Test_recover_public_key(t *testing.T) {
 
 	//err := dap.SignAndBroadcastTxCli()
 
-	/*	var recover_pub [32]byte
+	/*
+
+		var recover_pub [32]byte
 		name := substring(doc.Did, 8, len(doc.Did))
 		p1 := base58.Decode(name)
 		p2 := base58.Decode(doc.EncryptionPublicKey)
 		copy(recover_pub[:], p1)
-		copy(recover_pub[16:], p2)*/
-	/*
+		copy(recover_pub[16:], p2)
+
 		config := sdk.GetConfig()
 		config.SetBech32PrefixForAccount(app.Bech32PrefixAccAddr, app.Bech32PrefixAccPub)
 		config.SetBech32PrefixForValidator(app.Bech32PrefixValAddr, app.Bech32PrefixValPub)
 		config.SetBech32PrefixForConsensusNode(app.Bech32PrefixConsAddr, app.Bech32PrefixConsPub)
-		config.Seal()*/
+		config.Seal()
+
+	*/
 	//both parts are filled
 	r := exported.RecoverDidToEd25519PubKey(doc)
 	//only the first part filled
@@ -147,4 +151,17 @@ func Test_ed25519_development(t *testing.T) {
 	//require.Equal(t, privKey, cosmosPrivateKey, "recover private cosmos key success")
 	//require.Equal(t, info.GetAddress().String(), docCombine.DpInfo.GetAddress().String(), "keybase account established")
 
+}
+
+func Test_generate_recover(t *testing.T) {
+	setPrefix()
+	fmt.Println("========Seed==========")
+	did := exported.NewDidGeneratorBuilder().WithMem(sample_did_01_mem).Build()
+
+	fmt.Println("========Key Recover  =========")
+	fmt.Println(did)
+	fmt.Println(did.Did)
+
+	fmt.Println("========Check The Equal ===========")
+	require.Equal(t, did.Did, sample_did)
 }

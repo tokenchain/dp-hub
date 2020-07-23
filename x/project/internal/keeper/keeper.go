@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	exportedDid "github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/payments"
@@ -21,16 +22,18 @@ type Keeper struct {
 	paramSpace     params.Subspace
 	AccountKeeper  auth.AccountKeeper
 	paymentsKeeper payments.Keeper
+	didKeeper      did.Keeper
 }
 
 func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, paramSpace params.Subspace,
-	accountKeeper auth.AccountKeeper, paymentsKeeper payments.Keeper) Keeper {
+	accountKeeper auth.AccountKeeper, paymentsKeeper payments.Keeper, didKeeper did.Keeper) Keeper {
 	return Keeper{
 		cdc:            cdc,
 		storeKey:       key,
 		paramSpace:     paramSpace.WithKeyTable(types.ParamKeyTable()),
 		AccountKeeper:  accountKeeper,
 		paymentsKeeper: paymentsKeeper,
+		didKeeper:      didKeeper,
 	}
 }
 

@@ -250,10 +250,10 @@ func NewDarkpoolApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLate
 	)
 
 	app.didKeeper = did.NewKeeper(app.cdc, keys[did.StoreKey])
-	app.paymentsKeeper = payments.NewKeeper(app.cdc, keys[payments.StoreKey], app.subspaces[payments.ModuleName], app.bankKeeper, paymentsReservedIdPrefixes)
-	app.projectKeeper = project.NewKeeper(app.cdc, keys[project.StoreKey], app.subspaces[project.ModuleName], app.accountKeeper, app.paymentsKeeper)
+	app.paymentsKeeper = payments.NewKeeper(app.cdc, keys[payments.StoreKey], app.subspaces[payments.ModuleName], app.bankKeeper, app.didKeeper, paymentsReservedIdPrefixes)
+	app.projectKeeper = project.NewKeeper(app.cdc, keys[project.StoreKey], app.subspaces[project.ModuleName], app.accountKeeper, app.paymentsKeeper, app.didKeeper)
 	//app.bonddocKeeper = bonddoc.NewKeeper(app.cdc, keys[bonddoc.StoreKey])
-	app.bondsKeeper = bonds.NewKeeper(app.bankKeeper, app.supplyKeeper, app.accountKeeper, app.stakingKeeper, keys[bonds.StoreKey], app.cdc)
+	app.bondsKeeper = bonds.NewKeeper(app.bankKeeper, app.supplyKeeper, app.accountKeeper, app.stakingKeeper, app.didKeeper, keys[bonds.StoreKey], app.cdc)
 	app.oraclesKeeper = oracles.NewKeeper(app.cdc, keys[oracles.StoreKey])
 	app.treasuryKeeper = treasury.NewKeeper(app.cdc, keys[treasury.StoreKey], app.bankKeeper, app.oraclesKeeper, app.supplyKeeper, app.didKeeper)
 	//app.nsKeeper = nameservice.NewKeeper(app.cdc, keys[nameservice.StoreKey], app.bankKeeper)
