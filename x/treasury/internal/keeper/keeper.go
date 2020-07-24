@@ -23,7 +23,6 @@ type Keeper struct {
 
 func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankKeeper bank.Keeper,
 	oraclesKeeper oracles.Keeper, supplyKeeper supply.Keeper, didKeeper did.Keeper) Keeper {
-
 	return Keeper{
 		cdc:           cdc,
 		storeKey:      key,
@@ -33,7 +32,6 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankKeeper bank.Keeper,
 		didKeeper:     didKeeper,
 	}
 }
-
 func (k Keeper) Send(ctx sdk.Context, fromDid, toDidOrAddr string, amount sdk.Coins) error {
 	//from address
 	fromDidDoc, err := k.didKeeper.GetDidDoc(ctx, fromDid)
@@ -41,19 +39,18 @@ func (k Keeper) Send(ctx sdk.Context, fromDid, toDidOrAddr string, amount sdk.Co
 		return err
 	}
 	fromAddress := fromDidDoc.Address()
-
+	fmt.Println("send coin fromAddress")
 	toAddress, err := k.stringToAddr(ctx, toDidOrAddr)
 	if err != nil {
 		return err
 	}
-
+	fmt.Println("send coin toAddress")
 	if err := k.bankKeeper.SendCoins(ctx, fromAddress, toAddress, amount); err != nil {
 		return err
 	}
-
+	fmt.Println("send coin amount")
 	return nil
 }
-
 func (k Keeper) OracleTransfer(ctx sdk.Context, fromDid exported.Did, toDidOrAddr string, oracleDid exported.Did, amount sdk.Coins) error {
 	// Check if oracle exists
 	if !k.oraclesKeeper.OracleExists(ctx, oracleDid) {
@@ -116,10 +113,8 @@ func (k Keeper) OracleMint(ctx sdk.Context, oracleDid exported.Did, toDidOrAddr 
 	if err = k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, toAddress, amount); err != nil {
 		return err
 	}
-
 	return nil
 }
-
 func (k Keeper) OracleBurn(ctx sdk.Context, oracleDid, fromDid exported.Did, amount sdk.Coins) error {
 	// Get from address
 	fromDidDoc, err := k.didKeeper.GetDidDoc(ctx, fromDid)
@@ -162,7 +157,6 @@ func (k Keeper) OracleBurn(ctx sdk.Context, oracleDid, fromDid exported.Did, amo
 
 	return nil
 }
-
 func (k Keeper) stringToAddr(ctx sdk.Context, longaddress string) (sdk.AccAddress, error) {
 	// Get to address
 	var toAddress sdk.AccAddress
