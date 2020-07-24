@@ -31,7 +31,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 func handleMsgSend(ctx sdk.Context, k keeper.Keeper, msg types.MsgSend) (*sdk.Result, error) {
 	fmt.Println("send ctx keeper - handleMsgSend")
 	if err := k.Send(ctx, msg.FromDid, msg.ToDidOrAddr, msg.Amount); err != nil {
-		return nil, err
+		return &sdk.Result{}, err
 	}
 	fmt.Println("send ctx keeper - k")
 	ctx.EventManager().EmitEvent(

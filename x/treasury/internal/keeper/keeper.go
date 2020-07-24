@@ -34,6 +34,8 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankKeeper bank.Keeper,
 }
 func (k Keeper) Send(ctx sdk.Context, fromDid, toDidOrAddr string, amount sdk.Coins) error {
 	//from address
+	fmt.Println("send coin from", fromDid)
+	fmt.Println("send coin to", toDidOrAddr)
 	fromDidDoc, err := k.didKeeper.GetDidDoc(ctx, fromDid)
 	if err != nil {
 		return err
