@@ -65,8 +65,7 @@ func GetCmdOracleTransfer(cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
 				WithFromAddress(ixoDid.Address())
 
-			msg := types.NewMsgOracleTransfer(
-				fromDid, toDidOrAddr, coins, ixoDid.Did, proof)
+			msg := types.NewMsgOracleTransfer(fromDid, toDidOrAddr, coins, ixoDid.Did, proof)
 
 			return dap.GenerateOrBroadcastMsgs(cliCtx, msg, ixoDid)
 		},
@@ -97,8 +96,7 @@ func GetCmdOracleMint(cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
 				WithFromAddress(ixoDid.Address())
 
-			msg := types.NewMsgOracleMint(
-				toDidOrAddr, coins, ixoDid.Did, proof)
+			msg := types.NewMsgOracleMint(toDidOrAddr, coins, ixoDid.Did, proof)
 
 			return dap.GenerateOrBroadcastMsgs(cliCtx, msg, ixoDid)
 		},
@@ -129,8 +127,7 @@ func GetCmdOracleBurn(cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
 				WithFromAddress(ixoDid.Address())
 
-			msg := types.NewMsgOracleBurn(
-				fromDid, coins, ixoDid.Did, proof)
+			msg := types.NewMsgOracleBurn(fromDid, coins, ixoDid.Did, proof)
 
 			return dap.GenerateOrBroadcastMsgs(cliCtx, msg, ixoDid)
 		},

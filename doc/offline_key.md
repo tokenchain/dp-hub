@@ -187,7 +187,7 @@ func (s KeyGenerator) generateFinal() IxoDid {
         }
         //head part
         signKey := base58.Encode(privateKeyBytes[:32])
-        //keyPairPublicKey, keyPairPrivateKey, err := naclBox.GenerateKey(bytes.NewReader(privateKey[:]))
+
         keyPairPublicKey, keyPairPrivateKey, err := naclBox.GenerateKey(bytes.NewReader(privateKeyBytes[:]))
 
         var pubKey ed25519tm.PubKeyEd25519
