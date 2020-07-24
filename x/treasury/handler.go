@@ -1,6 +1,7 @@
 package treasury
 
 import (
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/keeper"
@@ -23,17 +24,16 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 			return nil, exported.UnknownRequest("No match for message type.")
 		}
 	}
-
 	// TODO: be able to disable sends/mints/burns globally
 	// TODO: be able to blacklist addresses/DIDs
 }
 
 func handleMsgSend(ctx sdk.Context, k keeper.Keeper, msg types.MsgSend) (*sdk.Result, error) {
-
+	fmt.Println("send ctx keeper - handleMsgSend")
 	if err := k.Send(ctx, msg.FromDid, msg.ToDidOrAddr, msg.Amount); err != nil {
 		return nil, err
 	}
-
+	fmt.Println("send ctx keeper - k")
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
