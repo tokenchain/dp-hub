@@ -38,7 +38,6 @@ func (k Keeper) Send(ctx sdk.Context, fromDid, toDidOrAddr string, amount sdk.Co
 		fmt.Println("error occurred: ", err)
 		return err
 	}
-
 	fromAddress := fromDidDoc.Address()
 	toAddress, err := k.stringToAddr(ctx, toDidOrAddr)
 	if err != nil {
@@ -47,7 +46,7 @@ func (k Keeper) Send(ctx sdk.Context, fromDid, toDidOrAddr string, amount sdk.Co
 	if err := k.bankKeeper.SendCoins(ctx, fromAddress, toAddress, amount); err != nil {
 		return err
 	}
-	fmt.Println("send coin:: address 0x", fromAddress, toAddress, amount)
+	//fmt.Println("send coin: address 0x", fromAddress, toAddress, amount)
 	return nil
 }
 func (k Keeper) OracleTransfer(ctx sdk.Context, fromDid exported.Did, toDidOrAddr string, oracleDid exported.Did, amount sdk.Coins) error {
