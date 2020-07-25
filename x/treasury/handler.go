@@ -1,7 +1,6 @@
 package treasury
 
 import (
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/keeper"
@@ -29,11 +28,15 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 }
 
 func handleMsgSend(ctx sdk.Context, k keeper.Keeper, msg types.MsgSend) (*sdk.Result, error) {
-	fmt.Println("send ctx keeper - handleMsgSend")
 	if err := k.Send(ctx, msg.FromDid, msg.ToDidOrAddr, msg.Amount); err != nil {
 		return &sdk.Result{}, err
 	}
-	fmt.Println("send ctx keeper - k")
+
+	a, _ := k.StringToDx0Addr(ctx, msg.FromDid)
+	msg.FromNative = a.String()
+	b, _ := k.StringToDx0Addr(ctx, msg.ToDidOrAddr)
+	msg.ToNative = b.String()
+
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
@@ -49,6 +52,11 @@ func handleMsgOracleTransfer(ctx sdk.Context, k keeper.Keeper, msg types.MsgOrac
 	if err := k.OracleTransfer(ctx, msg.FromDid, msg.ToDidOrAddr, msg.OracleDid, msg.Amount); err != nil {
 		return nil, err
 	}
+
+	a, _ := k.StringToDx0Addr(ctx, msg.FromDid)
+	msg.FromNative = a.String()
+	b, _ := k.StringToDx0Addr(ctx, msg.ToDidOrAddr)
+	msg.ToNative = b.String()
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
@@ -66,6 +74,9 @@ func handleMsgOracleMint(ctx sdk.Context, k keeper.Keeper, msg types.MsgOracleMi
 		return nil, err
 	}
 
+	b, _ := k.StringToDx0Addr(ctx, msg.ToDidOrAddr)
+	msg.ToNative = b.String()
+
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
@@ -81,6 +92,9 @@ func handleMsgOracleBurn(ctx sdk.Context, k keeper.Keeper, msg types.MsgOracleBu
 	if err := k.OracleBurn(ctx, msg.OracleDid, msg.FromDid, msg.Amount); err != nil {
 		return nil, err
 	}
+
+	a, _ := k.StringToDx0Addr(ctx, msg.FromDid)
+	msg.FromNative = a.String()
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(

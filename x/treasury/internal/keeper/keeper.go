@@ -39,14 +39,13 @@ func (k Keeper) Send(ctx sdk.Context, fromDid, toDidOrAddr string, amount sdk.Co
 		return err
 	}
 	fromAddress := fromDidDoc.Address()
-	toAddress, err := k.stringToAddr(ctx, toDidOrAddr)
+	toAddress, err := k.StringToDx0Addr(ctx, toDidOrAddr)
 	if err != nil {
 		return err
 	}
 	if err := k.bankKeeper.SendCoins(ctx, fromAddress, toAddress, amount); err != nil {
 		return err
 	}
-	//fmt.Println("send coin: address 0x", fromAddress, toAddress, amount)
 	return nil
 }
 func (k Keeper) OracleTransfer(ctx sdk.Context, fromDid exported.Did, toDidOrAddr string, oracleDid exported.Did, amount sdk.Coins) error {
@@ -76,7 +75,7 @@ func (k Keeper) OracleTransfer(ctx sdk.Context, fromDid exported.Did, toDidOrAdd
 }
 func (k Keeper) OracleMint(ctx sdk.Context, oracleDid exported.Did, toDidOrAddr string, amount sdk.Coins) error {
 
-	toAddress, err := k.stringToAddr(ctx, toDidOrAddr)
+	toAddress, err := k.StringToDx0Addr(ctx, toDidOrAddr)
 	if err != nil {
 		return err
 	}
@@ -155,17 +154,17 @@ func (k Keeper) OracleBurn(ctx sdk.Context, oracleDid, fromDid exported.Did, amo
 
 	return nil
 }
-func (k Keeper) stringToAddr(ctx sdk.Context, longaddress string) (sdk.AccAddress, error) {
+func (k Keeper) StringToDx0Addr(ctx sdk.Context, unknown_address_string string) (sdk.AccAddress, error) {
 	// Get to address
 	var toAddress sdk.AccAddress
-	if exported.IsValidDid(longaddress) {
-		toDidDoc, err := k.didKeeper.GetDidDoc(ctx, longaddress)
+	if exported.IsValidDid(unknown_address_string) {
+		toDidDoc, err := k.didKeeper.GetDidDoc(ctx, unknown_address_string)
 		if err != nil {
 			return nil, err
 		}
 		toAddress = toDidDoc.Address()
 	} else {
-		parsedAddr, err := sdk.AccAddressFromBech32(longaddress)
+		parsedAddr, err := sdk.AccAddressFromBech32(unknown_address_string)
 		if err != nil {
 			return nil, exported.IntErr(err.Error())
 		}

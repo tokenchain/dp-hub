@@ -142,15 +142,11 @@ func NewSignature(created time.Time, signature []byte) IxoSignature {
 		Created:        created,
 	}
 }
-
 func NewIxoTxSingleMsg(msg sdk.Msg, fee auth.StdFee, signature IxoSignature, memo string) IxoTx {
 	return NewIxoTx([]sdk.Msg{msg}, fee, []IxoSignature{signature}, memo)
 }
-
 func (tx IxoTx) GetMsgs() []sdk.Msg { return tx.Msgs }
-
 func (tx IxoTx) GetMemo() string { return tx.Memo }
-
 func (tx IxoTx) ValidateBasic() error {
 	// Fee validation
 	if tx.Fee.Gas > maxGasWanted {
@@ -161,7 +157,6 @@ func (tx IxoTx) ValidateBasic() error {
 		//return sdk.ErrInsufficientFee(fmt.Sprintf("invalid fee %s amount provided", tx.Fee.Amount))
 		return errors.Wrapf(errors.ErrInsufficientFee, "invalid fee %s amount provided", tx.Fee.Amount)
 	}
-
 	// Signatures validation
 	var ixoSigs = tx.GetSignatures()
 	if len(ixoSigs) == 0 {

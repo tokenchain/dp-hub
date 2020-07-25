@@ -37,26 +37,6 @@ func GetPubKeyGetter(keeper Keeper) ante.PubKeyGetter {
 			copy(pubKeyEd25519[:], base58.Decode(didDoc.GetPubKey()))
 			//fmt.Println("--- GetPubKeyGetter .5")
 		}
-		/*
-		   MsgAddDid{Did: did:dxp:VrsU9cUAcYgF7f397xtjsX, publicKey: GjKLRmDSCLALj28519q8XwKTmJTfFpobEsWCCKWHhzut}
-
-		   fmt.Println("- json message -")
-		   fmt.Println(msg)
-		*/
-		//fmt.Println("--- GetPubKeyGetter .6")
-		//fmt.Println(pubKeyEd25519)
 		return pubKeyEd25519, nil
-	}
-}
-
-func NewDefaultPubKeyGetter(didKeeper Keeper) ante.PubKeyGetter {
-	return func(ctx sdk.Context, msg ante.IxoMsg) (pubKey crypto.PubKey, res error) {
-		signerDidDoc, err := didKeeper.GetDidDoc(ctx, msg.GetSignerDid())
-		if err != nil {
-			return pubKey, err
-		}
-		var pubKeyRaw ed25519tm.PubKeyEd25519
-		copy(pubKeyRaw[:], base58.Decode(signerDidDoc.GetPubKey()))
-		return pubKeyRaw, nil
 	}
 }
