@@ -32,10 +32,6 @@ func handleMsgSend(ctx sdk.Context, k keeper.Keeper, msg types.MsgSend) (*sdk.Re
 		return &sdk.Result{}, err
 	}
 
-	a, _ := k.StringToDx0Addr(ctx, msg.FromDid)
-	msg.FromNative = a.String()
-	b, _ := k.StringToDx0Addr(ctx, msg.ToDidOrAddr)
-	msg.ToNative = b.String()
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
@@ -53,10 +49,6 @@ func handleMsgOracleTransfer(ctx sdk.Context, k keeper.Keeper, msg types.MsgOrac
 		return nil, err
 	}
 
-	a, _ := k.StringToDx0Addr(ctx, msg.FromDid)
-	msg.FromNative = a.String()
-	b, _ := k.StringToDx0Addr(ctx, msg.ToDidOrAddr)
-	msg.ToNative = b.String()
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
@@ -74,9 +66,6 @@ func handleMsgOracleMint(ctx sdk.Context, k keeper.Keeper, msg types.MsgOracleMi
 		return nil, err
 	}
 
-	b, _ := k.StringToDx0Addr(ctx, msg.ToDidOrAddr)
-	msg.ToNative = b.String()
-
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
@@ -93,8 +82,6 @@ func handleMsgOracleBurn(ctx sdk.Context, k keeper.Keeper, msg types.MsgOracleBu
 		return nil, err
 	}
 
-	a, _ := k.StringToDx0Addr(ctx, msg.FromDid)
-	msg.FromNative = a.String()
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
