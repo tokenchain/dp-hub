@@ -35,9 +35,13 @@ func (k Keeper) GetDidDoc(ctx sdk.Context, did exported.Did) (exported.DidDoc, e
 
 	var didDoc types.BaseDidDoc
 	err := k.cdc.UnmarshalBinaryLengthPrefixed(bz, &didDoc)
+
+	fmt.Println("if error UnmarshalBinaryLengthPrefixed: ", err)
+
 	if err != nil {
 		return nil, exported.ErrUnmarshalJson(err.Error())
 	}
+	fmt.Println("Get didDoc: ", didDoc)
 	return didDoc, nil
 }
 
