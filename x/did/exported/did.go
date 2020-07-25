@@ -93,8 +93,6 @@ func (id IxoDid) FromPubKeyDx0() tmcrypto.PubKey {
 	return address
 }
 func (id IxoDid) Address() sdk.AccAddress {
-	//return VerifyKeyToAddr(id.VerifyKey)
-	//return id.AddressDx0()
 	return VerifyKeyToAddrEd25519(id.VerifyKey)
 }
 func (id IxoDid) AddressEd() sdk.AccAddress {
@@ -118,8 +116,6 @@ func (id IxoDid) MarshaDid() ([]byte, error) {
 	return t, nil
 }
 func (id IxoDid) GetPubKey() string {
-	//han := RecoverDidEd25519PublicKey(id)
-	//return base58.Encode(han[:])
 	return id.VerifyKey
 }
 

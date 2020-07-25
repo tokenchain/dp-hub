@@ -166,14 +166,6 @@ func BytesToString(data []byte) string {
 func BytesToStringUnsafe(data []byte) string {
 	return *(*string)(unsafe.Pointer(&data))
 }
-
-/*
-func VerifyKeyToAddrEd25519(verifyKey string) sdk.AccAddress {
-	var pubKey ed25519.PublicKey
-	copy(pubKey[:], base58.Decode(verifyKey))
-	return sdk.AccAddress(pubKey)
-}
-*/
 func VerifyKeyToAddrEd25519(verifyKey string) sdk.AccAddress {
 	var pubKey ed25519tm.PubKeyEd25519
 	copy(pubKey[:], base58.Decode(verifyKey))
@@ -184,7 +176,6 @@ func VerifyKeyToPublicKeyEd25519(verifyKey string) tmcrypto.PubKey {
 	copy(pubKey[:], base58.Decode(verifyKey))
 	return ed25519tm.PubKeyEd25519(pubKey)
 }
-
 func VerifyKeyToPublicKeyEd25519Mech32(verifyKey string) string {
 	return sdk.MustBech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, VerifyKeyToPublicKeyEd25519(verifyKey))
 }
