@@ -55,6 +55,7 @@ type (
 		privkey []byte
 		name    string
 		seed    [32]byte
+		debug   bool
 	}
 )
 

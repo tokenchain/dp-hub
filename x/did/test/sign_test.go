@@ -301,7 +301,7 @@ func TestFromSeed(t *testing.T) {
 	var seed32 [32]byte
 	copy(seed32[:], seed.Sum(nil)[:32])
 
-	ixoDid := exported.NewDidGeneratorBuilder().BuildWithCustomSeed(seed32)
+	ixoDid := exported.NewDidGeneratorBuilder().WithSeed(seed32).Build()
 	//require.Nil(t, err)
 	require.Equal(t, validIxoDid, ixoDid)
 }

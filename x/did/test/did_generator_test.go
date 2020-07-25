@@ -2,9 +2,7 @@ package test
 
 import (
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	"github.com/cosmos/go-bip39"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
@@ -87,72 +85,6 @@ func Test_recover_public_key(t *testing.T) {
 	fmt.Println("========key recover  =========")
 	require.Nil(t, nil, "successfull signed")
 }
-func Test_ed25519_development(t *testing.T) {
-	setPrefix()
-
-	name := "cosmos"
-	entropySeed, err := bip39.NewEntropy(mnemonicEntropySize)
-	require.Nil(t, err, "memory phrase generated")
-	println("========Seed====================================================")
-	mnemonic, err := bip39.NewMnemonic(entropySeed)
-
-	var hdPath string
-	useBIP44 := !viper.IsSet(flagHDPath)
-	if useBIP44 {
-		hdPath = keys.CreateHDPath(0, 1).String()
-	} else {
-		hdPath = viper.GetString(flagHDPath)
-	}
-
-	algo := keys.SigningAlgo(viper.GetString(flagKeyAlgo))
-	if algo == keys.SigningAlgo("") {
-		algo = keys.Secp256k1
-	}
-	//isDryRun, _ := flags.GetBool(flagDryRun)
-	kb, err := getKeybase(true, nil)
-	//mnemonic = mnem
-
-	fmt.Println("====== memoric  ============")
-	fmt.Println(mnemonic)
-
-	// create master key and derive first key for keyring
-	derivedPriv, err := keys.StdDeriveKey(mnemonic, "", hdPath, algo)
-	//privKey, err := keys.StdPrivKeyGen(derivedPriv, algo)
-	docCombine := exported.InfoToDidEd25519(name, derivedPriv, true)
-	info, err := kb.CreateOffline(name, docCombine.FromPubKeyDx0(), keys.Ed25519)
-	if err != nil {
-		fmt.Println("failed to register key with name: ", name)
-	}
-	//	privKey_orginal := exported.PrivateKeyToSecp256k1(privKey)
-	//	privkey_v3 := exported.SecpPrivKey(derivedPriv)
-	//privateRecover := exported.RecoverDidToPrivateKeyClassic(docCombine)
-	//cosmosPrivateKey := exported.RecoverDidToCosmosPrivateKey(docCombine)
-
-	fmt.Println("========key recover  =========")
-	fmt.Println(docCombine)
-	fmt.Println(docCombine.Dpinfo.DpAddress)
-	//fmt.Println(privateRecover)
-
-	fmt.Println(info.GetAddress().String())
-	fmt.Println(docCombine.Dpinfo.PubKey)
-	//fmt.Println(len(recover_priv_key_ed))
-
-	fmt.Println("========cosmos private key check  =========")
-
-	fmt.Println(len(derivedPriv), derivedPriv)
-	//fmt.Println(len(privKey.Bytes()), privKey)
-	//fmt.Println(len(cosmosPrivateKey), cosmosPrivateKey.PubKey().Address().Bytes())
-	//fmt.Println(privKey.Equals(secp256k1.PrivKeySecp256k1(cosmosPrivateKey)))
-
-	fmt.Println("========end game now  ===========================")
-	//require.Equal(t, cap(privKey.Bytes()), cap(recover_priv_key_ed), "recover key are the same")
-	//	require.Equal(t, cap(privKey.Bytes()), cap(recover_priv_key_ed.Bytes()), "recover key success")
-	//require.Equal(t, 64, len(privateRecover), "recover key success")
-	//require.Equal(t, privKey, cosmosPrivateKey, "recover private cosmos key success")
-	//require.Equal(t, info.GetAddress().String(), docCombine.DpInfo.GetAddress().String(), "keybase account established")
-
-}
-
 func Test_generate_recover(t *testing.T) {
 	setPrefix()
 	fmt.Println("========Seed==========")
@@ -164,4 +96,48 @@ func Test_generate_recover(t *testing.T) {
 
 	fmt.Println("========Check The Equal ===========")
 	require.Equal(t, did.Did, sample_did)
+}
+
+func Test_generator(t *testing.T) {
+	setPrefix()
+	fmt.Println("========Seed==========")
+	total_accounts := uint32(20)
+	account_index := uint32(177)
+	list := []string{
+		"singularity",
+		"blackhole",
+		"cosmos",
+		"cosmic",
+		"darkness",
+		"nova",
+		"proton",
+		"rednova",
+		"bitcm",
+		"dollar",
+		"kbs",
+	}
+	var i uint32
+	var name string
+	for i = 1; i < total_accounts; i++ {
+
+		if i < uint32(len(list)+1) {
+			name = list[i-1]
+		} else {
+			name = "cosmos---"
+		}
+
+		did := exported.NewDidGeneratorBuilder().
+			WithName(name).
+			RecoverBIP44(sample_did_01_mem, "", account_index, i)
+
+		fmt.Println("========Check The DID ===========")
+		fmt.Println(did.Did)
+		fmt.Println("========DID Recover  =========")
+		fmt.Println(did)
+		fmt.Println("")
+		fmt.Println("")
+		fmt.Println("")
+		fmt.Println("")
+		fmt.Println("")
+	}
 }

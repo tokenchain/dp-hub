@@ -18,7 +18,6 @@ import (
 	"strings"
 	"unsafe"
 
-	naclBox "golang.org/x/crypto/nacl/box"
 	"io"
 )
 
@@ -90,47 +89,7 @@ func GenDidInfoExperiment(doc keys.Info, privateKey tmcrypto.PrivKey, x keys.Sig
 	return sovDid
 
 }
-func makePubKey(bt *[32]byte) (pubKey tmcrypto.PubKey) {
-	var pubKeyRaw ed25519tm.PubKeyEd25519
-	copy(pubKeyRaw[:], bt[:])
-	return pubKeyRaw
-}
-func InfoToDidEd25519(docName string, derivedPriv []byte, debug bool) IxoDid {
-	pubEd25519, priEd25519, _ := edgen.GenerateKey(bytes.NewReader(derivedPriv[0:32]))
-	keyPairPublicKey, keyPairPrivateKey, _ := naclBox.GenerateKey(bytes.NewReader(priEd25519[:]))
 
-	if debug {
-		fmt.Println("========pair1 key  =========")
-		fmt.Println("pub", len(pubEd25519), pubEd25519)
-		fmt.Println("pri", len(priEd25519), priEd25519)
-		fmt.Println("========pair2 key  =========")
-		fmt.Println("pub", len(keyPairPublicKey), keyPairPublicKey)
-		fmt.Println("pri", len(keyPairPrivateKey), keyPairPrivateKey)
-		fmt.Println("========Derived private key  =========")
-		fmt.Println(len(derivedPriv), derivedPriv)
-		fmt.Println("================================")
-	}
-	sovDid := IxoDid{
-		Dpinfo: DpInfo{
-			DpAddress: VerifyKeyToAddrEd25519(base58.Encode(pubEd25519[:])).String(),
-			PubKey:    sdk.MustBech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, makePubKey(pubEd25519)),
-			Name:      docName,
-			Algo:      "ed25519",
-			//DpAddress: doc.GetAddress().String(),
-			//Algo:      "secp256k1",
-		},
-		Did:                 dxpDidAddress(base58.Encode(pubEd25519[:16])),
-		VerifyKey:           base58.Encode(pubEd25519[:]),
-		EncryptionPublicKey: base58.Encode(keyPairPublicKey[:]),
-		Secret: Secret{
-			Seed:                 hex.EncodeToString(derivedPriv[0:32]),
-			SignKey:              base58.Encode(priEd25519[:32]),
-			EncryptionPrivateKey: base58.Encode(keyPairPrivateKey[:]),
-		},
-	}
-
-	return sovDid
-}
 
 func (sd SovrinDid) String() string {
 	output, err := json.MarshalIndent(sd, "", "  ")
@@ -152,7 +111,6 @@ func fromJsonString(jsonSovrinDid string) (IxoDid, error) {
 
 	return did, nil
 }
-
 
 func UnverifiedToAddr(ver string) sdk.AccAddress {
 	return sdk.AccAddress(tmcrypto.AddressHash([]byte(ver)))
@@ -199,30 +157,6 @@ func dxpDidAddress(document string) string {
 	return fmt.Sprintf("%s:%s", DidPrefix, document)
 }
 
-func fromSeedToDid(seed [32]byte) IxoDid {
-	publicKeyBytes, privateKeyBytes, err := edgen.GenerateKey(bytes.NewReader(seed[0:32]))
-	if err != nil {
-		panic(err)
-	}
-	//head part
-	signKey := base58.Encode(privateKeyBytes[:32])
-	//keyPairPublicKey, keyPairPrivateKey, err := naclBox.GenerateKey(bytes.NewReader(privateKey[:]))
-	keyPairPublicKey, keyPairPrivateKey, err := naclBox.GenerateKey(bytes.NewReader(privateKeyBytes[:]))
-
-	sovDid := IxoDid{
-		Did:                 dxpDidAddress(base58.Encode(publicKeyBytes[:16])),
-		VerifyKey:           base58.Encode(publicKeyBytes[:]),
-		EncryptionPublicKey: base58.Encode(keyPairPublicKey[:]),
-
-		Secret: Secret{
-			Seed:                 hex.EncodeToString(seed[0:32]),
-			SignKey:              signKey,
-			EncryptionPrivateKey: base58.Encode(keyPairPrivateKey[:]),
-		},
-	}
-
-	return sovDid
-}
 
 func SignMessage(message []byte, signKey string, verifyKey string) []byte {
 	// Force the length to 64
