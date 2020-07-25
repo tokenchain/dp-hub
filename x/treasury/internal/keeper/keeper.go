@@ -33,7 +33,6 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankKeeper bank.Keeper,
 	}
 }
 func (k Keeper) Send(ctx sdk.Context, fromDid, toDidOrAddr string, amount sdk.Coins) error {
-	//from address
 
 	fromDidDoc, err := k.didKeeper.GetDidDoc(ctx, fromDid)
 	if err != nil {

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	er "github.com/cosmos/cosmos-sdk/types/errors"
@@ -23,8 +24,11 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey) Keeper {
 
 func (k Keeper) GetDidDoc(ctx sdk.Context, did exported.Did) (exported.DidDoc, error) {
 	store := ctx.KVStore(k.storeKey)
+	fmt.Println("KVStore occurred: ", store)
 	key := types.GetDidPrefixKey(did)
+	fmt.Println("GetDidPrefixKey occurred: ", key)
 	bz := store.Get(key)
+	fmt.Println("Get occurred: ", bz)
 	if bz == nil {
 		return nil, exported.ErrInvalidDid("Invalid Did Address")
 	}
