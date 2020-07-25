@@ -34,13 +34,16 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankKeeper bank.Keeper,
 }
 func (k Keeper) Send(ctx sdk.Context, fromDid, toDidOrAddr string, amount sdk.Coins) error {
 	//from address
-	fmt.Println("send coin from", fromDid)
-	fmt.Println("send coin to", toDidOrAddr)
+
 	fromDidDoc, err := k.didKeeper.GetDidDoc(ctx, fromDid)
 	if err != nil {
+		fmt.Println("error occurred: ", err)
 		return err
 	}
+
 	fromAddress := fromDidDoc.Address()
+
+	fmt.Println("send coin to: ", toDidOrAddr)
 	fmt.Println("send coin fromAddress")
 	toAddress, err := k.stringToAddr(ctx, toDidOrAddr)
 	if err != nil {
