@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/tokenchain/ixo-blockchain/client/utils"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
 	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"net/http"
 	"strings"
@@ -63,8 +62,18 @@ func queryAddressFromDidRequestHandler(cliCtx context.CLIContext) http.HandlerFu
 			_, _ = w.Write([]byte("input is not a valid did"))
 			return
 		}
-		accAddress := ante.DidToAddr(vars["did"])
-		rest.PostProcessResponseBare(w, cliCtx, accAddress)
+		//accAddress := ante.DidToAddr(vars["did"])
+		key := exported.Did(vars["did"])
+		res, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s/%s", types.QuerierRoute, keeper.QueryDidDoc, key)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte(fmt.Sprintf("Could't query did. Error: %s", err.Error())))
+			return
+		}
+		var didDoc types.BaseDidDoc
+		cliCtx.Codec.MustUnmarshalJSON(res, &didDoc)
+		address_dx0 := exported.VerifyKeyToAddrEd25519(didDoc.PubKey)
+		rest.PostProcessResponseBare(w, cliCtx, address_dx0)
 	}
 }
 func queryDidDocRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {

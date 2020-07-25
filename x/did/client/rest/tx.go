@@ -57,7 +57,6 @@ func createDidRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 func addCredentialRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		w.Header().Set("Content-Type", "application/json")
 		did := r.URL.Query().Get("did")
 		didDocParam := r.URL.Query().Get("signerDidDoc")
@@ -78,12 +77,11 @@ func addCredentialRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		t := time.Now()
 		issued := t.Format(time.RFC3339)
-
 		credTypes := []string{"Credential", "ProofOfKYC"}
-
 		msg := types.NewMsgAddCredential(did, credTypes, sovrinDid.Did, issued)
 
 		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
+		//output, err:= ante.NewDidTxBuild(cliCtx, msg, sovrinDid).
 		if err != nil {
 			writeHead(w, http.StatusInternalServerError, err.Error())
 			return

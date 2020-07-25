@@ -18,21 +18,21 @@ func GetCmdSend(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			toDidOrAddr := args[0]
 			coinsStr := args[1]
-			ixoDidStr := args[2]
+			fromDxp := args[2]
 
 			coins, err := sdk.ParseCoins(coinsStr)
 			if err != nil {
 				return err
 			}
 
-			ixoDid, err := did.UnmarshalIxoDid(ixoDidStr)
+			dxpDID, err := did.UnmarshalIxoDid(fromDxp)
 			if err != nil {
 				return err
 			}
 
-			cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(ixoDid.Address())
-			msg := types.NewMsgSend(toDidOrAddr, coins, ixoDid.Did)
-			return ante.NewDidTxBuild(cliCtx, msg, ixoDid).CompleteAndBroadcastTxCLI()
+			cliCtx := context.NewCLIContext().WithCodec(cdc).WithFromAddress(dxpDID.Address())
+			msg := types.NewMsgSend(toDidOrAddr, coins, dxpDID.Did)
+			return ante.NewDidTxBuild(cliCtx, msg, dxpDID).CompleteAndBroadcastTxCLI()
 			//return dap.GenerateOrBroadcastMsgs(cliCtx, msg, ixoDid)
 		},
 	}
