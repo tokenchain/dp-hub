@@ -25,8 +25,7 @@ func NewMsgOracleTransfer(fromDid exported.Did, toDidOrAddr string, amount sdk.C
 	}
 }
 
-func NewMsgOracleMint(toDidOrAddr string, amount sdk.Coins,
-	oracleDid exported.Did, proof string) MsgOracleMint {
+func NewMsgOracleMint(toDidOrAddr string, amount sdk.Coins, oracleDid exported.Did, proof string) MsgOracleMint {
 	return MsgOracleMint{
 		OracleDid:   oracleDid,
 		ToDidOrAddr: toDidOrAddr,

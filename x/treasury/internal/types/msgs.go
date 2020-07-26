@@ -22,8 +22,6 @@ var (
 )
 
 type MsgSend struct {
-	FromNative  string       `json:"from_dx" yaml:"from_dx"`
-	ToNative    string       `json:"to_dx" yaml:"to_dx"`
 	FromDid     exported.Did `json:"from_did" yaml:"from_did"`
 	ToDidOrAddr exported.Did `json:"to_did" yaml:"to_did"`
 	Amount      sdk.Coins    `json:"amount" yaml:"amount"`
@@ -79,8 +77,6 @@ func (msg MsgSend) GetSignBytes() []byte {
 }
 
 type MsgOracleTransfer struct {
-	FromNative  string       `json:"from_dx" yaml:"from_dx"`
-	ToNative    string       `json:"to_dx" yaml:"to_dx"`
 	OracleDid   exported.Did `json:"oracle_did" yaml:"oracle_did"`
 	FromDid     exported.Did `json:"from_did" yaml:"from_did"`
 	ToDidOrAddr exported.Did `json:"to_did" yaml:"to_did"`
@@ -144,8 +140,6 @@ func (msg MsgOracleTransfer) GetSignBytes() []byte {
 }
 
 type MsgOracleMint struct {
-	FromNative  string       `json:"from_dx" yaml:"from_dx"`
-	ToNative    string       `json:"to_dx" yaml:"to_dx"`
 	OracleDid   exported.Did `json:"oracle_did" yaml:"oracle_did"`
 	ToDidOrAddr exported.Did `json:"to_did" yaml:"to_did"`
 	Amount      sdk.Coins    `json:"amount" yaml:"amount"`
@@ -205,8 +199,6 @@ func (msg MsgOracleMint) GetSignBytes() []byte {
 }
 
 type MsgOracleBurn struct {
-	FromNative  string       `json:"from_dx" yaml:"from_dx"`
-	ToNative    string       `json:"to_dx" yaml:"to_dx"`
 	OracleDid exported.Did `json:"oracle_did" yaml:"oracle_did"`
 	FromDid   exported.Did `json:"from_did" yaml:"from_did"`
 	Amount    sdk.Coins    `json:"amount" yaml:"amount"`
