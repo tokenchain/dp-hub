@@ -8,11 +8,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/params"
-	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
+	"github.com/tokenchain/ixo-blockchain/x/did"
+	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
 )
 
 var (
@@ -21,7 +22,7 @@ var (
 	templateCreatorAddr = sdk.AccAddress(crypto.AddressHash([]byte("templateCreatorAddr")))
 	payerAddr           = sdk.AccAddress(crypto.AddressHash([]byte("payerAddr")))
 
-	validPaymentAmount, _  = sdk.ParseCoins("1udap,2res")
+	validPaymentAmount, _  = sdk.ParseCoins("1dap,2res")
 	validPaymentMinimum, _ = sdk.ParseCoins("3res")
 	validPaymentMaximum    = sdk.NewCoins()
 
@@ -32,7 +33,7 @@ var (
 	validSubscriptionId1    = types.SubscriptionIdPrefix + "s1"
 	validSubscriptionId2    = types.SubscriptionIdPrefix + "s2"
 
-	validDoubledPaymentAmount, _ = sdk.ParseCoins("2udap,4res")
+	validDoubledPaymentAmount, _ = sdk.ParseCoins("2dap,4res")
 
 	validDiscounts = types.NewDiscounts(
 		types.NewDiscount(sdk.NewUint(1), sdk.MustNewDecFromStr("10")),
@@ -65,7 +66,7 @@ var (
 		templateCreatorAddr, payerAddr, false, true)
 )
 
-func ValidateVariables() sdk.Error {
+func ValidateVariables() error {
 	err := validDiscounts.Validate()
 	if err != nil {
 		return err
@@ -101,6 +102,7 @@ func CreateTestInput() (sdk.Context, Keeper, *codec.Codec) {
 
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	actStoreKey := sdk.NewKVStoreKey(auth.StoreKey)
+	didKey := sdk.NewKVStoreKey(did.StoreKey)
 
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
@@ -120,13 +122,14 @@ func CreateTestInput() (sdk.Context, Keeper, *codec.Codec) {
 	keyParams := sdk.NewKVStoreKey("subspace")
 	tkeyParams := sdk.NewTransientStoreKey("transient_params")
 
-	pk1 := params.NewKeeper(cdc, keyParams, tkeyParams, params.DefaultCodespace)
+	pk1 := params.NewKeeper(cdc, keyParams, tkeyParams)
 	paymentsSubspace := pk1.Subspace(types.DefaultParamspace)
 
 	accountKeeper := auth.NewAccountKeeper(cdc, actStoreKey, pk1.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
-	bankKeeper := bank.NewBaseKeeper(accountKeeper, pk1.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, nil)
+	bankKeeper := bank.NewBaseKeeper(accountKeeper, pk1.Subspace(bank.DefaultParamspace), nil)
+	didKeeper := did.NewKeeper(cdc, didKey)
 
-	keeper := NewKeeper(cdc, storeKey, paymentsSubspace, bankKeeper, nil)
+	keeper := NewKeeper(cdc, storeKey, paymentsSubspace, bankKeeper, didKeeper, nil)
 
 	return ctx, keeper, cdc
 }

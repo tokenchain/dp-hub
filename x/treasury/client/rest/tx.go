@@ -1,17 +1,26 @@
 package rest
 
 import (
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"net/http"
 
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/sovrin"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
 	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/types"
 )
 
+func writeHeadf(w http.ResponseWriter, code int, format string, i ...interface{}) {
+	w.WriteHeader(code)
+	_, _ = w.Write([]byte(fmt.Sprintf(format, i...)))
+}
+func writeHead(w http.ResponseWriter, code int, txt string) {
+	w.WriteHeader(code)
+	_, _ = w.Write([]byte(txt))
+}
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc("/treasury/send", sendRequestHandler(cliCtx)).Methods("POST")
 	r.HandleFunc("/treasury/oracleTransfer", oracleTransferRequestHandler(cliCtx)).Methods("POST")
@@ -24,33 +33,30 @@ func sendRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 
-		toDidParam := r.URL.Query().Get("toDid")
+		toDidParam := r.URL.Query().Get("toDidOrAddr")
 		amountParam := r.URL.Query().Get("amount")
-		sovrinDidParam := r.URL.Query().Get("sovrinDid")
+		sovrinDidParam := r.URL.Query().Get("ixoDid")
 
 		mode := r.URL.Query().Get("mode")
 		cliCtx = cliCtx.WithBroadcastMode(mode)
 
 		coins, err := sdk.ParseCoins(amountParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w,http.StatusBadRequest, err.Error())
 			return
 		}
 
-		sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := exported.UnmarshalDxpDid(sovrinDidParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w,http.StatusBadRequest, err.Error())
 			return
 		}
 
-		msg := types.NewMsgSend(toDidParam, coins, sovrinDid)
+		msg := types.NewMsgSend(toDidParam, coins, sovrinDid.Did)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w,http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -64,7 +70,7 @@ func oracleTransferRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 
 		fromDidParam := r.URL.Query().Get("fromDid")
-		toDidParam := r.URL.Query().Get("toDid")
+		toDidParam := r.URL.Query().Get("toDidOrAddr")
 		amountParam := r.URL.Query().Get("amount")
 		oracleDidParam := r.URL.Query().Get("oracleDid")
 		proofParam := r.URL.Query().Get("proof")
@@ -74,24 +80,21 @@ func oracleTransferRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		coins, err := sdk.ParseCoins(amountParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w,http.StatusBadRequest, err.Error())
 			return
 		}
 
-		oracleDid, err := sovrin.UnmarshalSovrinDid(oracleDidParam)
+		oracleDid, err := exported.UnmarshalDxpDid(oracleDidParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w,http.StatusBadRequest, err.Error())
 			return
 		}
 
-		msg := types.NewMsgOracleTransfer(fromDidParam, toDidParam, coins, oracleDid, proofParam)
+		msg := types.NewMsgOracleTransfer(fromDidParam, toDidParam, coins, oracleDid.Did, proofParam)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, oracleDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, oracleDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w,http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -104,7 +107,7 @@ func oracleMintRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 
-		toDidParam := r.URL.Query().Get("toDid")
+		toDidParam := r.URL.Query().Get("oracleDid")
 		amountParam := r.URL.Query().Get("amount")
 		oracleDidParam := r.URL.Query().Get("oracleDid")
 		proofParam := r.URL.Query().Get("proof")
@@ -114,24 +117,21 @@ func oracleMintRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		coins, err := sdk.ParseCoins(amountParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w,http.StatusBadRequest, err.Error())
 			return
 		}
 
-		oracleDid, err := sovrin.UnmarshalSovrinDid(oracleDidParam)
+		oracleDid, err := exported.UnmarshalDxpDid(oracleDidParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w,http.StatusBadRequest, err.Error())
 			return
 		}
 
-		msg := types.NewMsgOracleMint(toDidParam, coins, oracleDid, proofParam)
+		msg := types.NewMsgOracleMint(toDidParam, coins, oracleDid.Did, proofParam)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, oracleDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, oracleDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w,http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -148,30 +148,27 @@ func oracleBurnRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		amountParam := r.URL.Query().Get("amount")
 		oracleDidParam := r.URL.Query().Get("oracleDid")
 		proofParam := r.URL.Query().Get("proof")
-
 		mode := r.URL.Query().Get("mode")
+
 		cliCtx = cliCtx.WithBroadcastMode(mode)
 
 		coins, err := sdk.ParseCoins(amountParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w,http.StatusBadRequest, err.Error())
 			return
 		}
 
-		oracleDid, err := sovrin.UnmarshalSovrinDid(oracleDidParam)
+		oracleDid, err := exported.UnmarshalDxpDid(oracleDidParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w,http.StatusBadRequest, err.Error())
 			return
 		}
 
-		msg := types.NewMsgOracleBurn(fromDidParam, coins, oracleDid, proofParam)
+		msg := types.NewMsgOracleBurn(fromDidParam, coins, oracleDid.Did, proofParam)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, oracleDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, oracleDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w,http.StatusInternalServerError, err.Error())
 			return
 		}
 

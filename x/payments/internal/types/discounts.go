@@ -10,7 +10,7 @@ func NewDiscounts(discounts ...Discount) Discounts {
 	return Discounts(discounts)
 }
 
-func (ds Discounts) Validate() sdk.Error {
+func (ds Discounts) Validate() error {
 	if len(ds) == 0 {
 		return nil
 	}
@@ -20,7 +20,7 @@ func (ds Discounts) Validate() sdk.Error {
 	id := sdk.OneUint()
 	for _, d := range ds {
 		if !d.Id.Equal(id) {
-			return ErrDiscountIDsBeSequentialFrom1(DefaultCodespace)
+			return ErrDiscountIDsBeSequentialFrom1()
 		}
 		id = id.Add(sdk.OneUint())
 	}
@@ -47,11 +47,11 @@ func NewDiscount(id sdk.Uint, percent sdk.Dec) Discount {
 	}
 }
 
-func (d Discount) Validate() sdk.Error {
+func (d Discount) Validate() error {
 	if !d.Percent.IsPositive() {
-		return ErrNegativeDiscountPercentage(DefaultCodespace)
+		return ErrNegativeDiscountPercentage()
 	} else if d.Percent.GT(sdk.NewDec(100)) {
-		return ErrDiscountPercentageGreaterThan100(DefaultCodespace)
+		return ErrDiscountPercentageGreaterThan100()
 	}
 
 	return nil

@@ -37,7 +37,7 @@ func SupplyInvariant(k Keeper) sdk.Invariant {
 		// Get supply of coins held in accounts (includes stake token)
 		supplyInAccounts := sdk.Coins{}
 		k.accountKeeper.IterateAccounts(ctx, func(acc exported.Account) bool {
-			supplyInAccounts = supplyInAccounts.Add(acc.GetCoins())
+			supplyInAccounts = supplyInAccounts.Add(acc.GetCoins()...)
 			return false
 		})
 
@@ -53,7 +53,7 @@ func SupplyInvariant(k Keeper) sdk.Invariant {
 
 			// Subtract amount to be burned (this amount was already burned
 			// in handleMsgSell but is still a part of bond's CurrentSupply)
-			for _, s := range batch.Sells {
+			for _, s := range batch.Asks {
 				if s.Cancelled == types.FALSE {
 					supplyInBondsAndBatches = supplyInBondsAndBatches.Sub(
 						s.Amount)

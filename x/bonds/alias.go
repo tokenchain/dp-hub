@@ -3,11 +3,12 @@ package bonds
 import (
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
 //noinspection GoNameStartsWithPackageName
 const (
-	DefaultCodespace = types.DefaultCodespace
+	DefaultCodespace = types.ModuleName
 
 	BondsMintBurnAccount       = types.BondsMintBurnAccount
 	BatchesIntermediaryAccount = types.BatchesIntermediaryAccount
@@ -38,7 +39,13 @@ var (
 )
 
 type (
-	Keeper       = keeper.Keeper
-	CodeType     = types.CodeType
-	GenesisState = types.GenesisState
+	Keeper        = keeper.Keeper
+	Bond          = types.Bond
+	CodeType      = exported.CodeType
+	MsgCreateBond = types.MsgCreateBond
+	MsgEditBond   = types.MsgEditBond
+	MsgBuy        = types.MsgBuy
+	MsgSell       = types.MsgSell
+	MsgSwap       = types.MsgSwap
+	GenesisState  = types.GenesisState
 )

@@ -3,6 +3,7 @@ package rest
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/tokenchain/ixo-blockchain/client/utils"
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -19,8 +20,8 @@ func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 func queryOraclesRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		bz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.QuerierRoute,
-			keeper.QueryOracles), nil)
+		bz, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s", types.QuerierRoute,
+			keeper.QueryOracles)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(fmt.Sprintf("Couldn't get query data %s", err.Error())))

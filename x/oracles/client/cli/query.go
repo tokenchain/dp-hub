@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"github.com/tokenchain/ixo-blockchain/client/utils"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -18,8 +19,8 @@ func GetOraclesRequestHandler(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			bz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.QuerierRoute,
-				keeper.QueryOracles), nil)
+			bz, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s", types.QuerierRoute,
+				keeper.QueryOracles)
 			if err != nil {
 				return err
 			}

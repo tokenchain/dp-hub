@@ -2,7 +2,8 @@ package rest
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/tokenchain/ixo-blockchain/client/utils"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -10,7 +11,6 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/cosmos/cosmos-sdk/types/rest"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
 	"github.com/tokenchain/ixo-blockchain/x/project/internal/keeper"
 	"github.com/tokenchain/ixo-blockchain/x/project/internal/types"
 )
@@ -34,12 +34,10 @@ func queryProjectDocRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		vars := mux.Vars(r)
 		didAddr := vars["did"]
 
-		key := ixo.Did(didAddr)
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
-			keeper.QueryProjectDoc, key), nil)
+		key := exported.Did(didAddr)
+		res, _, err :=  utils.QueryWithData(cliCtx,"custom/%s/%s/%s", types.QuerierRoute, keeper.QueryProjectDoc, key)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(fmt.Sprintf("Could't query did. Error: %s", err.Error())))
+			writeHeadf(w, http.StatusInternalServerError, "Could't query did. Error: %s", err.Error())
 			return
 		}
 
@@ -62,11 +60,9 @@ func queryProjectAccountsRequestHandler(cliCtx context.CLIContext) http.HandlerF
 		vars := mux.Vars(r)
 		projectDid := vars["projectDid"]
 
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s",
-			types.QuerierRoute, keeper.QueryProjectAccounts, projectDid), nil)
+		res, _, err :=  utils.QueryWithData(cliCtx,"custom/%s/%s/%s", types.QuerierRoute, keeper.QueryProjectAccounts, projectDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(fmt.Sprintf("Could't query did. Error: %s", err.Error())))
+			writeHeadf(w, http.StatusInternalServerError, "Could't query did. Error: %s", err.Error())
 			return
 		}
 
@@ -78,8 +74,7 @@ func queryProjectAccountsRequestHandler(cliCtx context.CLIContext) http.HandlerF
 		var f interface{}
 		err = json.Unmarshal(res, &f)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(fmt.Sprintf("Could't parse query result. Result: %s. Error: %s", res, err.Error())))
+			writeHeadf(w, http.StatusInternalServerError, "Could't parse query result. Result: %s. Error: %s", res, err.Error())
 			return
 		}
 
@@ -96,11 +91,9 @@ func queryProjectTxsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		vars := mux.Vars(r)
 		projectDid := vars["projectDid"]
 
-		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s",
-			types.QuerierRoute, keeper.QueryProjectTx, projectDid), nil)
+		res, _, err :=  utils.QueryWithData(cliCtx,"custom/%s/%s/%s", types.QuerierRoute, keeper.QueryProjectTx, projectDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(fmt.Sprintf("Could't query did. Error: %s", err.Error())))
+			writeHeadf(w, http.StatusInternalServerError, "Could't query did. Error: %s", err.Error())
 			return
 		}
 
@@ -121,18 +114,15 @@ func queryProjectTxsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 func queryParamsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		bz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.QuerierRoute,
-			keeper.QueryParams), nil)
+		bz, _, err :=  utils.QueryWithData(cliCtx,"custom/%s/%s", types.QuerierRoute, keeper.QueryParams)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(fmt.Sprintf("Couldn't get query data %s", err.Error())))
+			writeHeadf(w, http.StatusInternalServerError, "Couldn't get query data %s", err.Error())
 			return
 		}
 
 		var params types.Params
 		if err := cliCtx.Codec.UnmarshalJSON(bz, &params); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(fmt.Sprintf("Couldn't Unmarshal data %s", err.Error())))
+			writeHeadf(w, http.StatusInternalServerError, "Couldn't Unmarshal data %s. ", err.Error())
 			return
 		}
 

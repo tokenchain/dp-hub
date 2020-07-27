@@ -10,6 +10,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmDB "github.com/tendermint/tm-db"
+	"github.com/tokenchain/ixo-blockchain/x/did"
 
 	"github.com/tokenchain/ixo-blockchain/x/payments"
 	"github.com/tokenchain/ixo-blockchain/x/project/internal/types"
@@ -19,6 +20,7 @@ func CreateTestInput() (sdk.Context, Keeper, *codec.Codec,
 	payments.Keeper, bank.Keeper) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	actStoreKey := sdk.NewKVStoreKey(auth.StoreKey)
+	didKey := sdk.NewKVStoreKey(did.StoreKey)
 	keyParams := sdk.NewKVStoreKey("subspace")
 	tkeyParams := sdk.NewTransientStoreKey("transient_params")
 	keyFees := sdk.NewKVStoreKey(payments.StoreKey)
@@ -35,7 +37,7 @@ func CreateTestInput() (sdk.Context, Keeper, *codec.Codec,
 	ctx := sdk.NewContext(ms, abci.Header{}, true, log.NewNopLogger())
 	cdc := MakeTestCodec()
 
-	pk1 := params.NewKeeper(cdc, keyParams, tkeyParams, params.DefaultCodespace)
+	pk1 := params.NewKeeper(cdc, keyParams, tkeyParams)
 	accountKeeper := auth.NewAccountKeeper(
 		cdc, actStoreKey, pk1.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount,
 	)
@@ -43,10 +45,10 @@ func CreateTestInput() (sdk.Context, Keeper, *codec.Codec,
 	paymentsSubspace := pk1.Subspace(payments.DefaultParamspace)
 	projectSubspace := pk1.Subspace(types.DefaultParamspace)
 
-	bankKeeper := bank.NewBaseKeeper(accountKeeper, pk1.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, nil)
-	paymentsKeeper := payments.NewKeeper(cdc, keyFees, paymentsSubspace, bankKeeper, nil)
-	keeper := NewKeeper(cdc, storeKey, projectSubspace, accountKeeper, paymentsKeeper)
-
+	bankKeeper := bank.NewBaseKeeper(accountKeeper, pk1.Subspace(bank.DefaultParamspace), nil)
+	didKeeper := did.NewKeeper(cdc, didKey)
+	paymentsKeeper := payments.NewKeeper(cdc, keyFees, paymentsSubspace, bankKeeper, didKeeper, nil)
+	keeper := NewKeeper(cdc, storeKey, projectSubspace, accountKeeper, paymentsKeeper, didKeeper)
 	paymentsKeeper.SetParams(ctx, payments.DefaultParams())
 
 	return ctx, keeper, cdc, paymentsKeeper, bankKeeper

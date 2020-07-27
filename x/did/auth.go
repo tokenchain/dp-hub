@@ -1,30 +1,42 @@
 package did
 
 import (
+	"fmt"
 	"github.com/btcsuite/btcutil/base58"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	"github.com/tendermint/tendermint/crypto"
+	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
-func GetPubKeyGetter(keeper Keeper) ixo.PubKeyGetter {
-	return func(ctx sdk.Context, msg ixo.IxoMsg) ([32]byte, sdk.Result) {
-
+func GetPubKeyGetter(keeper Keeper) ante.PubKeyGetter {
+	return func(ctx sdk.Context, msg ante.IxoMsg) (pubKey crypto.PubKey, res error) {
 		// Get signer PubKey
-		var pubKey [32]byte
+		var pubKeyEd25519 ed25519tm.PubKeyEd25519
 		switch msg := msg.(type) {
-		case types.MsgAddDid:
-			copy(pubKey[:], base58.Decode(msg.DidDoc.PubKey))
-		case types.MsgAddCredential:
-			did := msg.GetSignerDid()
-			didDoc, _ := keeper.GetDidDoc(ctx, did)
-			if didDoc == nil {
-				return pubKey, sdk.ErrUnauthorized("Issuer did not found").Result()
-			}
-			copy(pubKey[:], base58.Decode(didDoc.GetPubKey()))
+		case MsgAddDid:
+			copy(pubKeyEd25519[:], base58.Decode(msg.DidDoc.PubKey))
+			//pubKeyEd25519 = did.RecoverDidToEd25519PubKey(msg.DidDoc.)
+
 		default:
-			return pubKey, sdk.ErrUnknownRequest("No match for message type.").Result()
+			// For the remaining messages, the did is the signer
+			//fmt.Println("--- GetPubKeyGetter .1")
+			fmt.Println(msg.GetSignerDid())
+
+			didDoc, er := keeper.GetDidDoc(ctx, msg.GetSignerDid())
+			//fmt.Println("--- GetPubKeyGetter .3")
+			if er != nil {
+				return nil, er
+			}
+			//fmt.Println("--- GetPubKeyGetter .4")
+			if didDoc == nil {
+				return pubKey, exported.Unauthorized("Issuer did not found")
+			}
+
+			copy(pubKeyEd25519[:], base58.Decode(didDoc.GetPubKey()))
+			//fmt.Println("--- GetPubKeyGetter .5")
 		}
-		return pubKey, sdk.Result{}
+		return pubKeyEd25519, nil
 	}
 }

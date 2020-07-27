@@ -35,8 +35,12 @@ func DefaultGenesisState() GenesisState {
 }
 
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
-	for _, record := range data.WhoisRecords {
-		keeper.SetWhois(ctx, record.Value, record)
+	println("WhoisRecords")
+	if data.WhoisRecords != nil {
+		println("WhoisRecords ok!")
+		for _, record := range data.WhoisRecords {
+			keeper.SetWhois(ctx, record.Value, record)
+		}
 	}
 }
 

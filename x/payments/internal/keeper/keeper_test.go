@@ -2,8 +2,8 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
 	"github.com/stretchr/testify/require"
+	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
 	"testing"
 	"time"
 )
@@ -135,17 +135,17 @@ func TestKeeperEffectPayment(t *testing.T) {
 	k.SetPaymentContract(ctx, contract)
 
 	// Set payer balance
-	balance, err2 := sdk.ParseCoins("10udap,10res")
+	balance, err2 := sdk.ParseCoins("10dap,10res")
 	require.Nil(t, err2)
 	err := k.bankKeeper.SetCoins(ctx, contract.Payer, balance)
 	require.Nil(t, err)
 
 	// At this point, cumulative: /
-	// PayAmt:  1udap, 2res
+	// PayAmt:  1dap, 2res
 	// PayMin:  3res
 	// PayMax:  /
-	// Next payment expected to be: 1udap, 3res (3res due to PayMin)
-	// Updated balance: 9udap, 7res
+	// Next payment expected to be: 1dap, 3res (3res due to PayMin)
+	// Updated balance: 9dap, 7res
 
 	// Effect payment
 	effected, err := k.EffectPayment(ctx, k.bankKeeper, contract.Id)
@@ -154,16 +154,16 @@ func TestKeeperEffectPayment(t *testing.T) {
 
 	// Check balance
 	newBalance := k.bankKeeper.GetCoins(ctx, contract.Payer)
-	expected, err2 := sdk.ParseCoins("9udap,7res")
+	expected, err2 := sdk.ParseCoins("9dap,7res")
 	require.Nil(t, err2)
 	require.Equal(t, expected.String(), newBalance.String())
 
-	// At this point, cumulative: 1udap, 3res
-	// PayAmt:  1udap, 2res
+	// At this point, cumulative: 1dap, 3res
+	// PayAmt:  1dap, 2res
 	// PayMin:  3res
 	// PayMax:  /
-	// Next payment expected to be: 1udap, 2res (no effect from PayMin)
-	// Updated balance: 8udap, 5res
+	// Next payment expected to be: 1dap, 2res (no effect from PayMin)
+	// Updated balance: 8dap, 5res
 
 	// Effect payment
 	effected, err = k.EffectPayment(ctx, k.bankKeeper, contract.Id)
@@ -172,13 +172,13 @@ func TestKeeperEffectPayment(t *testing.T) {
 
 	// Check balance
 	newBalance = k.bankKeeper.GetCoins(ctx, contract.Payer)
-	expected, err2 = sdk.ParseCoins("8udap,5res")
+	expected, err2 = sdk.ParseCoins("8dap,5res")
 	require.Nil(t, err2)
 	require.Equal(t, expected.String(), newBalance.String())
 
-	// At this point, cumulative: 2udap, 5res
-	// Next payment expected to be: 1udap, 2res
-	// Updated balance: 7udap, 3res
+	// At this point, cumulative: 2dap, 5res
+	// Next payment expected to be: 1dap, 2res
+	// Updated balance: 7dap, 3res
 
 	// Effect payment
 	effected, err = k.EffectPayment(ctx, k.bankKeeper, contract.Id)
@@ -187,7 +187,7 @@ func TestKeeperEffectPayment(t *testing.T) {
 
 	// Check balance
 	newBalance = k.bankKeeper.GetCoins(ctx, contract.Payer)
-	expected, err2 = sdk.ParseCoins("7udap,3res")
+	expected, err2 = sdk.ParseCoins("7dap,3res")
 	require.Nil(t, err2)
 	require.Equal(t, expected.String(), newBalance.String())
 
@@ -210,7 +210,7 @@ func TestKeeperEffectPaymentWithDiscounts(t *testing.T) {
 	k.SetPaymentContract(ctx, contract)
 
 	// Set payer balance
-	balance, err2 := sdk.ParseCoins("10udap,10res")
+	balance, err2 := sdk.ParseCoins("10dap,10res")
 	require.Nil(t, err2)
 	err := k.bankKeeper.SetCoins(ctx, contract.Payer, balance)
 	require.Nil(t, err)
@@ -220,11 +220,11 @@ func TestKeeperEffectPaymentWithDiscounts(t *testing.T) {
 	require.Nil(t, err)
 
 	// At this point, cumulative: /
-	// PayAmt:  2udap, 4res (discounted to 1udap, 2res)
+	// PayAmt:  2dap, 4res (discounted to 1dap, 2res)
 	// PayMin:  3res
 	// PayMax:  /
-	// Next payment expected to be: 1udap, 3res (3res due to PayMin)
-	// Updated balance: 9udap, 7res
+	// Next payment expected to be: 1dap, 3res (3res due to PayMin)
+	// Updated balance: 9dap, 7res
 
 	// Effect payment
 	effected, err := k.EffectPayment(ctx, k.bankKeeper, contract.Id)
@@ -233,16 +233,16 @@ func TestKeeperEffectPaymentWithDiscounts(t *testing.T) {
 
 	// Check balance
 	newBalance := k.bankKeeper.GetCoins(ctx, contract.Payer)
-	expected, err2 := sdk.ParseCoins("9udap,7res")
+	expected, err2 := sdk.ParseCoins("9dap,7res")
 	require.Nil(t, err2)
 	require.Equal(t, expected.String(), newBalance.String())
 
-	// At this point, cumulative: 1udap, 3res
-	// PayAmt:  2udap, 4res (discounted to 1udap, 2res)
+	// At this point, cumulative: 1dap, 3res
+	// PayAmt:  2dap, 4res (discounted to 1dap, 2res)
 	// PayMin:  3res
 	// PayMax:  /
-	// Next payment expected to be: 1udap, 2res (no effect from PayMin)
-	// Updated balance: 8udap, 5res
+	// Next payment expected to be: 1dap, 2res (no effect from PayMin)
+	// Updated balance: 8dap, 5res
 
 	// Effect payment
 	effected, err = k.EffectPayment(ctx, k.bankKeeper, contract.Id)
@@ -251,13 +251,13 @@ func TestKeeperEffectPaymentWithDiscounts(t *testing.T) {
 
 	// Check balance
 	newBalance = k.bankKeeper.GetCoins(ctx, contract.Payer)
-	expected, err2 = sdk.ParseCoins("8udap,5res")
+	expected, err2 = sdk.ParseCoins("8dap,5res")
 	require.Nil(t, err2)
 	require.Equal(t, expected.String(), newBalance.String())
 
-	// At this point, cumulative: 2udap, 5res
-	// Next payment expected to be: 1udap, 2res
-	// Updated balance: 7udap, 3res
+	// At this point, cumulative: 2dap, 5res
+	// Next payment expected to be: 1dap, 2res
+	// Updated balance: 7dap, 3res
 
 	// Effect payment
 	effected, err = k.EffectPayment(ctx, k.bankKeeper, contract.Id)
@@ -266,7 +266,7 @@ func TestKeeperEffectPaymentWithDiscounts(t *testing.T) {
 
 	// Check balance
 	newBalance = k.bankKeeper.GetCoins(ctx, contract.Payer)
-	expected, err2 = sdk.ParseCoins("7udap,3res")
+	expected, err2 = sdk.ParseCoins("7dap,3res")
 	require.Nil(t, err2)
 	require.Equal(t, expected.String(), newBalance.String())
 
@@ -295,17 +295,17 @@ func TestKeeperEffectSubscriptionPayment(t *testing.T) {
 	k.SetSubscription(ctx, testSubscription)
 
 	// Set payer balance
-	balance, err2 := sdk.ParseCoins("10udap,10res")
+	balance, err2 := sdk.ParseCoins("10dap,10res")
 	require.Nil(t, err2)
 	err := k.bankKeeper.SetCoins(ctx, contract.Payer, balance)
 	require.Nil(t, err)
 
 	// At this point, cumulative: /
-	// PayAmt:  1udap, 2res
+	// PayAmt:  1dap, 2res
 	// PayMin:  3res
 	// PayMax:  /
-	// Next payment expected to be: 1udap, 3res (3res due to PayMin)
-	// Updated balance: 9udap, 7res
+	// Next payment expected to be: 1dap, 3res (3res due to PayMin)
+	// Updated balance: 9dap, 7res
 
 	// Effect subscription payment
 	err = k.EffectSubscriptionPayment(ctx, testSubscription.Id)
@@ -313,16 +313,16 @@ func TestKeeperEffectSubscriptionPayment(t *testing.T) {
 
 	// Check balance
 	newBalance := k.bankKeeper.GetCoins(ctx, contract.Payer)
-	expected, err2 := sdk.ParseCoins("9udap,7res")
+	expected, err2 := sdk.ParseCoins("9dap,7res")
 	require.Nil(t, err2)
 	require.Equal(t, expected.String(), newBalance.String())
 
-	// At this point, cumulative: 1udap, 3res
-	// PayAmt:  1udap, 2res
+	// At this point, cumulative: 1dap, 3res
+	// PayAmt:  1dap, 2res
 	// PayMin:  3res
 	// PayMax:  /
-	// Next payment expected to be: 1udap, 2res (no effect from PayMin)
-	// Updated balance: 8udap, 5res
+	// Next payment expected to be: 1dap, 2res (no effect from PayMin)
+	// Updated balance: 8dap, 5res
 
 	// Effect subscription payment
 	err = k.EffectSubscriptionPayment(ctx, testSubscription.Id)
@@ -330,13 +330,13 @@ func TestKeeperEffectSubscriptionPayment(t *testing.T) {
 
 	// Check balance
 	newBalance = k.bankKeeper.GetCoins(ctx, contract.Payer)
-	expected, err2 = sdk.ParseCoins("8udap,5res")
+	expected, err2 = sdk.ParseCoins("8dap,5res")
 	require.Nil(t, err2)
 	require.Equal(t, expected.String(), newBalance.String())
 
-	// At this point, cumulative: 2udap, 5res
-	// Next payment expected to be: 1udap, 2res
-	// Updated balance: 7udap, 3res
+	// At this point, cumulative: 2dap, 5res
+	// Next payment expected to be: 1dap, 2res
+	// Updated balance: 7dap, 3res
 
 	// Effect subscription payment
 	err = k.EffectSubscriptionPayment(ctx, testSubscription.Id)
@@ -344,7 +344,7 @@ func TestKeeperEffectSubscriptionPayment(t *testing.T) {
 
 	// Check balance
 	newBalance = k.bankKeeper.GetCoins(ctx, contract.Payer)
-	expected, err2 = sdk.ParseCoins("7udap,3res")
+	expected, err2 = sdk.ParseCoins("7dap,3res")
 	require.Nil(t, err2)
 	require.Equal(t, expected.String(), newBalance.String())
 

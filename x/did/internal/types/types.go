@@ -1,68 +1,68 @@
 package types
 
 import (
+	"encoding/json"
 	"errors"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
-var _ ixo.DidDoc = (*BaseDidDoc)(nil)
+var _ exported.DidDoc = (*BaseDidDoc)(nil)
 
 type BaseDidDoc struct {
-	Did         ixo.Did         `json:"did" yaml:"did"`
-	PubKey      string          `json:"pubKey" yaml:"pubKey"`
-	Credentials []DidCredential `json:"credentials" yaml:"credentials"`
+	Did         exported.Did             `json:"did" yaml:"did"`
+	PubKey      string                   `json:"pubKey" yaml:"pubKey"` //that also is the verify key
+	Credentials []exported.DidCredential `json:"credentials,omitempty" yaml:"credentials"`
 }
 
-func NewBaseDidDoc(did ixo.Did, pubKey string) BaseDidDoc {
+func NewBaseDidDoc(did exported.Did, pubKey string) BaseDidDoc {
 	return BaseDidDoc{
 		Did:         did,
 		PubKey:      pubKey,
-		Credentials: []DidCredential{},
+		Credentials: []exported.DidCredential{},
 	}
 }
-
-func (dd BaseDidDoc) GetDid() ixo.Did                 { return dd.Did }
-func (dd BaseDidDoc) GetPubKey() string               { return dd.PubKey }
-func (dd BaseDidDoc) GetCredentials() []DidCredential { return dd.Credentials }
-
-func (dd BaseDidDoc) SetDid(did ixo.Did) error {
+func (dd BaseDidDoc) GetDid() exported.Did                     { return dd.Did }
+func (dd BaseDidDoc) GetPubKey() string                        { return dd.PubKey }
+func (dd BaseDidDoc) GetCredentials() []exported.DidCredential { return dd.Credentials }
+func (dd BaseDidDoc) SetDid(did exported.Did) error {
 	if len(dd.Did) != 0 {
 		return errors.New("cannot override BaseDidDoc did")
 	}
-
 	dd.Did = did
-
 	return nil
 }
-
 func (dd BaseDidDoc) SetPubKey(pubKey string) error {
 	if len(dd.PubKey) != 0 {
 		return errors.New("cannot override BaseDidDoc pubKey")
 	}
-
 	dd.PubKey = pubKey
-
 	return nil
 }
-
-func (dd *BaseDidDoc) AddCredential(cred DidCredential) {
+func (dd *BaseDidDoc) AddCredential(cred exported.DidCredential) {
 	if dd.Credentials == nil {
-		dd.Credentials = make([]DidCredential, 0)
+		dd.Credentials = make([]exported.DidCredential, 0)
 	}
-
 	dd.Credentials = append(dd.Credentials, cred)
 }
-
-type DidCredential struct {
-	CredType []string `json:"type" yaml:"type"`
-	Issuer   ixo.Did  `json:"issuer" yaml:"issuer"`
-	Issued   string   `json:"issued" yaml:"issued"`
-	Claim    Claim    `json:"claim" yaml:"claim"`
+func (dd BaseDidDoc) Address() sdk.AccAddress {
+	return exported.VerifyKeyToAddrEd25519(dd.GetPubKey())
 }
-
-type Claim struct {
-	Id           ixo.Did `json:"id" yaml:"id"`
-	KYCValidated bool    `json:"KYCValidated" yaml:"KYCValidated"`
+func (dd BaseDidDoc) AddressUnverified() sdk.AccAddress {
+	return exported.UnverifiedToAddr(dd.GetPubKey())
 }
-
 type Credential struct{}
+func fromJsonString(jsonIxoDid string) (exported.IxoDid, error) {
+	var did exported.IxoDid
+	err := json.Unmarshal([]byte(jsonIxoDid), &did)
+	if err != nil {
+		err := fmt.Errorf("Could not unmarshal did into struct. Error: %s .", err.Error())
+		return exported.IxoDid{}, err
+	}
+
+	return did, nil
+}
+func UnmarshalIxoDid(jsonIxoDid string) (exported.IxoDid, error) {
+	return fromJsonString(jsonIxoDid)
+}

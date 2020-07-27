@@ -3,14 +3,14 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
 
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/sovrin"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
 	"github.com/tokenchain/ixo-blockchain/x/project/internal/types"
 )
 
@@ -22,7 +22,14 @@ func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc("/createEvaluation", createEvaluationRequestHandler(cliCtx)).Methods("POST")
 	r.HandleFunc("/withdrawFunds", withdrawFundsRequestHandler(cliCtx)).Methods("POST")
 }
-
+func writeHeadf(w http.ResponseWriter, code int, format string, i ...interface{}) {
+	w.WriteHeader(code)
+	_, _ = w.Write([]byte(fmt.Sprintf(format, i...)))
+}
+func writeHead(w http.ResponseWriter, code int, txt string) {
+	w.WriteHeader(code)
+	_, _ = w.Write([]byte(txt))
+}
 func createProjectRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -34,25 +41,22 @@ func createProjectRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		var projectDoc types.ProjectDoc
 		err := json.Unmarshal([]byte(projectDocParam), &projectDoc)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(fmt.Sprintf("Could not unmarshall projectDoc into struct. Error: %s", err.Error())))
+			writeHeadf(w, http.StatusBadRequest, "Could not unmarshall projectDoc into struct. Error: %s", err.Error())
 			return
 		}
 
-		didDoc, err := sovrin.UnmarshalSovrinDid(didDocParam)
+		didDoc, err := exported.UnmarshalDxpDid(didDocParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHeadf(w, http.StatusBadRequest, "Bad Request. Error: %s", err.Error())
 			return
 		}
 
 		cliCtx = cliCtx.WithBroadcastMode(mode)
 		msg := types.NewMsgCreateProject(senderDid, projectDoc, didDoc)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, didDoc)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, didDoc)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHeadf(w, http.StatusInternalServerError, "Internal Server Error: %s", err.Error())
 			return
 		}
 
@@ -68,10 +72,9 @@ func updateProjectStatusRequestHandler(cliCtx context.CLIContext) http.HandlerFu
 		sovrinDidParam := r.URL.Query().Get("sovrinDid")
 		mode := r.URL.Query().Get("mode")
 
-		sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := exported.UnmarshalDxpDid(sovrinDidParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
@@ -95,10 +98,9 @@ func updateProjectStatusRequestHandler(cliCtx context.CLIContext) http.HandlerFu
 
 		msg := types.NewMsgUpdateProjectStatus(senderDid, updateProjectStatusDoc, sovrinDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -116,10 +118,9 @@ func createAgentRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		projectDidParam := r.URL.Query().Get("projectDid")
 		mode := r.URL.Query().Get("mode")
 
-		projectDid, err := sovrin.UnmarshalSovrinDid(projectDidParam)
+		projectDid, err := exported.UnmarshalDxpDid(projectDidParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
@@ -137,10 +138,9 @@ func createAgentRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgCreateAgent(txHash, senderDid, createAgentDoc, projectDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, projectDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, projectDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -157,10 +157,9 @@ func createClaimRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		sovrinDidParam := r.URL.Query().Get("sovrinDid")
 		mode := r.URL.Query().Get("mode")
 
-		sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := exported.UnmarshalDxpDid(sovrinDidParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
@@ -172,10 +171,9 @@ func createClaimRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgCreateClaim(txHash, senderDid, createClaimDoc, sovrinDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -193,10 +191,9 @@ func createEvaluationRequestHandler(cliCtx context.CLIContext) http.HandlerFunc 
 		sovrinDidParam := r.URL.Query().Get("sovrinDid")
 		mode := r.URL.Query().Get("mode")
 
-		sovrinDid, err := sovrin.UnmarshalSovrinDid(sovrinDidParam)
+		sovrinDid, err := exported.UnmarshalDxpDid(sovrinDidParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
@@ -215,10 +212,9 @@ func createEvaluationRequestHandler(cliCtx context.CLIContext) http.HandlerFunc 
 
 		msg := types.NewMsgCreateEvaluation(txHash, senderDid, createEvaluationDoc, sovrinDid)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, sovrinDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -233,18 +229,16 @@ func withdrawFundsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		dataParam := r.URL.Query().Get("data")
 		mode := r.URL.Query().Get("mode")
 
-		senderDid, err := sovrin.UnmarshalSovrinDid(senderDidParam)
+		senderDid, err := exported.UnmarshalDxpDid(senderDidParam)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		var data types.WithdrawFundsDoc
 		err = json.Unmarshal([]byte(dataParam), &data)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(fmt.Sprintf("Could not unmarshall data into struct. Error: %s", err.Error())))
+			writeHeadf(w, http.StatusBadRequest, "Could not unmarshall data into struct. Error: %s", err.Error())
 			return
 		}
 
@@ -252,10 +246,9 @@ func withdrawFundsRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		msg := types.NewMsgWithdrawFunds(senderDid.Did, data)
 
-		output, err := ixo.SignAndBroadcastTxRest(cliCtx, msg, senderDid)
+		output, err := dap.SignAndBroadcastTxRest(cliCtx, msg, senderDid)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			writeHead(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 

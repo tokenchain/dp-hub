@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -30,6 +31,7 @@ func (AppModuleBasic) Name() string {
 
 func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
 	RegisterCodec(cdc)
+	RegisterAmino(cdc)
 }
 
 func (AppModuleBasic) DefaultGenesis() json.RawMessage {
@@ -58,9 +60,11 @@ func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	didTxCmd.AddCommand(client.PostCommands(
+	didTxCmd.AddCommand(flags.PostCommands(
 		cli.GetCmdAddDidDoc(cdc),
 		cli.GetCmdAddCredential(cdc),
+  	//	cli.GetCmdDidGenerate(cdc),
+		cli.GetCmdAccDidGenerate(cdc),
 	)...)
 
 	return didTxCmd
@@ -75,7 +79,7 @@ func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	didQueryCmd.AddCommand(client.GetCommands(
+	didQueryCmd.AddCommand(flags.GetCommands(
 		cli.GetCmdAddressFromDid(),
 		cli.GetCmdDidDoc(cdc),
 		cli.GetCmdAllDids(cdc),

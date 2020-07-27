@@ -1,9 +1,9 @@
 package types
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 )
 
 const (
-	DefaultCodespace sdk.CodespaceType = ModuleName
+	DefaultCodespace exported.CodespaceType = ModuleName
 )

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"github.com/tokenchain/ixo-blockchain/x/dap"
+	exported "github.com/tokenchain/ixo-blockchain/x/did/exported"
 
-	"github.com/tokenchain/ixo-blockchain/x/ixo/sovrin"
 	"github.com/tokenchain/ixo-blockchain/x/project/internal/types"
 )
 
@@ -21,7 +21,7 @@ func GetCmdCreateProject(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			senderDid := args[0]
 			projectDocStr := args[1]
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(args[2])
+			sovrinDid, err := exported.UnmarshalDxpDid(args[2])
 			if err != nil {
 				return err
 			}
@@ -33,12 +33,12 @@ func GetCmdCreateProject(cdc *codec.Codec) *cobra.Command {
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+				WithFromAddress(sovrinDid.Address())
 
 			msg := types.NewMsgCreateProject(senderDid, projectDoc, sovrinDid)
 			stdSignMsg := msg.ToStdSignMsg(types.MsgCreateProjectFee)
 
-			res, err := ixo.SignAndBroadcastTxFromStdSignMsg(cliCtx, stdSignMsg, sovrinDid)
+			res, err := dap.SignAndBroadcastTxFromStdSignMsg(cliCtx, stdSignMsg, sovrinDid)
 			if err != nil {
 				return err
 			}
@@ -58,7 +58,7 @@ func GetCmdUpdateProjectStatus(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			senderDid := args[0]
 			status := args[1]
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(args[2])
+			sovrinDid, err := exported.UnmarshalDxpDid(args[2])
 			if err != nil {
 				return err
 			}
@@ -79,11 +79,11 @@ func GetCmdUpdateProjectStatus(cdc *codec.Codec) *cobra.Command {
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+				WithFromAddress(sovrinDid.Address())
 
 			msg := types.NewMsgUpdateProjectStatus(senderDid, updateProjectStatusDoc, sovrinDid)
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
@@ -108,17 +108,17 @@ func GetCmdCreateAgent(cdc *codec.Codec) *cobra.Command {
 				Role:     role,
 			}
 
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(args[4])
+			sovrinDid, err := exported.UnmarshalDxpDid(args[4])
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+				WithFromAddress(sovrinDid.Address())
 
 			msg := types.NewMsgCreateAgent(txHash, senderDid, createAgentDoc, sovrinDid)
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
@@ -145,17 +145,17 @@ func GetCmdUpdateAgent(cdc *codec.Codec) *cobra.Command {
 				Role:   agentRole,
 			}
 
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(args[5])
+			sovrinDid, err := exported.UnmarshalDxpDid(args[5])
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+				WithFromAddress(sovrinDid.Address())
 
 			msg := types.NewMsgUpdateAgent(txHash, senderDid, updateAgentDoc, sovrinDid)
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
@@ -173,17 +173,17 @@ func GetCmdCreateClaim(cdc *codec.Codec) *cobra.Command {
 				ClaimID: claimId,
 			}
 
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(args[3])
+			sovrinDid, err := exported.UnmarshalDxpDid(args[3])
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+				WithFromAddress(sovrinDid.Address())
 
 			msg := types.NewMsgCreateClaim(txHash, senderDid, createClaimDoc, sovrinDid)
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
@@ -208,17 +208,17 @@ func GetCmdCreateEvaluation(cdc *codec.Codec) *cobra.Command {
 				Status:  claimStatus,
 			}
 
-			sovrinDid, err := sovrin.UnmarshalSovrinDid(args[4])
+			sovrinDid, err := exported.UnmarshalDxpDid(args[4])
 			if err != nil {
 				return err
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixo.DidToAddr(sovrinDid.Did))
+				WithFromAddress(sovrinDid.Address())
 
 			msg := types.NewMsgCreateEvaluation(txHash, senderDid, createEvaluationDoc, sovrinDid)
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, sovrinDid)
 		},
 	}
 }
@@ -229,7 +229,7 @@ func GetCmdWithdrawFunds(cdc *codec.Codec) *cobra.Command {
 		Short: "Withdraw funds.",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			senderDid, err := sovrin.UnmarshalSovrinDid(args[0])
+			senderDid, err := exported.UnmarshalDxpDid(args[0])
 			if err != nil {
 				return err
 			}
@@ -241,11 +241,11 @@ func GetCmdWithdrawFunds(cdc *codec.Codec) *cobra.Command {
 			}
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc).
-				WithFromAddress(ixo.DidToAddr(senderDid.Did))
+				WithFromAddress(senderDid.Address())
 
 			msg := types.NewMsgWithdrawFunds(senderDid.Did, data)
 
-			return ixo.SignAndBroadcastTxCli(cliCtx, msg, senderDid)
+			return dap.SignAndBroadcastTxCli(cliCtx, msg, senderDid)
 		},
 	}
 }

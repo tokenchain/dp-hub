@@ -1,6 +1,9 @@
 package types
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+)
 
 var oneHundred = sdk.NewDec(100)
 
@@ -10,10 +13,10 @@ func NewDistribution(shares ...DistributionShare) Distribution {
 	return Distribution(shares)
 }
 
-func (d Distribution) Validate() sdk.Error {
+func (d Distribution) Validate() error {
 	// Shares must add up to 100% (no shares means 0%)
 	if len(d) == 0 {
-		return ErrDistributionPercentagesNot100(DefaultCodespace, sdk.ZeroDec())
+		return ErrDistributionPercentagesNot100(sdk.ZeroDec())
 	}
 
 	// Validate shares and calculate total
@@ -27,21 +30,21 @@ func (d Distribution) Validate() sdk.Error {
 
 	// Shares must add up to 100%
 	if !total.Equal(sdk.NewDec(100)) {
-		return ErrDistributionPercentagesNot100(DefaultCodespace, total)
+		return ErrDistributionPercentagesNot100(total)
 	}
 
 	return nil
 }
 
 func (d Distribution) GetDistributionsFor(amount sdk.Coins) []sdk.DecCoins {
-	decAmount := sdk.NewDecCoins(amount)
+	decAmount := sdk.NewDecCoinsFromCoins(amount...)
 	distributions := make([]sdk.DecCoins, len(d))
 
 	// Calculate distribution amount for each share of the distribution
 	var distributed sdk.DecCoins
 	for i, share := range d {
 		distributions[i] = share.GetShareOf(decAmount)
-		distributed = distributed.Add(distributions[i])
+		distributed = distributed.Add(distributions[i]...)
 	}
 
 	// Distributed amount should equal original amount
@@ -64,11 +67,11 @@ func NewDistributionShare(address sdk.AccAddress, percentage sdk.Dec) Distributi
 	}
 }
 
-func (d DistributionShare) Validate() sdk.Error {
+func (d DistributionShare) Validate() error {
 	if !d.Percentage.IsPositive() {
-		return ErrNegativeSharePercentage(DefaultCodespace)
+		return ErrNegativeSharePercentage()
 	} else if d.Address.Empty() {
-		return sdk.ErrInvalidAddress("empty distribution share address")
+		return exported.ErrInvalidAddress("empty distribution share address")
 	}
 
 	return nil

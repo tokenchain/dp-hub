@@ -1,24 +1,22 @@
 package types
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"strings"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
-	"github.com/tokenchain/ixo-blockchain/x/ixo/sovrin"
+	"strings"
 )
 
-func NewMsgCreateProject(senderDid ixo.Did, projectDoc ProjectDoc, projectDid sovrin.SovrinDid) MsgCreateProject {
+func NewMsgCreateProject(senderDid exported.Did, projectDoc ProjectDoc, projectDid exported.IxoDid) MsgCreateProject {
 	return MsgCreateProject{
 		TxHash:     "",
 		SenderDid:  senderDid,
 		ProjectDid: projectDid.Did,
-		PubKey:     projectDid.VerifyKey,
+		PubKey:     projectDid.GetPubKey(),
 		Data:       projectDoc,
 	}
 }
 
-func NewMsgUpdateProjectStatus(senderDid ixo.Did, updateProjectStatusDoc UpdateProjectStatusDoc, projectDid sovrin.SovrinDid) MsgUpdateProjectStatus {
+func NewMsgUpdateProjectStatus(senderDid exported.Did, updateProjectStatusDoc UpdateProjectStatusDoc, projectDid exported.IxoDid) MsgUpdateProjectStatus {
 	return MsgUpdateProjectStatus{
 		TxHash:     "",
 		SenderDid:  senderDid,
@@ -27,7 +25,7 @@ func NewMsgUpdateProjectStatus(senderDid ixo.Did, updateProjectStatusDoc UpdateP
 	}
 }
 
-func NewMsgCreateAgent(txHash string, senderDid ixo.Did, createAgentDoc CreateAgentDoc, projectDid sovrin.SovrinDid) MsgCreateAgent {
+func NewMsgCreateAgent(txHash string, senderDid exported.Did, createAgentDoc CreateAgentDoc, projectDid exported.IxoDid) MsgCreateAgent {
 	return MsgCreateAgent{
 		ProjectDid: projectDid.Did,
 		TxHash:     txHash,
@@ -36,7 +34,7 @@ func NewMsgCreateAgent(txHash string, senderDid ixo.Did, createAgentDoc CreateAg
 	}
 }
 
-func NewMsgUpdateAgent(txHash string, senderDid ixo.Did, updateAgentDoc UpdateAgentDoc, projectDid sovrin.SovrinDid) MsgUpdateAgent {
+func NewMsgUpdateAgent(txHash string, senderDid exported.Did, updateAgentDoc UpdateAgentDoc, projectDid exported.IxoDid) MsgUpdateAgent {
 	return MsgUpdateAgent{
 		ProjectDid: projectDid.Did,
 		TxHash:     txHash,
@@ -45,7 +43,7 @@ func NewMsgUpdateAgent(txHash string, senderDid ixo.Did, updateAgentDoc UpdateAg
 	}
 }
 
-func NewMsgCreateClaim(txHash string, senderDid ixo.Did, createClaimDoc CreateClaimDoc, projectDid sovrin.SovrinDid) MsgCreateClaim {
+func NewMsgCreateClaim(txHash string, senderDid exported.Did, createClaimDoc CreateClaimDoc, projectDid exported.IxoDid) MsgCreateClaim {
 	return MsgCreateClaim{
 		ProjectDid: projectDid.Did,
 		TxHash:     txHash,
@@ -54,7 +52,7 @@ func NewMsgCreateClaim(txHash string, senderDid ixo.Did, createClaimDoc CreateCl
 	}
 }
 
-func NewMsgCreateEvaluation(txHash string, senderDid ixo.Did, createEvaluationDoc CreateEvaluationDoc, projectDid sovrin.SovrinDid) MsgCreateEvaluation {
+func NewMsgCreateEvaluation(txHash string, senderDid exported.Did, createEvaluationDoc CreateEvaluationDoc, projectDid exported.IxoDid) MsgCreateEvaluation {
 	return MsgCreateEvaluation{
 		ProjectDid: projectDid.Did,
 		TxHash:     txHash,
@@ -63,16 +61,16 @@ func NewMsgCreateEvaluation(txHash string, senderDid ixo.Did, createEvaluationDo
 	}
 }
 
-func NewMsgWithdrawFunds(senderDid ixo.Did, data WithdrawFundsDoc) MsgWithdrawFunds {
+func NewMsgWithdrawFunds(senderDid exported.Did, data WithdrawFundsDoc) MsgWithdrawFunds {
 	return MsgWithdrawFunds{
 		SenderDid: senderDid,
 		Data:      data,
 	}
 }
 
-func CheckNotEmpty(value string, name string) (valid bool, err sdk.Error) {
+func CheckNotEmpty(value string, name string) (valid bool, err error) {
 	if strings.TrimSpace(value) == "" {
-		return false, sdk.ErrUnknownRequest(name + " is empty.")
+		return false, exported.UnknownRequest(name + " is empty.")
 	} else {
 		return true, nil
 	}

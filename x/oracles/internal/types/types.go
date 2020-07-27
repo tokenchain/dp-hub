@@ -2,7 +2,7 @@ package types
 
 import (
 	"fmt"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
 	"strings"
 )
 
@@ -10,13 +10,13 @@ import (
 
 type (
 	Oracle struct {
-		OracleDid    ixo.Did         `json:"oracle_did" yaml:"oracle_did"`
+		OracleDid    exported.Did       `json:"oracle_did" yaml:"oracle_did"`
 		Capabilities OracleTokenCaps `json:"capabilities" yaml:"capabilities"`
 	}
 	Oracles []Oracle
 )
 
-func NewOracle(oracleDid ixo.Did, caps OracleTokenCaps) Oracle {
+func NewOracle(oracleDid exported.Did, caps OracleTokenCaps) Oracle {
 	return Oracle{
 		OracleDid:    oracleDid,
 		Capabilities: caps,
@@ -69,7 +69,6 @@ func (otcs OracleTokenCaps) MustGet(denom string) OracleTokenCap {
 
 func ParseTokenCaps(capsStr string) (TokenCaps, error) {
 	capsStr = strings.TrimSpace(capsStr)
-
 	capsStrs := strings.Split(capsStr, "/")
 	caps := make(TokenCaps, len(capsStrs))
 	for i, capStr := range capsStrs {

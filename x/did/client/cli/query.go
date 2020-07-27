@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/ixo"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"github.com/tokenchain/ixo-blockchain/client/utils"
+	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
+	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
 )
 
 func GetCmdAddressFromDid() *cobra.Command {
@@ -17,11 +19,10 @@ func GetCmdAddressFromDid() *cobra.Command {
 		Short: "Query for an account address by DID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if !ixo.IsValidDid(args[0]) {
+			if !exported.IsValidDid(args[0]) {
 				return errors.New("input is not a valid did")
 			}
-
-			accAddress := ixo.DidToAddr(args[0])
+			accAddress := ante.DidToAddr(args[0])
 			fmt.Println(accAddress.String())
 			return nil
 		},
@@ -37,10 +38,9 @@ func GetCmdDidDoc(cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			didAddr := args[0]
-			key := ixo.Did(didAddr)
+			key := exported.Did(didAddr)
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
-				keeper.QueryDidDoc, key), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s/%s", types.QuerierRoute, keeper.QueryDidDoc, key)
 			if err != nil {
 				return err
 			}
@@ -72,24 +72,19 @@ func GetCmdAllDids(cdc *codec.Codec) *cobra.Command {
 		Short: "Query all DIDs",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
-				keeper.QueryAllDids, "ALL"), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s/%s", types.QuerierRoute, keeper.QueryAllDids, "ALL")
 			if err != nil {
 				return err
 			}
-
-			var didDids []ixo.Did
+			var didDids []exported.Did
 			err = cdc.UnmarshalJSON(res, &didDids)
 			if err != nil {
 				return err
 			}
-
 			output, err := cdc.MarshalJSONIndent(didDids, "", "  ")
 			if err != nil {
 				return err
 			}
-
 			fmt.Println(string(output))
 			return nil
 		},
@@ -102,24 +97,19 @@ func GetCmdAllDidDocs(cdc *codec.Codec) *cobra.Command {
 		Short: "Query all DID documents",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", types.QuerierRoute,
-				keeper.QueryAllDidDocs, "ALL"), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s/%s", types.QuerierRoute, keeper.QueryAllDidDocs, "ALL")
 			if err != nil {
 				return err
 			}
-
 			var didDocs []types.BaseDidDoc
 			err = cdc.UnmarshalJSON(res, &didDocs)
 			if err != nil {
 				return err
 			}
-
 			output, err := cdc.MarshalJSONIndent(didDocs, "", "  ")
 			if err != nil {
 				return err
 			}
-
 			fmt.Println(string(output))
 			return nil
 		},

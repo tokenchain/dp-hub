@@ -3,6 +3,7 @@ package rest
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/tokenchain/ixo-blockchain/client/utils"
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -29,8 +30,8 @@ func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 func queryParamsHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		bz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s",
-			types.QuerierRoute, keeper.QueryParams), nil)
+		bz, _, err := utils.QueryWithData(cliCtx,"custom/%s/%s",
+			types.QuerierRoute, keeper.QueryParams)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(fmt.Sprintf("Couldn't get query data %s", err.Error())))
@@ -53,8 +54,8 @@ func queryPaymentTemplateHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		vars := mux.Vars(r)
 		templateId := vars[RestPaymentTemplateId]
 
-		bz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s",
-			types.QuerierRoute, keeper.QueryPaymentTemplate, templateId), nil)
+		bz, _, err := utils.QueryWithData(cliCtx,"custom/%s/%s/%s",
+			types.QuerierRoute, keeper.QueryPaymentTemplate, templateId)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(fmt.Sprintf("Couldn't get query data %s", err.Error())))
@@ -77,8 +78,8 @@ func queryPaymentContractHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		vars := mux.Vars(r)
 		contractId := vars[RestPaymentContractId]
 
-		bz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s",
-			types.QuerierRoute, keeper.QueryPaymentContract, contractId), nil)
+		bz, _, err := utils.QueryWithData(cliCtx,"custom/%s/%s/%s",
+			types.QuerierRoute, keeper.QueryPaymentContract, contractId)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(fmt.Sprintf("Couldn't get query data %s", err.Error())))
@@ -101,8 +102,8 @@ func querySubscriptionHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		vars := mux.Vars(r)
 		subscriptionId := vars[RestSubscriptionId]
 
-		bz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s",
-			types.QuerierRoute, keeper.QuerySubscription, subscriptionId), nil)
+		bz, _, err := utils.QueryWithData(cliCtx,"custom/%s/%s/%s",
+			types.QuerierRoute, keeper.QuerySubscription, subscriptionId)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(fmt.Sprintf("Couldn't get query data %s", err.Error())))

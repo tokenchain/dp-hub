@@ -8,20 +8,27 @@ import (
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
 	// Init params
 	keeper.SetParams(ctx, data.Params)
-
-	// Init payment templates
-	for _, pt := range data.PaymentTemplates {
-		keeper.SetPaymentTemplate(ctx, pt)
+	println("payment PaymentTemplates")
+	if data.PaymentTemplates != nil {
+		// Init payment templates
+		for _, pt := range data.PaymentTemplates {
+			keeper.SetPaymentTemplate(ctx, pt)
+		}
 	}
-
-	// Init payment contracts
-	for _, pc := range data.PaymentContracts {
-		keeper.SetPaymentContract(ctx, pc)
+	println("payment PaymentContracts")
+	if data.PaymentContracts != nil {
+		// Init payment contracts
+		for _, pc := range data.PaymentContracts {
+			keeper.SetPaymentContract(ctx, pc)
+		}
 	}
-
-	// Init subscriptions
-	for _, s := range data.Subscriptions {
-		keeper.SetSubscription(ctx, s)
+	println("payment Subscriptions")
+	if data.Subscriptions != nil {
+		// Init subscriptions
+		println("payment Subscriptions ok")
+		for _, s := range data.Subscriptions {
+			keeper.SetSubscription(ctx, s)
+		}
 	}
 }
 

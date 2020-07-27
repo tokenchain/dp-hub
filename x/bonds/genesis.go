@@ -7,14 +7,21 @@ import (
 
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
 	// Initialise bonds
-	for _, b := range data.Bonds {
-		keeper.SetBond(ctx, b.BondDid, b)
-		keeper.SetBondDid(ctx, b.Token, b.BondDid)
+	println("Bonds ===")
+	if data.Bonds != nil {
+		println("Bonds ok=")
+		for _, b := range data.Bonds {
+			keeper.SetBond(ctx, b.BondDid, b)
+			keeper.SetBondDid(ctx, b.Token, b.BondDid)
+		}
 	}
-
-	// Initialise batches
-	for _, b := range data.Batches {
-		keeper.SetBatch(ctx, b.BondDid, b)
+	println("Batches ===")
+	if data.Batches != nil {
+		println("Batches ok=")
+		// Initialise batches
+		for _, b := range data.Batches {
+			keeper.SetBatch(ctx, b.BondDid, b)
+		}
 	}
 }
 
@@ -31,9 +38,10 @@ func ExportGenesis(ctx sdk.Context, k Keeper) GenesisState {
 		bonds = append(bonds, bond)
 		batches = append(batches, batch)
 	}
-
+	params_ := k.GetParams(ctx)
 	return GenesisState{
 		Bonds:   bonds,
 		Batches: batches,
+		Params:  params_,
 	}
 }

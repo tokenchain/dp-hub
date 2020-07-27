@@ -4,10 +4,10 @@ import "github.com/tokenchain/ixo-blockchain/x/nameservice/types"
 import "github.com/tokenchain/ixo-blockchain/x/nameservice/keeper"
 
 const (
-	ModuleName   = types.ModuleName
-	RouterKey    = types.RouterKey
-	StoreKey     = types.StoreKey
-	QuerierRoute = types.QuerierRoute
+	ModuleName     = types.ModuleName
+	RouterKey      = types.RouterKey
+	StoreKey       = types.StoreKey
+	QuerierRoute   = types.QuerierRoute
 )
 
 var (

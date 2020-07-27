@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
+	"github.com/tokenchain/ixo-blockchain/client/utils"
 	"github.com/tokenchain/ixo-blockchain/x/nameservice/types"
 )
 
@@ -37,7 +38,7 @@ func GetCmdResolveName(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			name := args[0]
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/resolve/%s", queryRoute, name), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/resolve/%s", queryRoute, name)
 			if err != nil {
 				fmt.Printf("could not resolve name - %s \n", name)
 				return nil
@@ -60,7 +61,7 @@ func GetCmdWhois(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			name := args[0]
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/whois/%s", queryRoute, name), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/whois/%s", queryRoute, name)
 			if err != nil {
 				fmt.Printf("could not resolve whois - %s \n", name)
 				return nil
@@ -82,7 +83,7 @@ func GetCmdNames(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/names", queryRoute), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/names", queryRoute)
 			if err != nil {
 				fmt.Printf("could not get query names\n")
 				return nil

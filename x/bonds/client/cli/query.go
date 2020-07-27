@@ -3,6 +3,8 @@ package cli
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/tokenchain/ixo-blockchain/client/utils"
 	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -20,7 +22,7 @@ func GetQueryCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	bondsQueryCmd.AddCommand(client.GetCommands(
+	bondsQueryCmd.AddCommand(flags.GetCommands(
 		GetCmdBonds(storeKey, cdc),
 		GetCmdBond(storeKey, cdc),
 		GetCmdBatch(storeKey, cdc),
@@ -44,9 +46,7 @@ func GetCmdBonds(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/%s/bonds",
-					queryRoute), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/bonds", queryRoute)
 			if err != nil {
 				fmt.Printf("%s", err.Error())
 				return nil
@@ -68,9 +68,7 @@ func GetCmdBond(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			bondDid := args[0]
 
-			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/%s/bond/%s",
-					queryRoute, bondDid), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/bond/%s", queryRoute, bondDid)
 			if err != nil {
 				fmt.Printf("%s", err.Error())
 				return nil
@@ -102,9 +100,7 @@ func GetCmdBatch(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			bondDid := args[0]
 
-			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/%s/batch/%s",
-					queryRoute, bondDid), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/batch/%s", queryRoute, bondDid)
 			if err != nil {
 				fmt.Printf("%s", err.Error())
 				return nil
@@ -136,9 +132,7 @@ func GetCmdLastBatch(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			bondDid := args[0]
 
-			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/%s/last_batch/%s",
-					queryRoute, bondDid), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/last_batch/%s", queryRoute, bondDid)
 			if err != nil {
 				fmt.Printf("%s", err.Error())
 				return nil
@@ -170,9 +164,7 @@ func GetCmdCurrentPrice(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			bondDid := args[0]
 
-			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/%s/current_price/%s",
-					queryRoute, bondDid), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/current_price/%s", queryRoute, bondDid)
 			if err != nil {
 				fmt.Printf("%s", err.Error())
 				return nil
@@ -205,9 +197,7 @@ func GetCmdCurrentReserve(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			bondDid := args[0]
 
-			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/%s/current_reserve/%s",
-					queryRoute, bondDid), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/current_reserve/%s", queryRoute, bondDid)
 			if err != nil {
 				fmt.Printf("%s", err.Error())
 				return nil
@@ -247,10 +237,7 @@ func GetCmdCustomPrice(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				return nil
 			}
 
-			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/%s/custom_price/%s/%s",
-					queryRoute, bondDid,
-					bondCoinWithAmount.Amount.String()), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/custom_price/%s/%s", queryRoute, bondDid, bondCoinWithAmount.Amount.String())
 			if err != nil {
 				fmt.Printf("%s", err.Error())
 				return nil
@@ -290,10 +277,7 @@ func GetCmdBuyPrice(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				return nil
 			}
 
-			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/%s/buy_price/%s/%s",
-					queryRoute, bondDid,
-					bondCoinWithAmount.Amount.String()), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/buy_price/%s/%s", queryRoute, bondDid, bondCoinWithAmount.Amount.String())
 			if err != nil {
 				fmt.Printf("%s", err.Error())
 				return nil
@@ -333,10 +317,7 @@ func GetCmdSellReturn(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				return nil
 			}
 
-			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/%s/sell_return/%s/%s",
-					queryRoute, bondDid,
-					bondCoinWithAmount.Amount.String()), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/sell_return/%s/%s", queryRoute, bondDid, bondCoinWithAmount.Amount.String())
 			if err != nil {
 				fmt.Printf("%s", err.Error())
 				return nil
@@ -377,10 +358,7 @@ func GetCmdSwapReturn(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				return nil
 			}
 
-			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/%s/swap_return/%s/%s/%s/%s",
-					queryRoute, bondDid, fromCoinWithAmount.Denom,
-					fromCoinWithAmount.Amount.String(), toToken), nil)
+			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/swap_return/%s/%s/%s/%s", queryRoute, bondDid, fromCoinWithAmount.Denom, fromCoinWithAmount.Amount.String(), toToken)
 			if err != nil {
 				fmt.Printf("%s", err.Error())
 				return nil
