@@ -1,9 +1,8 @@
 package main
 
 import (
-	"github.com/cosmos/cosmos-sdk/client/flags"
-
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/lcd"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
@@ -18,9 +17,9 @@ import (
 	cli2 "github.com/tokenchain/ixo-blockchain/client/cli"
 	clientTx "github.com/tokenchain/ixo-blockchain/client/tx"
 	/*authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
-		distRest "github.com/cosmos/cosmos-sdk/x/distribution/client/rest"
-		distcmd "github.com/cosmos/cosmos-sdk/x/distribution"
-		distClient "github.com/cosmos/cosmos-sdk/x/distribution/client"*/
+	distRest "github.com/cosmos/cosmos-sdk/x/distribution/client/rest"
+	distcmd "github.com/cosmos/cosmos-sdk/x/distribution"
+	distClient "github.com/cosmos/cosmos-sdk/x/distribution/client"*/
 
 )
 
