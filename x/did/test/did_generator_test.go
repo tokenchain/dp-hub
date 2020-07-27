@@ -1,6 +1,7 @@
 package test
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/cosmos/go-bip39"
 	"github.com/stretchr/testify/require"
@@ -124,11 +125,16 @@ func Test_generator(t *testing.T) {
 			name = list[i-1]
 		} else {
 			name = "cosmos---"
+			continue
 		}
 
 		did := exported.NewDidGeneratorBuilder().
 			WithName(name).
 			RecoverBIP44(sample_did_01_mem, "", account_index, i)
+
+
+		jsonString, _ := json.Marshal(did)
+		makeFile(name, jsonString)
 
 		fmt.Println("========Check The DID ===========")
 		fmt.Println(did.Did)

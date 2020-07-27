@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -10,6 +11,8 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tokenchain/ixo-blockchain/app"
 	"io"
+	"io/ioutil"
+	"os"
 )
 
 const (
@@ -96,7 +99,6 @@ func getKeybase(transient bool, buf io.Reader) (keys.Keybase, error) {
 	}
 	return keys.NewKeyring(sdk.KeyringServiceName(), viper.GetString(flags.FlagKeyringBackend), viper.GetString(flags.FlagHome), buf)
 }
-
 func substring(source string, start int, end int) string {
 	var r = []rune(source)
 	length := len(r)
@@ -108,7 +110,6 @@ func substring(source string, start int, end int) string {
 	}
 	return string(r[start:end])
 }
-
 func createTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
 	app := simapp.Setup(isCheckTx)
 	ctx := app.BaseApp.NewContext(isCheckTx, abci.Header{})
@@ -124,4 +125,9 @@ func setPrefix() {
 	config.SetBech32PrefixForValidator(app.Bech32PrefixValAddr, app.Bech32PrefixValPub)
 	config.SetBech32PrefixForConsensusNode(app.Bech32PrefixConsAddr, app.Bech32PrefixConsPub)
 	config.Seal()
+}
+func makeFile(key string, data []byte) {
+	path := "/Users/hesk/Documents/ixo/dp-hub/private/did-mainnet/"
+	filename := fmt.Sprintf("%s/did_%s.json", path, key)
+	ioutil.WriteFile(filename, data, os.ModePerm)
 }

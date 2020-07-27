@@ -72,16 +72,14 @@ build: go.sum
 ifeq ($(OS),Windows_NT)
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpd.exe ./cmd/dpd
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli.exe ./cmd/dpcli
-
 else
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpd ./cmd/dpd
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli ./cmd/dpcli
-
 endif
 
-linux: go.sum
-	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/dpd ./cmd/dpd
-	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli ./cmd/dpcli
+centos: go.sum
+	gox -osarch="linux/amd64" -mod=readonly $(BUILD_FLAGS) -output build/linux/dpd ./cmd/dpd
+	gox -osarch="linux/amd64" -mod=readonly $(BUILD_FLAGS) -output build/linux/dpcli ./cmd/dpcli
 
 install: go.sum
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/dpd
@@ -113,6 +111,10 @@ linux-faucet: go.sum
 
 update-git: go.sum
 	$(update_check)
+
+preinstall: go.sum
+	sudo go get github.com/mitchellh/gox
+
 
 ########################################
 ### Tools & dependencies
