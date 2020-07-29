@@ -100,6 +100,13 @@ func Test_generate_recover(t *testing.T) {
 }
 
 func Test_generator(t *testing.T) {
+	/*
+
+	ADDRESS_SINGULARITY=$(jq '.dp.address' $DID_FOLDER/did_singularity.json -r)
+	DIDSOVRIN_SINGULARITY=$(jq -c . $DID_FOLDER/did_singularity.json)
+	DID_SINGULARITY=$(jq '.did' $DID_FOLDER/did_singularity.json -r)
+
+	*/
 	setPrefix()
 	fmt.Println("========Seed==========")
 	total_accounts := uint32(20)
@@ -135,6 +142,8 @@ func Test_generator(t *testing.T) {
 
 		jsonString, _ := json.Marshal(did)
 		makeFile(name, jsonString)
+
+
 
 		fmt.Println("========Check The DID ===========")
 		fmt.Println(did.Did)
