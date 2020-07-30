@@ -35,8 +35,8 @@ require (
 	github.com/spf13/viper v1.6.3
 	github.com/streadway/handy v0.0.0-20190108123426-d5acb3125c2a
 	github.com/stretchr/testify v1.6.1
-	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15
-	github.com/tendermint/dex-demo v0.0.2 // indirect
+	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15 // indirect
+	github.com/tendermint/dex-demo v0.0.2
 	github.com/tendermint/ed25519 v0.0.0-20171027050219-d8387025d2b9
 	github.com/tendermint/go-amino v0.15.1
 	github.com/tendermint/tendermint v0.33.6 // latest
@@ -44,7 +44,7 @@ require (
 	github.com/tendermint/tmlibs v0.8.1
 	github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce
 	github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8 // indirect; --- indirect
-	go.uber.org/atomic v1.5.0
+	go.uber.org/atomic v1.5.0 // indirect
 	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79 // ---
 	golang.org/x/tools v0.0.0-20200103221440-774c71fcf114 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // ---
