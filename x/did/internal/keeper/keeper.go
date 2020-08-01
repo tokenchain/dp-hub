@@ -30,7 +30,7 @@ func (k Keeper) GetDidDoc(ctx sdk.Context, did exported.Did) (exported.DidDoc, e
 	bz := store.Get(key)
 	//fmt.Println("Get occurred: ", bz)
 	if bz == nil {
-		return nil, exported.ErrInvalidDid("Invalid Did Address")
+		return nil, exported.ErrInvalidDid("Invalid Did Address from docs")
 	}
 
 	var didDoc types.BaseDidDoc

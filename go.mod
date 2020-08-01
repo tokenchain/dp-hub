@@ -3,6 +3,7 @@ module github.com/tokenchain/ixo-blockchain
 go 1.12
 
 require (
+	github.com/GoLandr/gox v0.3.0 // indirect
 	github.com/agl/ed25519 v0.0.0-20200225211852-fd4d107ace12 // indirect
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/confio/ics23/go v0.0.0-20200610201322-18c7bd6b2dd3 // indirect
@@ -46,6 +47,6 @@ require (
 	github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8 // indirect; --- indirect
 	go.uber.org/atomic v1.5.0 // indirect
 	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79 // ---
-	golang.org/x/tools v0.0.0-20200103221440-774c71fcf114 // indirect
+	golang.org/x/mobile v0.0.0-20200721161523-bcce01171201 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // ---
 )

@@ -7,6 +7,10 @@ BINDIR ?= $(GOPATH)/bin
 GPG_SIGNING_KEY = ''
 export GO111MODULE = on
 export COSMOS_SDK_TEST_KEYRING = n
+
+#ANDROID_PATH=$(HOME)/Library/Android/sdk/ndk-bundle/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64/bin
+#/Users/hesk/Library/Android/sdk/ndk-bundle/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64/bin
+#export PATH=$(ANDROID_PATH):$($PATH)
 define update_check
  sh update.sh
 endef
@@ -68,7 +72,7 @@ SHOWTIMECMD :=  date "+%Y/%m/%d H:%M:%S"
 all: lint install
 OS=linux
 
-build: go.sum
+build:
 ifeq ($(OS),Windows_NT)
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpd.exe ./cmd/dpd
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli.exe ./cmd/dpcli
@@ -77,9 +81,17 @@ else
 	go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli ./cmd/dpcli
 endif
 
-centos: go.sum
-	gox -osarch="linux/amd64" -mod=readonly $(BUILD_FLAGS) -output build/linux/dpd ./cmd/dpd
-	gox -osarch="linux/amd64" -mod=readonly $(BUILD_FLAGS) -output build/linux/dpcli ./cmd/dpcli
+centos:
+	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/linux/dpcli ./cmd/dpcli
+	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/linux/dpd ./cmd/dpd
+#	gox -osarch="linux/amd64" -mod=readonly $(BUILD_FLAGS) -output build/linux/dpd ./cmd/dpd
+#	gox -osarch="linux/amd64" -mod=readonly $(BUILD_FLAGS) -output build/linux/dpcli ./cmd/dpcli
+
+
+#Android isn't official target platform for cross-compilation. If all you need are command-line executables then you can set GOOS=linux because android is a linux under the hood, else take a look at https://github.com/golang/go/wiki/Mobile
+android:
+	env GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 go build -mod=readonly $(BUILD_FLAGS) -o build/android/dpcli ./cmd/dpcli
+#	env GOOS=linux GOARCH=arm GOARM=7 CC=arm-linux-androideabi-as CXX=false CGO_ENABLED=1 go build -mod=readonly $(BUILD_FLAGS) -o build/linux/dpcli ./cmd/dpcli
 
 install: go.sum
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/dpd
@@ -114,7 +126,6 @@ update-git: go.sum
 
 preinstall: go.sum
 	sudo go get github.com/mitchellh/gox
-
 
 ########################################
 ### Tools & dependencies
