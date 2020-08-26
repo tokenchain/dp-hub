@@ -40,17 +40,14 @@ func (s KeyGenerator) WithName(n string) KeyGenerator {
 	s.name = n
 	return s
 }
-
 func (s KeyGenerator) WithPubKey(n []byte) KeyGenerator {
 	s.pubkey = n
 	return s
 }
-
 func (s KeyGenerator) WithPrivKey(n []byte) KeyGenerator {
 	s.privkey = n
 	return s
 }
-
 func (s KeyGenerator) WithMem(n string) KeyGenerator {
 	s.mem = n
 	return s
@@ -134,7 +131,6 @@ func (s KeyGenerator) generateFinal() IxoDid {
 	}
 	return sovDid
 }
-
 //to get some parameters from the builder
 func (s KeyGenerator) Pre() KeyGenerator {
 	return s.generateMnemonic().generateSeed()
@@ -142,7 +138,6 @@ func (s KeyGenerator) Pre() KeyGenerator {
 func (s KeyGenerator) Finalize() IxoDid {
 	return s.generateFinal()
 }
-
 //one step finish
 func (s KeyGenerator) Build() IxoDid {
 	fmt.Println(s.mem)

@@ -41,7 +41,7 @@ var ValidWithdrawalInfo = WithdrawalInfo{
 	ActionID:     "1",
 	ProjectDid:   "6iftm1hHdaU6LJGKayRMev",
 	RecipientDid: "6iftm1hHdaU6LJGKayRMev",
-	Amount:       sdk.NewCoin(dap.IxoNativeToken, sdk.NewInt(10)),
+	Amount:       sdk.NewCoin(common.NativeToken, sdk.NewInt(10)),
 }
 
 var (

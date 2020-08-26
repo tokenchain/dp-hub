@@ -4,7 +4,7 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/ixo-blockchain/x/common"
 )
 
 // Parameter store keys
@@ -63,16 +63,16 @@ func NewParams(ixoFactor, initiationFeeAmount, initiationNodeFeePercentage,
 // default payments module parameters
 func DefaultParams() Params {
 	return Params{
-		IxoFactor:                            sdk.OneDec(),                                             // 1
-		InitiationFeeAmount:                  sdk.NewDec(500).Mul(types.IxoDecimals),                   // 500 * 1e3 = 500000
-		InitiationNodeFeePercentage:          sdk.ZeroDec(),                                            // 0
-		ClaimFeeAmount:                       sdk.NewDec(6).Quo(sdk.NewDec(10)).Mul(types.IxoDecimals), // 0.6 * 1e3 = 600
-		EvaluationFeeAmount:                  sdk.NewDec(4).Quo(sdk.NewDec(10)).Mul(types.IxoDecimals), // 0.4 * 1e3 = 400
-		ServiceAgentRegistrationFeeAmount:    sdk.ZeroDec().Mul(types.IxoDecimals),                     // 0 * 1e3 = 0
-		EvaluationAgentRegistrationFeeAmount: sdk.ZeroDec().Mul(types.IxoDecimals),                     // 0 * 1e3 = 0
-		NodeFeePercentage:                    sdk.NewDec(5).Quo(sdk.NewDec(10)),                        // 0.5
-		EvaluationPayFeePercentage:           sdk.NewDec(1).Quo(sdk.NewDec(10)),                        // 0.1
-		EvaluationPayNodeFeePercentage:       sdk.NewDec(4).Quo(sdk.NewDec(10)),                        // 0.4
+		IxoFactor:                            sdk.OneDec(),                                                 // 1
+		InitiationFeeAmount:                  sdk.NewDec(500).Mul(common.NativeDecimals),                   // 500 * 1e3 = 500000
+		InitiationNodeFeePercentage:          sdk.ZeroDec(),                                                // 0
+		ClaimFeeAmount:                       sdk.NewDec(6).Quo(sdk.NewDec(10)).Mul(common.NativeDecimals), // 0.6 * 1e3 = 600
+		EvaluationFeeAmount:                  sdk.NewDec(4).Quo(sdk.NewDec(10)).Mul(common.NativeDecimals), // 0.4 * 1e3 = 400
+		ServiceAgentRegistrationFeeAmount:    sdk.ZeroDec().Mul(common.NativeDecimals),                     // 0 * 1e3 = 0
+		EvaluationAgentRegistrationFeeAmount: sdk.ZeroDec().Mul(common.NativeDecimals),                     // 0 * 1e3 = 0
+		NodeFeePercentage:                    sdk.NewDec(5).Quo(sdk.NewDec(10)),                            // 0.5
+		EvaluationPayFeePercentage:           sdk.NewDec(1).Quo(sdk.NewDec(10)),                            // 0.1
+		EvaluationPayNodeFeePercentage:       sdk.NewDec(4).Quo(sdk.NewDec(10)),                            // 0.4
 	}
 }
 

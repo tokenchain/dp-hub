@@ -27,6 +27,7 @@ require (
 	github.com/hmgle/socks5_go v0.0.0-20200531025750-85d815c008b8 // indirect
 	github.com/hmgle/tcfs-go v0.0.0-20200229151502-e6821ff02f22 // indirect
 	github.com/joho/godotenv v1.3.0 // indirect
+	github.com/json-iterator/go v1.1.9
 	github.com/olekukonko/tablewriter v0.0.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.6
@@ -45,6 +46,7 @@ require (
 	github.com/tendermint/tmlibs v0.8.1
 	github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce
 	github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8 // indirect; --- indirect
+	github.com/willf/bitset v1.1.11 // indirect
 	go.uber.org/atomic v1.5.0 // indirect
 	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79 // ---
 	golang.org/x/mobile v0.0.0-20200721161523-bcce01171201 // indirect

@@ -1,6 +1,7 @@
 package exported
 
 import (
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 )
 
@@ -9,32 +10,29 @@ type CodeType = uint32
 type CodespaceType = string
 
 const (
-
 	moduleNameDid     = "did"
 	moduleNameBonddoc = "bonddoc"
 	moduleNameIxo     = "dap"
 	moduleNamePayment = "payments"
 	moduleNameProject = "project"
 
-	CodeInvalidDid         CodeType = 201
-	CodeInvalidPubKey      CodeType = 202
-	CodeInvalidIssuer      CodeType = 203
-	CodeInvalidCredentials CodeType = 204
-
-	CodeNameDoesNotExist       CodeType = 325
-	CodeInternalBondDic        CodeType = 326
-	CodeInvalidBasicMsg        CodeType = 150
-	CodeBadDataValue           CodeType = 151
-	CodeUnauthorizedPermission CodeType = 152
-	CodeItemDuplication        CodeType = 153
-	CodeItemNotFound           CodeType = 154
-	CodeInvalidState           CodeType = 155
-	CodeBadWasmExecution       CodeType = 156
-	CodeOnlyOneDenomAllowed    CodeType = 157
-	CodeInvalidDenom           CodeType = 158
-	CodeUnknownClientID        CodeType = 159
-
-	//payments
+	CodeOK                           CodeType = 0
+	CodeInvalidDid                   CodeType = 201
+	CodeInvalidPubKey                CodeType = 202
+	CodeInvalidIssuer                CodeType = 203
+	CodeInvalidCredentials           CodeType = 204
+	CodeNameDoesNotExist             CodeType = 325
+	CodeInternalBondDic              CodeType = 326
+	CodeInvalidBasicMsg              CodeType = 150
+	CodeBadDataValue                 CodeType = 151
+	CodeUnauthorizedPermission       CodeType = 152
+	CodeItemDuplication              CodeType = 153
+	CodeItemNotFound                 CodeType = 154
+	CodeInvalidState                 CodeType = 155
+	CodeBadWasmExecution             CodeType = 156
+	CodeOnlyOneDenomAllowed          CodeType = 157
+	CodeInvalidDenom                 CodeType = 158
+	CodeUnknownClientID              CodeType = 159
 	CodeInvalidDistribution          CodeType = 101
 	CodeInvalidShare                 CodeType = 102
 	CodeInvalidPeriod                CodeType = 103
@@ -47,6 +45,7 @@ const (
 	CodeInvalidArgument              CodeType = 110
 	CodeAlreadyExists                CodeType = 111
 	CodeInvalidCoin                  CodeType = 112
+	CodeInsufficientCoins            CodeType = 113
 )
 
 var (
@@ -69,6 +68,7 @@ var (
 	ErrOnlyOneDenomAllowed    = errors.Register(moduleNameIxo, CodeOnlyOneDenomAllowed, "Only One Denom Allowed")
 	ErrInvalidDenom           = errors.Register(moduleNameIxo, CodeInvalidDenom, "Invalid Denom")
 	ErrUnknownClientID        = errors.Register(moduleNameIxo, CodeUnknownClientID, "Unknown Client ID")
+	ErrInsufficientCoins      = errors.Register(moduleNameIxo, CodeInsufficientCoins, "Unknown Client ID")
 	ErrInvalidDistribution    = errors.Register(moduleNamePayment, CodeInvalidDistribution, "payment invalid")
 	EInvalidShare             = errors.Register(moduleNamePayment, CodeInvalidShare, "payment invalid")
 	EInvalidPeriod            = errors.Register(moduleNamePayment, CodeInvalidPeriod, "payment invalid")
@@ -98,6 +98,9 @@ func InvalidAddress(m string) error {
 func UnknownRequest(m string) error {
 	return errors.Wrap(errors.ErrUnknownRequest, m)
 }
+func UnknownRequestErr(m string, err error) error {
+	return errors.Wrap(errors.ErrUnknownRequest, fmt.Sprintf("%s :%s", m, err.Error()))
+}
 func Unauthorized(m string) error {
 	return errors.Wrap(errors.ErrUnauthorized, m)
 }
@@ -109,4 +112,7 @@ func ErrJsonMars(m string) error {
 }
 func ErrUnmarshalJson(m string) error {
 	return errors.Wrapf(errors.ErrJSONUnmarshal, "technical error in %s", m)
+}
+func InsufficientCoins(m string) error {
+	return errors.Wrapf(ErrInsufficientCoins, "%s: %s", moduleNameIxo, m)
 }

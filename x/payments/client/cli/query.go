@@ -17,18 +17,14 @@ func GetParamsRequestHandler(cdc *codec.Codec) *cobra.Command {
 		Short: "Query params",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
-			bz, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s", types.QuerierRoute,
-				keeper.QueryParams)
+			bz, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s", types.QuerierRoute, keeper.QueryParams)
 			if err != nil {
 				return err
 			}
-
 			var params types.Params
 			if err := cdc.UnmarshalJSON(bz, &params); err != nil {
 				return err
 			}
-
 			fmt.Println(string(bz))
 			return nil
 		},
@@ -43,7 +39,6 @@ func GetCmdPaymentTemplate(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			templateId := args[0]
-
 			res, _, err := utils.QueryWithData(cliCtx, "custom/%s/%s/%s", types.QuerierRoute, keeper.QueryPaymentTemplate, templateId)
 			if err != nil {
 				fmt.Printf("%s", err.Error())
@@ -55,12 +50,10 @@ func GetCmdPaymentTemplate(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-
 			output, err := cdc.MarshalJSONIndent(out, "", "  ")
 			if err != nil {
 				return err
 			}
-
 			fmt.Println(string(output))
 			return nil
 		},
