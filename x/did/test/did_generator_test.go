@@ -98,7 +98,6 @@ func Test_generate_recover(t *testing.T) {
 	fmt.Println("========Check The Equal ===========")
 	require.Equal(t, did.Did, sample_did)
 }
-
 func Test_generator(t *testing.T) {
 	/*
 

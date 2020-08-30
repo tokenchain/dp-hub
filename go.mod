@@ -8,7 +8,7 @@ require (
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/confio/ics23/go v0.0.0-20200610201322-18c7bd6b2dd3 // indirect
 	github.com/coreos/go-etcd v2.0.0+incompatible // indirect
-	github.com/cosmos/cosmos-sdk v0.38.5 // --- latest
+	github.com/cosmos/cosmos-sdk v0.39.1 // --- latest
 	github.com/cosmos/go-bip39 v0.0.0-20180819234021-555e2067c45d
 	github.com/cpuguy83/go-md2man v1.0.10 // indirect; indirect;
 	github.com/dpapathanasiou/go-recaptcha v0.0.0-20190121160230-be5090b17804
