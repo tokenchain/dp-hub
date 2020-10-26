@@ -19,6 +19,9 @@ based SDK 0.39.1
 - [Chinese Developer Guide](https://github.com/tokenchain/dp-hub/blob/master/doc/commands.md)
 - [Development Guide](https://github.com/cosmos/cosmos-sdk/tree/master/docs/building-modules)
 
+### Migration works
+outstanding works are listed below [upgrades](https://github.com/cosmos/cosmos-sdk/blob/master/CHANGELOG.md)
+
 ### Scripts
 Quick-start:
 
