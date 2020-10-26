@@ -8,7 +8,6 @@ LEDGER_ENABLED ?= true
 BINDIR ?= $(GOPATH)/bin
 GPG_SIGNING_KEY = ''
 COMPRESSED_NAME:="dxpbundle_centos_$(VERSION).tar.gz"
-BUILD_TARGET := "~/build/linux"
 
 export GO111MODULE = on
 export COSMOS_SDK_TEST_KEYRING = n
@@ -85,10 +84,6 @@ else
 	go build -mod=readonly $(BUILD_FLAGS) -o build/darwin/dpcli ./cmd/dpcli
 endif
 
-#Android isn't official target platform for cross-compilation. If all you need are command-line executables then you can set GOOS=linux because android is a linux under the hood, else take a look at https://github.com/golang/go/wiki/Mobile
-android:
-	env GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 go build -mod=readonly $(BUILD_FLAGS) -o build/android/dpcli ./cmd/dpcli
-#	env GOOS=linux GOARCH=arm GOARM=7 CC=arm-linux-androideabi-as CXX=false CGO_ENABLED=1 go build -mod=readonly $(BUILD_FLAGS) -o build/linux/dpcli ./cmd/dpcli
 install: go.sum
 	go install $(BUILD_FLAGS) ./cmd/dpd
 	go install $(BUILD_FLAGS) ./cmd/dpcli
@@ -99,7 +94,6 @@ sign-release:
 	      -o SHA256SUMS.sign -b SHA256SUMS; \
 	fi;
 
-
 linux: go.sum centos buildcompress
 
 lint: go.sum
@@ -108,10 +102,9 @@ lint: go.sum
 
 build-faucet: go.sum
 ifeq ($(OS),Windows_NT)
-	go build -mod=readonly $(BUILD_FLAGS) -o build/dpfaucet.exe ./cmd/dpfaucet
-
-	else
-	go build -mod=readonly $(BUILD_FLAGS) -o build/dpfaucet ./cmd/dpfaucet
+	go build -mod=readonly $(BUILD_FLAGS) -o build/win/dpfaucet.exe ./cmd/dpfaucet
+else
+	go build -mod=readonly $(BUILD_FLAGS) -o build/darwin/dpfaucet ./cmd/dpfaucet
 endif
 
 install-faucet: go.sum
@@ -123,7 +116,7 @@ linux-faucet: go.sum
 update-git: go.sum
 	$(update_check)
 
-preinstall: go.sum
+preinstall: go.sum go-mod-cache
 	sudo go get github.com/mitchellh/gox
 
 ########################################
@@ -151,3 +144,8 @@ buildcompress:
 	cd $(current_dir)/build/linux && tar -czf $(COMPRESSED_NAME) "dpd" "dpcli"
 	cd $(current_dir)/build/linux && shasum -a256 $(COMPRESSED_NAME)
 	cd $(current_dir)/build/linux && rm "dpd" && rm "dpcli"
+
+#Android isn't official target platform for cross-compilation. If all you need are command-line executables then you can set GOOS=linux because android is a linux under the hood, else take a look at https://github.com/golang/go/wiki/Mobile
+android:
+	env GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 go build -mod=readonly $(BUILD_FLAGS) -o build/android/dpcli ./cmd/dpcli
+#	env GOOS=linux GOARCH=arm GOARM=7 CC=arm-linux-androideabi-as CXX=false CGO_ENABLED=1 go build -mod=readonly $(BUILD_FLAGS) -o build/linux/dpcli ./cmd/dpcli
