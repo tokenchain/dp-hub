@@ -1,10 +1,15 @@
 #!/usr/bin/make -f
-VERSION := v$(shell cat version.txt)              # $(shell echo $(shell git describe --tags) | sed 's/^v//')
+current_dir := $(shell pwd)
+# $(shell echo $(shell git describe --tags) | sed 's/^v//')
+VERSION := v$(shell cat version.txt)
 COMMIT := $(shell git log -1 --format='%H')
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 LEDGER_ENABLED ?= true
 BINDIR ?= $(GOPATH)/bin
 GPG_SIGNING_KEY = ''
+COMPRESSED_NAME:="dxpbundle_centos_$(VERSION).tar.gz"
+BUILD_TARGET := "~/build/linux"
+
 export GO111MODULE = on
 export COSMOS_SDK_TEST_KEYRING = n
 
@@ -73,18 +78,12 @@ OS=linux
 
 build:
 ifeq ($(OS),Windows_NT)
-	go build -mod=readonly $(BUILD_FLAGS) -o build/dpd.exe ./cmd/dpd
-	go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli.exe ./cmd/dpcli
+	go build -mod=readonly $(BUILD_FLAGS) -o build/win/dpd.exe ./cmd/dpd
+	go build -mod=readonly $(BUILD_FLAGS) -o build/win/dpcli.exe ./cmd/dpcli
 else
-	go build -mod=readonly $(BUILD_FLAGS) -o build/dpd ./cmd/dpd
-	go build -mod=readonly $(BUILD_FLAGS) -o build/dpcli ./cmd/dpcli
+	go build -mod=readonly $(BUILD_FLAGS) -o build/darwin/dpd ./cmd/dpd
+	go build -mod=readonly $(BUILD_FLAGS) -o build/darwin/dpcli ./cmd/dpcli
 endif
-
-centos:
-	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/linux/dpcli ./cmd/dpcli
-	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/linux/dpd ./cmd/dpd
-#	gox -osarch="linux/amd64" -mod=readonly $(BUILD_FLAGS) -output build/linux/dpd ./cmd/dpd
-#	gox -osarch="linux/amd64" -mod=readonly $(BUILD_FLAGS) -output build/linux/dpcli ./cmd/dpcli
 
 #Android isn't official target platform for cross-compilation. If all you need are command-line executables then you can set GOOS=linux because android is a linux under the hood, else take a look at https://github.com/golang/go/wiki/Mobile
 android:
@@ -99,6 +98,9 @@ sign-release:
 	  gpg --default-key $(GPG_SIGNING_KEY) -a \
 	      -o SHA256SUMS.sign -b SHA256SUMS; \
 	fi;
+
+
+linux: go.sum centos buildcompress
 
 lint: go.sum
 	go run ./cmd/dpd
@@ -136,3 +138,16 @@ go.sum: go.mod
 	@go mod verify
 
 .PHONY: all build install go.sum
+
+.ONESHELL: # Only applies to all target
+
+centos:
+	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/linux/dpcli ./cmd/dpcli
+	env GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/linux/dpd ./cmd/dpd
+#	gox -osarch="linux/amd64" -mod=readonly $(BUILD_FLAGS) -output build/linux/dpd ./cmd/dpd
+#	gox -osarch="linux/amd64" -mod=readonly $(BUILD_FLAGS) -output build/linux/dpcli ./cmd/dpcli
+
+buildcompress:
+	cd $(current_dir)/build/linux && tar -czf $(COMPRESSED_NAME) "dpd" "dpcli"
+	cd $(current_dir)/build/linux && shasum -a256 $(COMPRESSED_NAME)
+	cd $(current_dir)/build/linux && rm "dpd" && rm "dpcli"
