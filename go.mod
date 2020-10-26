@@ -1,4 +1,4 @@
-module github.com/tokenchain/ixo-blockchain
+module github.com/tokenchain/dp-block
 
 go 1.12
 
@@ -22,7 +22,8 @@ require (
 	github.com/gobuffalo/packr/v2 v2.7.1 // indirect
 	github.com/gobuffalo/syncx v0.1.0 // indirect
 	github.com/gogo/protobuf v1.3.1 // indirect
-	github.com/gorilla/mux v1.7.3
+	github.com/gorilla/handlers v1.5.1 // indirect
+	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/sessions v1.2.0
 	github.com/hmgle/socks5_go v0.0.0-20200531025750-85d815c008b8 // indirect
 	github.com/hmgle/tcfs-go v0.0.0-20200229151502-e6821ff02f22 // indirect
@@ -40,11 +41,11 @@ require (
 	github.com/tendermint/dex-demo v0.0.2
 	github.com/tendermint/ed25519 v0.0.0-20171027050219-d8387025d2b9
 	github.com/tendermint/go-amino v0.15.1
-	github.com/tendermint/tendermint v0.33.6 // latest
+	github.com/tendermint/tendermint v0.33.7 // latest
 	github.com/tendermint/tm-db v0.5.1
 	github.com/tendermint/tmlibs v0.8.1
 	github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce
-	github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8 // indirect; --- indirect
+	github.com/ugorji/go v1.1.13 // indirect
 	go.uber.org/atomic v1.5.0 // indirect
 	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79 // ---
 	golang.org/x/mobile v0.0.0-20200721161523-bcce01171201 // indirect

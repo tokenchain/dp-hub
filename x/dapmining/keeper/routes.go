@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
-	"github.com/tokenchain/ixo-blockchain/x/dapmining/keeper/session"
+	"github.com/tokenchain/dp-block/x/dapmining/keeper/session"
 	"io/ioutil"
 	"net/http"
 )

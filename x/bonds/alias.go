@@ -1,9 +1,9 @@
 package bonds
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/keeper"
-	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+	"github.com/tokenchain/dp-block/x/bonds/internal/keeper"
+	"github.com/tokenchain/dp-block/x/bonds/internal/types"
+	"github.com/tokenchain/dp-block/x/did/exported"
 )
 
 //noinspection GoNameStartsWithPackageName

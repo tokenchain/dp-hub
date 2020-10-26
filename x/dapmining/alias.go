@@ -1,9 +1,9 @@
 package dapmining
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/dapmining/keeper"
-	"github.com/tokenchain/ixo-blockchain/x/dapmining/types"
-	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+	"github.com/tokenchain/dp-block/x/dapmining/keeper"
+	"github.com/tokenchain/dp-block/x/dapmining/types"
+	"github.com/tokenchain/dp-block/x/did/exported"
 )
 
 //noinspection GoNameStartsWithPackageName

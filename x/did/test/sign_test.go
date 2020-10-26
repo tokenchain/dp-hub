@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
-	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+	"github.com/tokenchain/dp-block/x/did/exported"
 	"strings"
 	"testing"
 )

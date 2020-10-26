@@ -20,9 +20,9 @@ import (
 	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/multisig"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
-	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+	"github.com/tokenchain/dp-block/x/dap/types"
+	"github.com/tokenchain/dp-block/x/did/ante"
+	"github.com/tokenchain/dp-block/x/did/exported"
 
 	"os"
 	"time"
@@ -294,29 +294,6 @@ func signAndBroadcast(ctx context.CLIContext, msg auth.StdSignMsg, ixoDid export
 		return sdk.TxResponse{}, fmt.Errorf("Could not broadcast tx. Error: %s! ", err.Error())
 	}
 	return res, nil
-}
-
-func simulateMsgs(txBldr auth.TxBuilder, cliCtx context.CLIContext, msgs []sdk.Msg) (estimated, adjusted uint64, err error) {
-	// Build the transaction
-	stdSignMsg, err := txBldr.BuildSignMsg(msgs)
-	if err != nil {
-		return
-	}
-
-	// Signature set to a blank signature
-	signature := ante.IxoSignature{}
-	tx := ante.NewIxoTxSingleMsg(
-		stdSignMsg.Msgs[0], stdSignMsg.Fee, signature, stdSignMsg.Memo)
-
-	bz, err := cliCtx.Codec.MarshalJSON(tx)
-	if err != nil {
-		err = fmt.Errorf("Could not marshall tx to binary. Error: %s", err.Error())
-		return
-	}
-
-	estimated, adjusted, err = utils.CalculateGas(
-		cliCtx.QueryWithData, cliCtx.Codec, bz, txBldr.GasAdjustment())
-	return
 }
 
 func ApproximateFeeForTxDap(cliCtx context.CLIContext, tx ante.IxoTx, chainId string) (auth.StdFee, error) {

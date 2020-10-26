@@ -3,7 +3,7 @@ package test
 import (
 	"fmt"
 	"github.com/stretchr/testify/require"
-	"github.com/tokenchain/ixo-blockchain/x/did/ed25519"
+	"github.com/tokenchain/dp-block/x/did/ed25519"
 	"testing"
 )
 

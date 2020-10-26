@@ -14,10 +14,10 @@ import (
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/tokenchain/ixo-blockchain/x/payments"
-	"github.com/tokenchain/ixo-blockchain/x/project/client/cli"
-	"github.com/tokenchain/ixo-blockchain/x/project/client/rest"
-	"github.com/tokenchain/ixo-blockchain/x/project/internal/keeper"
+	"github.com/tokenchain/dp-block/x/payments"
+	"github.com/tokenchain/dp-block/x/project/client/cli"
+	"github.com/tokenchain/dp-block/x/project/client/rest"
+	"github.com/tokenchain/dp-block/x/project/internal/keeper"
 )
 
 var (

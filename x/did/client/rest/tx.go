@@ -3,17 +3,17 @@ package rest
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/types/rest"
-	"github.com/tokenchain/ixo-blockchain/client/utils"
-	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+	"github.com/tokenchain/dp-block/client/utils"
+	"github.com/tokenchain/dp-block/x/did/exported"
 	"net/http"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/gorilla/mux"
 
-	"github.com/tokenchain/ixo-blockchain/x/dap"
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
+	"github.com/tokenchain/dp-block/x/dap"
+	"github.com/tokenchain/dp-block/x/did/internal/keeper"
+	"github.com/tokenchain/dp-block/x/did/internal/types"
 )
 
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {

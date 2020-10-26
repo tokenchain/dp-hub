@@ -12,7 +12,7 @@ import (
         sdk "github.com/cosmos/cosmos-sdk/types"
         "github.com/cosmos/go-bip39"
         ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
-        edgen "github.com/tokenchain/ixo-blockchain/x/did/ed25519"
+        edgen "github.com/tokenchain/dp-block/x/did/ed25519"
         naclBox "golang.org/x/crypto/nacl/box"
 )
 

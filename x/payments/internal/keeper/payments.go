@@ -4,8 +4,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/supply"
-	"github.com/tokenchain/ixo-blockchain/x/did/exported"
-	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
+	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-block/x/payments/internal/types"
 )
 
 // -------------------------------------------------------- PaymentTemplates Get/Set

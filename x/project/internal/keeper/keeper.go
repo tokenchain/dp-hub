@@ -8,12 +8,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/params"
-	"github.com/tokenchain/ixo-blockchain/x/did"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
-	exportedDid "github.com/tokenchain/ixo-blockchain/x/did/exported"
-	"github.com/tokenchain/ixo-blockchain/x/payments"
+	"github.com/tokenchain/dp-block/x/did"
+	"github.com/tokenchain/dp-block/x/did/ante"
+	exportedDid "github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-block/x/payments"
 
-	"github.com/tokenchain/ixo-blockchain/x/project/internal/types"
+	"github.com/tokenchain/dp-block/x/project/internal/types"
 )
 
 type Keeper struct {

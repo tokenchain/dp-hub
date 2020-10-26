@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/tokenchain/ixo-blockchain/client/utils"
-	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+	"github.com/tokenchain/dp-block/client/utils"
+	"github.com/tokenchain/dp-block/x/did/exported"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
 
-	"github.com/tokenchain/ixo-blockchain/x/project/internal/keeper"
-	"github.com/tokenchain/ixo-blockchain/x/project/internal/types"
+	"github.com/tokenchain/dp-block/x/project/internal/keeper"
+	"github.com/tokenchain/dp-block/x/project/internal/types"
 )
 
 func GetCmdProjectDoc(cdc *codec.Codec) *cobra.Command {

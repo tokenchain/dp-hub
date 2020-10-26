@@ -7,8 +7,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
-	"github.com/tokenchain/ixo-blockchain/client/utils"
-	"github.com/tokenchain/ixo-blockchain/x/nameservice/types"
+	"github.com/tokenchain/dp-block/client/utils"
+	"github.com/tokenchain/dp-block/x/nameservice/types"
 )
 
 func GetQueryCmd(storeKey string, cdc *codec.Codec) *cobra.Command {

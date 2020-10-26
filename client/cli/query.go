@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/tokenchain/ixo-blockchain/client/utils"
+	"github.com/tokenchain/dp-block/client/utils"
 )
 
 func QueryTxCmd(cdc *codec.Codec) *cobra.Command {

@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 
-	"github.com/tokenchain/ixo-blockchain/x/payments/client/cli"
+	"github.com/tokenchain/dp-block/x/payments/client/cli"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -17,8 +17,8 @@ import (
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/tokenchain/ixo-blockchain/x/payments/client/rest"
-	"github.com/tokenchain/ixo-blockchain/x/payments/internal/keeper"
+	"github.com/tokenchain/dp-block/x/payments/client/rest"
+	"github.com/tokenchain/dp-block/x/payments/internal/keeper"
 )
 
 var (

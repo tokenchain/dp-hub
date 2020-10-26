@@ -1,13 +1,13 @@
 package keeper
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/did"
+	"github.com/tokenchain/dp-block/x/did"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
+	"github.com/tokenchain/dp-block/x/did/internal/types"
 )
 
 func TestQueryDidDocs(t *testing.T) {

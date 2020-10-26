@@ -3,7 +3,7 @@ package test
 import (
 	"fmt"
 	"github.com/streadway/handy/atomic"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
+	"github.com/tokenchain/dp-block/x/did/ante"
 	"testing"
 	"time"
 )

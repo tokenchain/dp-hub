@@ -1,12 +1,12 @@
 package keeper
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/did"
+	"github.com/tokenchain/dp-block/x/did"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
+	"github.com/tokenchain/dp-block/x/did/internal/types"
 )
 
 func TestKeeper(t *testing.T) {

@@ -3,7 +3,7 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
-	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
+	"github.com/tokenchain/dp-block/x/payments/internal/types"
 	"testing"
 	"time"
 )

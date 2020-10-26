@@ -2,8 +2,8 @@ package cli
 
 import (
 	"fmt"
-	"github.com/tokenchain/ixo-blockchain/x/dap"
-	exported "github.com/tokenchain/ixo-blockchain/x/did/exported"
+	"github.com/tokenchain/dp-block/x/dap"
+	exported "github.com/tokenchain/dp-block/x/did/exported"
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -11,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 
-	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
+	"github.com/tokenchain/dp-block/x/payments/internal/types"
 )
 
 const (

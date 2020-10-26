@@ -1,10 +1,10 @@
 package did
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/did/ed25519"
-	"github.com/tokenchain/ixo-blockchain/x/did/exported"
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/keeper"
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
+	"github.com/tokenchain/dp-block/x/did/ed25519"
+	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-block/x/did/internal/keeper"
+	"github.com/tokenchain/dp-block/x/did/internal/types"
 )
 
 const (

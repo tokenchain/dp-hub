@@ -9,11 +9,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	client2 "github.com/tokenchain/ixo-blockchain/x/bonds/client"
-	"github.com/tokenchain/ixo-blockchain/x/bonds/errors"
-	"github.com/tokenchain/ixo-blockchain/x/bonds/internal/types"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
-	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+	client2 "github.com/tokenchain/dp-block/x/bonds/client"
+	"github.com/tokenchain/dp-block/x/bonds/errors"
+	"github.com/tokenchain/dp-block/x/bonds/internal/types"
+	"github.com/tokenchain/dp-block/x/did/ante"
+	"github.com/tokenchain/dp-block/x/did/exported"
 	"strings"
 )
 

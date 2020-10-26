@@ -5,11 +5,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	er "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/tokenchain/ixo-blockchain/x/dap"
-	types2 "github.com/tokenchain/ixo-blockchain/x/dap/types"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
-	"github.com/tokenchain/ixo-blockchain/x/did/exported"
-	"github.com/tokenchain/ixo-blockchain/x/payments"
+	"github.com/tokenchain/dp-block/x/dap"
+	types2 "github.com/tokenchain/dp-block/x/dap/types"
+	"github.com/tokenchain/dp-block/x/did/ante"
+	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-block/x/payments"
 )
 
 const (

@@ -12,8 +12,8 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
-	"github.com/tokenchain/ixo-blockchain/x/did"
-	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
+	"github.com/tokenchain/dp-block/x/did"
+	"github.com/tokenchain/dp-block/x/payments/internal/types"
 )
 
 var (

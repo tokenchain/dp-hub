@@ -2,8 +2,8 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x/did/exported"
-	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
+	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-block/x/payments/internal/types"
 )
 
 // -------------------------------------------------------- Subscriptions Get/Set

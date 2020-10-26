@@ -6,10 +6,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/supply"
-	"github.com/tokenchain/ixo-blockchain/x/did"
-	"github.com/tokenchain/ixo-blockchain/x/did/exported"
-	"github.com/tokenchain/ixo-blockchain/x/oracles"
-	"github.com/tokenchain/ixo-blockchain/x/treasury/internal/types"
+	"github.com/tokenchain/dp-block/x/did"
+	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-block/x/oracles"
+	"github.com/tokenchain/dp-block/x/treasury/internal/types"
 )
 
 type Keeper struct {

@@ -1,7 +1,7 @@
 package types
 
 import (
-	did "github.com/tokenchain/ixo-blockchain/x/did/exported"
+	did "github.com/tokenchain/dp-block/x/did/exported"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"

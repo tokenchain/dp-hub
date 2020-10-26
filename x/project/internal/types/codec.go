@@ -13,7 +13,7 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgCreateEvaluation{}, "project/CreateEvaluation", nil)
 	cdc.RegisterConcrete(MsgWithdrawFunds{}, "project/WithdrawFunds", nil)
 
-	// TODO: https://github.com/tokenchain/ixo-blockchain/issues/76
+	// TODO: https://github.com/tokenchain/dp-block/issues/76
 	//cdc.RegisterInterface((*StoredProjectDoc)(nil), nil)
 	//cdc.RegisterConcrete(AccountMap{}, "project/AccountMap", nil)
 	//cdc.RegisterConcrete(WithdrawalInfo{}, "project/WithdrawalInfo", nil)

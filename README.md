@@ -1,12 +1,14 @@
 # DP Chain Hub ::sparkle::
 
-[![version](https://img.shields.io/github/tag/tokenchain/ixo-blockchain.svg)](https://github.com/tokenchain/ixo-blockchain/releases/latest)
-[![Go Report Card](https://goreportcard.com/badge/github.com/tokenchain/ixo-blockchain)](https://goreportcard.com/report/github.com/tokenchain/ixo-blockchain)
-[![LoC](https://tokei.rs/b1/github/tokenchain/ixo-blockchain)](https://github.com/tokenchain/ixo-blockchain)
+[![version](https://img.shields.io/github/tag/tokenchain/ixo-blockchain.svg)](https://github.com/tokenchain/dp-block/releases/latest)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tokenchain/dp-block)](https://goreportcard.com/report/github.com/tokenchain/dp-block)
+[![LoC](https://tokei.rs/b1/github/tokenchain/ixo-blockchain)](https://github.com/tokenchain/dp-block)
 
 This is the official repository for the Internet of Impact Relayer Hub (DP Hub)
 
 > This document will have all details necessary to help getting started with DP Hub
+based SDK 0.39.1
+
 
 ## Documentation
 - Guide for setting up a Relayer on the Darkpool Test Network: [here](https://github.com/tokenchain/docs/blob/master/developer-tools/test-networks/join-a-test-network.md)

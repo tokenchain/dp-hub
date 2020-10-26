@@ -5,10 +5,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
-	"github.com/tokenchain/ixo-blockchain/client/utils"
+	"github.com/tokenchain/dp-block/client/utils"
 
-	"github.com/tokenchain/ixo-blockchain/x/payments/internal/keeper"
-	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
+	"github.com/tokenchain/dp-block/x/payments/internal/keeper"
+	"github.com/tokenchain/dp-block/x/payments/internal/types"
 )
 
 func GetParamsRequestHandler(cdc *codec.Codec) *cobra.Command {

@@ -2,8 +2,8 @@ package cli
 
 import (
 	"fmt"
-	"github.com/tokenchain/ixo-blockchain/x/did/ante"
-	"github.com/tokenchain/ixo-blockchain/x/did/exported"
+	"github.com/tokenchain/dp-block/x/did/ante"
+	"github.com/tokenchain/dp-block/x/did/exported"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -11,7 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	"github.com/tokenchain/ixo-blockchain/x/did/internal/types"
+	"github.com/tokenchain/dp-block/x/did/internal/types"
 )
 
 func GetCmdAddDidDoc(cdc *codec.Codec) *cobra.Command {

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"github.com/tokenchain/ixo-blockchain/x/dapmining/keeper/session"
+	"github.com/tokenchain/dp-block/x/dapmining/keeper/session"
 	"net/http"
 )
 

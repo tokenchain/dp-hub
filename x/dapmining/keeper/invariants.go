@@ -4,7 +4,7 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
-	"github.com/tokenchain/ixo-blockchain/x/dapmining/types"
+	"github.com/tokenchain/dp-block/x/dapmining/types"
 )
 
 // RegisterInvariants registers all supply invariants

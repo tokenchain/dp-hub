@@ -1,8 +1,8 @@
 package payments
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/payments/internal/keeper"
-	"github.com/tokenchain/ixo-blockchain/x/payments/internal/types"
+	"github.com/tokenchain/dp-block/x/payments/internal/keeper"
+	"github.com/tokenchain/dp-block/x/payments/internal/types"
 )
 
 const (

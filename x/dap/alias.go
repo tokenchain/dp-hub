@@ -1,8 +1,8 @@
 package dap
 
 import (
-	"github.com/tokenchain/ixo-blockchain/x/dap/auth"
-	"github.com/tokenchain/ixo-blockchain/x/dap/types"
+	"github.com/tokenchain/dp-block/x/dap/auth"
+	"github.com/tokenchain/dp-block/x/dap/types"
 )
 
 const (

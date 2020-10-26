@@ -2,7 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/ixo-blockchain/x/dap"
+	"github.com/tokenchain/dp-block/x/dap"
 )
 
 var ValidCreateProjectMsg = MsgCreateProject{

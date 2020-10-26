@@ -2,14 +2,15 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/cosmos/cosmos-sdk/store"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"io"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/server"
+	storetype "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/cosmos/cosmos-sdk/store"
 	genUtilCli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/spf13/cobra"
@@ -19,9 +20,9 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	oraclesCli "github.com/tokenchain/ixo-blockchain/x/oracles/client/cli"
+	oraclesCli "github.com/tokenchain/dp-block/x/oracles/client/cli"
 
-	"github.com/tokenchain/ixo-blockchain/app"
+	"github.com/tokenchain/dp-block/app"
 )
 
 const (
@@ -87,7 +88,7 @@ func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application
 
 	return app.NewDarkpoolApp(
 		logger, db, traceStore, true, invCheckPeriod, skipUpgradeHeights,
-		baseapp.SetPruning(store.PruneSyncable),
+		baseapp.SetPruning(storetype.PruneNothing),
 		baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
 		baseapp.SetHaltHeight(viper.GetUint64(server.FlagHaltHeight)),
 		baseapp.SetHaltTime(viper.GetUint64(server.FlagHaltTime)),

@@ -11,9 +11,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tokenchain/ixo-blockchain/x/treasury/client/rest"
+	"github.com/tokenchain/dp-block/x/treasury/client/rest"
 
-	"github.com/tokenchain/ixo-blockchain/x/treasury/client/cli"
+	"github.com/tokenchain/dp-block/x/treasury/client/cli"
 )
 
 var (
