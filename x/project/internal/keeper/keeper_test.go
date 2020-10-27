@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/stretchr/testify/require"
 
-	"github.com/tokenchain/dp-block/x/project/internal/types"
+	"github.com/tokenchain/dp-hub/x/project/internal/types"
 )
 
 func TestProjectDoc(t *testing.T) {

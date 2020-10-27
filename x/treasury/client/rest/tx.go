@@ -6,11 +6,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
-	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/did/exported"
 	"net/http"
 
-	"github.com/tokenchain/dp-block/x/dap"
-	"github.com/tokenchain/dp-block/x/treasury/internal/types"
+	"github.com/tokenchain/dp-hub/x/dap"
+	"github.com/tokenchain/dp-hub/x/treasury/internal/types"
 )
 
 func writeHeadf(w http.ResponseWriter, code int, format string, i ...interface{}) {

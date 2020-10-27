@@ -2,7 +2,7 @@ package cli
 
 import (
 	flag "github.com/spf13/pflag"
-	"github.com/tokenchain/dp-block/x/bonds/internal/types"
+	"github.com/tokenchain/dp-hub/x/bonds/internal/types"
 )
 
 const (

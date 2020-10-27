@@ -8,8 +8,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/tendermint/tendermint/crypto"
 	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tokenchain/dp-block/x/did/ed25519"
-	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/did/ed25519"
+	"github.com/tokenchain/dp-hub/x/did/exported"
 
 	"time"
 )

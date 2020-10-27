@@ -1,8 +1,8 @@
 package project
 
 import (
-	"github.com/tokenchain/dp-block/x/project/internal/keeper"
-	"github.com/tokenchain/dp-block/x/project/internal/types"
+	"github.com/tokenchain/dp-hub/x/project/internal/keeper"
+	"github.com/tokenchain/dp-hub/x/project/internal/types"
 )
 
 const (

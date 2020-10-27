@@ -8,13 +8,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/input"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
-	"github.com/tokenchain/dp-block/client/utils"
-	aute2 "github.com/tokenchain/dp-block/x/did/ante"
-	"github.com/tokenchain/dp-block/x/did/internal/types"
+	"github.com/tokenchain/dp-hub/client/utils"
+	aute2 "github.com/tokenchain/dp-hub/x/did/ante"
+	"github.com/tokenchain/dp-hub/x/did/internal/types"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/did/exported"
 )
 
 const (

@@ -1,7 +1,7 @@
 package nameservice
 
-import "github.com/tokenchain/dp-block/x/nameservice/types"
-import "github.com/tokenchain/dp-block/x/nameservice/keeper"
+import "github.com/tokenchain/dp-hub/x/nameservice/types"
+import "github.com/tokenchain/dp-hub/x/nameservice/keeper"
 
 const (
 	ModuleName     = types.ModuleName

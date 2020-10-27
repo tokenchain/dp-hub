@@ -1,4 +1,4 @@
-module github.com/tokenchain/dp-block
+module github.com/tokenchain/dp-hub
 
 go 1.12
 

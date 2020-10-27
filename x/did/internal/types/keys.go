@@ -1,6 +1,6 @@
 package types
 
-import "github.com/tokenchain/dp-block/x/did/exported"
+import "github.com/tokenchain/dp-hub/x/did/exported"
 
 const (
 	ModuleName   = "did"

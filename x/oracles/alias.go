@@ -1,8 +1,8 @@
 package oracles
 
 import (
-	"github.com/tokenchain/dp-block/x/oracles/internal/keeper"
-	"github.com/tokenchain/dp-block/x/oracles/internal/types"
+	"github.com/tokenchain/dp-hub/x/oracles/internal/keeper"
+	"github.com/tokenchain/dp-hub/x/oracles/internal/types"
 )
 
 const (

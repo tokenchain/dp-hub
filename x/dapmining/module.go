@@ -8,9 +8,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
-	"github.com/tokenchain/dp-block/x/bonds/client/cli"
-	"github.com/tokenchain/dp-block/x/bonds/client/rest"
-	"github.com/tokenchain/dp-block/x/dapmining/keeper"
+	"github.com/tokenchain/dp-hub/x/bonds/client/cli"
+	"github.com/tokenchain/dp-hub/x/bonds/client/rest"
+	"github.com/tokenchain/dp-hub/x/dapmining/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"

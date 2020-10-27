@@ -1,7 +1,7 @@
 package project
 
 import (
-	types2 "github.com/tokenchain/dp-block/x/dap/types"
+	types2 "github.com/tokenchain/dp-hub/x/dap/types"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -10,8 +10,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/stretchr/testify/require"
 
-	"github.com/tokenchain/dp-block/x/project/internal/keeper"
-	"github.com/tokenchain/dp-block/x/project/internal/types"
+	"github.com/tokenchain/dp-hub/x/project/internal/keeper"
+	"github.com/tokenchain/dp-hub/x/project/internal/types"
 )
 
 func TestHandler_CreateClaim(t *testing.T) {

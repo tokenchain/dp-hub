@@ -6,11 +6,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/tokenchain/dp-block/client/utils"
-	"github.com/tokenchain/dp-block/x/did/ante"
-	"github.com/tokenchain/dp-block/x/did/exported"
-	"github.com/tokenchain/dp-block/x/did/internal/keeper"
-	"github.com/tokenchain/dp-block/x/did/internal/types"
+	"github.com/tokenchain/dp-hub/client/utils"
+	"github.com/tokenchain/dp-hub/x/did/ante"
+	"github.com/tokenchain/dp-hub/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/did/internal/keeper"
+	"github.com/tokenchain/dp-hub/x/did/internal/types"
 )
 
 func GetCmdAddressFromDid() *cobra.Command {

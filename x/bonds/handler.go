@@ -5,10 +5,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tokenchain/dp-block/x/bonds/errors"
-	"github.com/tokenchain/dp-block/x/bonds/internal/keeper"
-	"github.com/tokenchain/dp-block/x/bonds/internal/types"
-	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/bonds/errors"
+	"github.com/tokenchain/dp-hub/x/bonds/internal/keeper"
+	"github.com/tokenchain/dp-hub/x/bonds/internal/types"
+	"github.com/tokenchain/dp-hub/x/did/exported"
 	"strings"
 )
 

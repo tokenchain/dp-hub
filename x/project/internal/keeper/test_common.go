@@ -10,10 +10,10 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmDB "github.com/tendermint/tm-db"
-	"github.com/tokenchain/dp-block/x/did"
+	"github.com/tokenchain/dp-hub/x/did"
 
-	"github.com/tokenchain/dp-block/x/payments"
-	"github.com/tokenchain/dp-block/x/project/internal/types"
+	"github.com/tokenchain/dp-hub/x/payments"
+	"github.com/tokenchain/dp-hub/x/project/internal/types"
 )
 
 func CreateTestInput() (sdk.Context, Keeper, *codec.Codec,

@@ -61,7 +61,7 @@ ldflags = \
 	-X github.com/cosmos/cosmos-sdk/version.ClientName=dcli \
 	-X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 	-X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-	-X github.com/tokenchain/dp-block/version.BuildTags=$(build_tags_comma_sep)
+	-X github.com/tokenchain/dp-hub/version.BuildTags=$(build_tags_comma_sep)
 
 ifeq ($(WITH_CLEVELDB),yes)
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb

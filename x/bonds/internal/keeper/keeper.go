@@ -10,8 +10,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/tendermint/tendermint/libs/log"
-	"github.com/tokenchain/dp-block/x/bonds/internal/types"
-	"github.com/tokenchain/dp-block/x/did"
+	"github.com/tokenchain/dp-hub/x/bonds/internal/types"
+	"github.com/tokenchain/dp-hub/x/did"
 )
 
 type (

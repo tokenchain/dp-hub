@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/dp-block/x/bonds/internal/types"
+	"github.com/tokenchain/dp-hub/x/bonds/internal/types"
 )
 
 // RegisterInvariants registers all supply invariants

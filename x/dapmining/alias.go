@@ -1,9 +1,9 @@
 package dapmining
 
 import (
-	"github.com/tokenchain/dp-block/x/dapmining/keeper"
-	"github.com/tokenchain/dp-block/x/dapmining/types"
-	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/dapmining/keeper"
+	"github.com/tokenchain/dp-hub/x/dapmining/types"
+	"github.com/tokenchain/dp-hub/x/did/exported"
 )
 
 //noinspection GoNameStartsWithPackageName

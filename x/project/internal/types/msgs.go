@@ -6,9 +6,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/spf13/viper"
-	"github.com/tokenchain/dp-block/x/dap/types"
-	"github.com/tokenchain/dp-block/x/did/ante"
-	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/dap/types"
+	"github.com/tokenchain/dp-hub/x/did/ante"
+	"github.com/tokenchain/dp-hub/x/did/exported"
 )
 
 const (

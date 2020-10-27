@@ -2,7 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	exported "github.com/tokenchain/dp-block/x/did/exported"
+	exported "github.com/tokenchain/dp-hub/x/did/exported"
 	"strings"
 )
 

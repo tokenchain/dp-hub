@@ -3,10 +3,10 @@ package did
 import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/did/exported"
 
-	"github.com/tokenchain/dp-block/x/did/internal/keeper"
-	"github.com/tokenchain/dp-block/x/did/internal/types"
+	"github.com/tokenchain/dp-hub/x/did/internal/keeper"
+	"github.com/tokenchain/dp-hub/x/did/internal/types"
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {

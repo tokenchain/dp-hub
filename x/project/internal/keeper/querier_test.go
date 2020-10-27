@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/tokenchain/dp-block/x/project/internal/types"
+	"github.com/tokenchain/dp-hub/x/project/internal/types"
 )
 
 func TestQueryProjectDoc(t *testing.T) {

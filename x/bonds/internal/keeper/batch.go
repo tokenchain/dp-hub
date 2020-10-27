@@ -4,9 +4,9 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/tokenchain/dp-block/x/bonds/errors"
-	"github.com/tokenchain/dp-block/x/bonds/internal/types"
-	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/bonds/errors"
+	"github.com/tokenchain/dp-hub/x/bonds/internal/types"
+	"github.com/tokenchain/dp-hub/x/did/exported"
 )
 
 func (k Keeper) MustGetBatch(ctx sdk.Context, bondDid exported.Did) types.Batch {

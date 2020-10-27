@@ -1,8 +1,8 @@
 # DP Chain Hub ::sparkle::
 
-[![version](https://img.shields.io/github/tag/tokenchain/ixo-blockchain.svg)](https://github.com/tokenchain/dp-block/releases/latest)
-[![Go Report Card](https://goreportcard.com/badge/github.com/tokenchain/dp-block)](https://goreportcard.com/report/github.com/tokenchain/dp-block)
-[![LoC](https://tokei.rs/b1/github/tokenchain/ixo-blockchain)](https://github.com/tokenchain/dp-block)
+[![version](https://img.shields.io/github/tag/tokenchain/ixo-blockchain.svg)](https://github.com/tokenchain/dp-hub/releases/latest)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tokenchain/dp-hub)](https://goreportcard.com/report/github.com/tokenchain/dp-hub)
+[![LoC](https://tokei.rs/b1/github/tokenchain/ixo-blockchain)](https://github.com/tokenchain/dp-hub)
 
 This is the official repository for the Internet of Impact Relayer Hub (DP Hub)
 

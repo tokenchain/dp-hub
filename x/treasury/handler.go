@@ -2,9 +2,9 @@ package treasury
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/dp-block/x/did/exported"
-	"github.com/tokenchain/dp-block/x/treasury/internal/keeper"
-	"github.com/tokenchain/dp-block/x/treasury/internal/types"
+	"github.com/tokenchain/dp-hub/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/treasury/internal/keeper"
+	"github.com/tokenchain/dp-hub/x/treasury/internal/types"
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {

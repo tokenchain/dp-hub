@@ -6,8 +6,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/crypto"
 	ed25519tm "github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tokenchain/dp-block/x/did/ante"
-	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/did/ante"
+	"github.com/tokenchain/dp-hub/x/did/exported"
 )
 
 func GetPubKeyGetter(keeper Keeper) ante.PubKeyGetter {

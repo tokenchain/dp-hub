@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/dp-block/x/nameservice/types"
+	"github.com/tokenchain/dp-hub/x/nameservice/types"
 )
 
 //type Handler func(ctx Context, msg Msg) Result

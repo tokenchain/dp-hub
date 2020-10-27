@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/did/exported"
 
 	"strings"
 )

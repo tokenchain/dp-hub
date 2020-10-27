@@ -5,8 +5,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/params"
-	"github.com/tokenchain/dp-block/x/did"
-	"github.com/tokenchain/dp-block/x/payments/internal/types"
+	"github.com/tokenchain/dp-hub/x/did"
+	"github.com/tokenchain/dp-hub/x/payments/internal/types"
 	"strings"
 )
 

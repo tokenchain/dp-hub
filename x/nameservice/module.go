@@ -13,8 +13,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tokenchain/dp-block/x/nameservice/client/cli"
-	"github.com/tokenchain/dp-block/x/nameservice/client/rest"
+	"github.com/tokenchain/dp-hub/x/nameservice/client/cli"
+	"github.com/tokenchain/dp-hub/x/nameservice/client/rest"
 )
 
 // type check to ensure the interface is properly implemented

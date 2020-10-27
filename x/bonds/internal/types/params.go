@@ -3,7 +3,7 @@ package types
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/x/params"
-	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/did/exported"
 )
 
 type (

@@ -12,11 +12,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tokenchain/dp-block/x/dap"
-	"github.com/tokenchain/dp-block/x/dap/types"
-	"github.com/tokenchain/dp-block/x/did"
-	aute2 "github.com/tokenchain/dp-block/x/did/ante"
-	export2 "github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/dap"
+	"github.com/tokenchain/dp-hub/x/dap/types"
+	"github.com/tokenchain/dp-hub/x/did"
+	aute2 "github.com/tokenchain/dp-hub/x/did/ante"
+	export2 "github.com/tokenchain/dp-hub/x/did/exported"
 	"time"
 )
 

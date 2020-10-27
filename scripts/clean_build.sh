@@ -5,5 +5,5 @@ rm -rf "$HOME"/.dxocli
 rm -rf "$HOME"/.dpd
 rm -rf "$HOME"/.dpcli
 
-cd "$HOME"/go/src/github.com/tokenchain/dp-block/ || exit
+cd "$HOME"/go/src/github.com/tokenchain/dp-hub/ || exit
 make install

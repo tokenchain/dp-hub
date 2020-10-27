@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
-	"github.com/tokenchain/dp-block/x/nameservice/types"
+	"github.com/tokenchain/dp-hub/x/nameservice/types"
 	"net/http"
 )
 

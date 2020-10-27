@@ -1,7 +1,7 @@
 package types
 
 import (
-	did "github.com/tokenchain/dp-block/x/did/exported"
+	did "github.com/tokenchain/dp-hub/x/did/exported"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"

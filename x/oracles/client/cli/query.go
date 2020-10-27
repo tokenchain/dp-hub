@@ -2,14 +2,14 @@ package cli
 
 import (
 	"fmt"
-	"github.com/tokenchain/dp-block/client/utils"
+	"github.com/tokenchain/dp-hub/client/utils"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
 
-	"github.com/tokenchain/dp-block/x/oracles/internal/keeper"
-	"github.com/tokenchain/dp-block/x/oracles/internal/types"
+	"github.com/tokenchain/dp-hub/x/oracles/internal/keeper"
+	"github.com/tokenchain/dp-hub/x/oracles/internal/types"
 )
 
 func GetOraclesRequestHandler(cdc *codec.Codec) *cobra.Command {

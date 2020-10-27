@@ -20,9 +20,9 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	oraclesCli "github.com/tokenchain/dp-block/x/oracles/client/cli"
+	oraclesCli "github.com/tokenchain/dp-hub/x/oracles/client/cli"
 
-	"github.com/tokenchain/dp-block/app"
+	"github.com/tokenchain/dp-hub/app"
 )
 
 const (

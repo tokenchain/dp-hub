@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/dp-block/x/bonds/internal/types"
-	exporteddid "github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/bonds/internal/types"
+	exporteddid "github.com/tokenchain/dp-hub/x/did/exported"
 )
 
 // GetParams returns the total set of bonds parameters.

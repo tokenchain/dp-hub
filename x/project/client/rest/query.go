@@ -2,8 +2,8 @@ package rest
 
 import (
 	"encoding/json"
-	"github.com/tokenchain/dp-block/client/utils"
-	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/client/utils"
+	"github.com/tokenchain/dp-hub/x/did/exported"
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -11,8 +11,8 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/cosmos/cosmos-sdk/types/rest"
-	"github.com/tokenchain/dp-block/x/project/internal/keeper"
-	"github.com/tokenchain/dp-block/x/project/internal/types"
+	"github.com/tokenchain/dp-hub/x/project/internal/keeper"
+	"github.com/tokenchain/dp-hub/x/project/internal/types"
 )
 
 type AccDetails struct {

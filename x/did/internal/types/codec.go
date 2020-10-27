@@ -7,7 +7,7 @@ import (
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgAddDid{}, "did/MsgAddDid", nil)
 	cdc.RegisterConcrete(MsgAddCredential{}, "did/MsgAddCredential", nil)
-	// TODO: https://github.com/tokenchain/dp-block/issues/76
+	// TODO: https://github.com/tokenchain/dp-hub/issues/76
 	cdc.RegisterConcrete(BaseDidDoc{}, "did/BaseDidDoc", nil)
 	//cdc.RegisterConcrete(ante.IxoTx{}, "darkpool/IxoTx", nil)
 	//cdc.RegisterConcrete(DidCredential{}, "did/DidCredential", nil)

@@ -11,9 +11,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tokenchain/dp-block/x/oracles/client/cli"
-	"github.com/tokenchain/dp-block/x/oracles/client/rest"
-	"github.com/tokenchain/dp-block/x/oracles/internal/keeper"
+	"github.com/tokenchain/dp-hub/x/oracles/client/cli"
+	"github.com/tokenchain/dp-hub/x/oracles/client/rest"
+	"github.com/tokenchain/dp-hub/x/oracles/internal/keeper"
 )
 
 var (

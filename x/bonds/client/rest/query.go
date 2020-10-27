@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
-	"github.com/tokenchain/dp-block/client/utils"
+	"github.com/tokenchain/dp-hub/client/utils"
 	"net/http"
 )
 

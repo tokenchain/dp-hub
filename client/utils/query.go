@@ -10,7 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/viper"
 	core "github.com/tendermint/tendermint/rpc/core/types"
-	"github.com/tokenchain/dp-block/x/did/ante"
+	"github.com/tokenchain/dp-hub/x/did/ante"
 	"io"
 	"time"
 )

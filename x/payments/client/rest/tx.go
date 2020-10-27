@@ -6,12 +6,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
-	"github.com/tokenchain/dp-block/x/dap"
-	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/dap"
+	"github.com/tokenchain/dp-hub/x/did/exported"
 	"net/http"
 	"strings"
 
-	"github.com/tokenchain/dp-block/x/payments/internal/types"
+	"github.com/tokenchain/dp-hub/x/payments/internal/types"
 )
 
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {

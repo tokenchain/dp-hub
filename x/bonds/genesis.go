@@ -2,7 +2,7 @@ package bonds
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tokenchain/dp-block/x/bonds/internal/types"
+	"github.com/tokenchain/dp-hub/x/bonds/internal/types"
 )
 
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {

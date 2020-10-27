@@ -2,7 +2,7 @@ package test
 
 import (
 	"github.com/stretchr/testify/require"
-	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/did/exported"
 	"testing"
 )
 

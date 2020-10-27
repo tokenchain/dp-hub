@@ -1,8 +1,8 @@
 package treasury
 
 import (
-	"github.com/tokenchain/dp-block/x/treasury/internal/keeper"
-	"github.com/tokenchain/dp-block/x/treasury/internal/types"
+	"github.com/tokenchain/dp-hub/x/treasury/internal/keeper"
+	"github.com/tokenchain/dp-hub/x/treasury/internal/types"
 )
 
 const (

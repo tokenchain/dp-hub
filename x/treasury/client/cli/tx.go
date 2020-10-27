@@ -5,9 +5,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
-	"github.com/tokenchain/dp-block/x/did"
-	"github.com/tokenchain/dp-block/x/did/ante"
-	"github.com/tokenchain/dp-block/x/treasury/internal/types"
+	"github.com/tokenchain/dp-hub/x/did"
+	"github.com/tokenchain/dp-hub/x/did/ante"
+	"github.com/tokenchain/dp-hub/x/treasury/internal/types"
 )
 
 func GetCmdSend(cdc *codec.Codec) *cobra.Command {

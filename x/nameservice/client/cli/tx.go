@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/spf13/cobra"
-	"github.com/tokenchain/dp-block/x/nameservice/types"
+	"github.com/tokenchain/dp-hub/x/nameservice/types"
 	"bufio"
 )
 

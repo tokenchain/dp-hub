@@ -7,10 +7,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/tokenchain/dp-block/x/dap"
-	exported "github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/dap"
+	exported "github.com/tokenchain/dp-hub/x/did/exported"
 
-	"github.com/tokenchain/dp-block/x/project/internal/types"
+	"github.com/tokenchain/dp-hub/x/project/internal/types"
 )
 
 func GetCmdCreateProject(cdc *codec.Codec) *cobra.Command {

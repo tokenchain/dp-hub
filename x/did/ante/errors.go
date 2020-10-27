@@ -3,7 +3,7 @@ package ante
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/tokenchain/dp-block/x/did/exported"
+	"github.com/tokenchain/dp-hub/x/did/exported"
 )
 
 func InvalidTxDecodePubkeyNotFound(e error) error {
